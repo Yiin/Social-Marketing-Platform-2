@@ -37,8 +37,8 @@ $factory->define(App\Models\Template::class, function (Faker\Generator $faker) {
         'name' => $faker->sentence(random_int(2, 4)),
         'url' => $faker->url,
         'image_url' => $faker->imageUrl(),
-        'description' => $faker->paragraph,
-        'message' => $faker->paragraph,
+        'description' => ucwords($faker->word) . ' {' . implode('|', $faker->words(5)) . '} ' . $faker->paragraph,
+        'message' => ucwords($faker->word) . ' {' . implode('|', $faker->words(5)) . '} ' . ' {' . implode('|', $faker->words(3)) . '} ',
         'caption' => $faker->title
     ];
 });

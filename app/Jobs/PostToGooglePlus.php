@@ -17,6 +17,11 @@ class PostToGooglePlus implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
+     * @var Queue|Model
+     */
+    private $_queue;
+
+    /**
      * @var string
      */
     private $message;
@@ -30,6 +35,7 @@ class PostToGooglePlus implements ShouldQueue
      * @var array
      */
     private $group;
+
     /**
      * @var string
      */
@@ -46,11 +52,11 @@ class PostToGooglePlus implements ShouldQueue
      */
     public function __construct(Queue $queue, $message, $url, $group, $categoryId)
     {
+        $this->_queue = $queue;
         $this->message = $message;
         $this->url = $url;
         $this->group = $group;
         $this->categoryId = $categoryId;
-        $this->queue = $queue;
     }
 
     /**
@@ -60,12 +66,17 @@ class PostToGooglePlus implements ShouldQueue
      */
     public function handle()
     {
+        \Log::error('1');
         $accountId = $this->group['account_id'];
 
+        \Log::error('2');
         $account = Account::find($accountId);
+        \Log::error('3');
         $success = $account->socialMediaService->impl()->login($account->username, $account->password);
 
+        \Log::error('4');
         if (!$success) {
+            \Log::error('5');
             return;
         }
         $result = $account->socialMediaService->impl()->postGP(
@@ -78,7 +89,7 @@ class PostToGooglePlus implements ShouldQueue
         }
 
         Post::create([
-            'queue_id' => $this->queue->id,
+            'queue_id' => $this->_queue->id,
             'data' => [
                 'url' => $result['postURL'],
                 'message' => $this->message,
