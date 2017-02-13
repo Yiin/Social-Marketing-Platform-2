@@ -39,4 +39,9 @@ class Queue extends Model
     protected $casts = [
         'stats' => 'array',
     ];
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
 }
