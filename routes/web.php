@@ -25,4 +25,3 @@ Route::get('stats/{queue}', function (\App\Models\Queue $queue) {
 Route::get('q', function () {
     //
 });
-/*
