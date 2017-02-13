@@ -31,7 +31,7 @@ class AccountController extends Controller
          */
         $socialMediaService = SocialMediaService::find($request->get('social_media_service_id'));
 
-        if ($socialMediaService->impl()->login($request->get('username'), $request->get('password'))) {
+        if (!$socialMediaService->impl()->login($request->get('username'), $request->get('password'))) {
             return response()->json(['username' => ['Login failed.']], 401);
         }
 
