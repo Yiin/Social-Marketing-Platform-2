@@ -6,7 +6,6 @@ use App\Models\Account;
 use App\Models\Post;
 use App\Models\Queue;
 use Illuminate\Bus\Queueable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,7 +16,7 @@ class PostToGooglePlus implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * @var Queue|Model
+     * @var Queue
      */
     private $_queue;
 
@@ -44,7 +43,7 @@ class PostToGooglePlus implements ShouldQueue
     /**
      * Create a new job instance.
      *
-     * @param Queue|Model $queue
+     * @param Queue $queue
      * @param $message
      * @param $url
      * @param $group
@@ -66,19 +65,17 @@ class PostToGooglePlus implements ShouldQueue
      */
     public function handle()
     {
-        \Log::error('1');
+        $this->_queue = Queue::find($this->_queue->id);
+
         $accountId = $this->group['account_id'];
 
-        \Log::error('2');
         $account = Account::find($accountId);
-        \Log::error('3');
         $success = $account->socialMediaService->impl()->login($account->username, $account->password);
 
-        \Log::error('4');
         if (!$success) {
-            \Log::error('5');
             return;
         }
+
         $result = $account->socialMediaService->impl()->postGP(
             $this->message, $this->url, '', $this->group['id'], $this->categoryId
         );
@@ -86,6 +83,15 @@ class PostToGooglePlus implements ShouldQueue
         if (!is_array($result) || !isset($result['isPosted']) || $result['isPosted'] != '1') {
             \Log::error('GooglePlus - ' . $result);
             return;
+        }
+
+        $this->_queue->update(['stats->posts' => $this->_queue->stats['posts'] + 1]);
+
+        $cacheKey = "Queue.{$this->_queue->id}.LAST_CHECKED_GROUP";
+
+        if (cache($cacheKey) != $this->group['id']) {
+            cache([$cacheKey => $this->group['id']], 60);
+            $this->_queue->update(['stats->backlinks' => $this->_queue->stats['backlinks'] + $this->group['members']]);
         }
 
         Post::create([

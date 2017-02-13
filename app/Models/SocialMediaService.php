@@ -47,7 +47,7 @@ class SocialMediaService extends Model
                     'delay' => 'required|numeric|min:0'
                 ]
             ]
-        ]
+        ],
     ];
 
     /**

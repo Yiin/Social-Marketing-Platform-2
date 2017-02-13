@@ -22,6 +22,7 @@ use Illuminate\Database\Query\Builder;
  * @method static Builder|Queue whereStats($value)
  * @method static Builder|Queue whereTemplateId($value)
  * @method static Builder|Queue whereUpdatedAt($value)
+ * @method static Queue create($value)
  * @mixin \Eloquent
  */
 class Queue extends Model
@@ -30,7 +31,9 @@ class Queue extends Model
         'social_media_service_id',
         'client_id',
         'template_id',
-        'stats'
+        'stats',
+        'stats->posts',
+        'stats->backlinks'
     ];
 
     protected $casts = [

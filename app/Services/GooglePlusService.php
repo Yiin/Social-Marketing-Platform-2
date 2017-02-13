@@ -79,7 +79,7 @@ class GooglePlusService implements SocialMediaServiceInterface
     /**
      * @param array $postData
      * @param SocialMediaService $socialMediaService
-     * @return Queue|\Illuminate\Database\Eloquent\Model
+     * @return Queue
      */
     public function post(array $postData, SocialMediaService $socialMediaService)
     {
@@ -102,7 +102,7 @@ class GooglePlusService implements SocialMediaServiceInterface
             'client_id' => $client_id,
             'template_id' => $template_id,
             'stats' => [
-                'groups' => 0,
+                'posts' => 0,
                 'backlinks' => 0
             ]
         ]);
@@ -111,7 +111,7 @@ class GooglePlusService implements SocialMediaServiceInterface
 
         foreach ($groups as $group) {
             if (empty($group['categories'])) {
-                $group['categories'][] = null;
+                continue;
             }
 
             $url = $template->url;
@@ -188,8 +188,14 @@ class GooglePlusService implements SocialMediaServiceInterface
 
             $groups[$index] = array_merge($groups[$index], $data);
 
+            if (!isset($groups[$index]['name'])) {
+                // Name
+                $name = $this->scrapeName($html);
+                $groups[$index]['name'] = $name;
+            }
+
             // Cache for 1 hour
-            Cache::put('GooglePlus.' . $groups[$index]['id'], $data, 60);
+            Cache::put('GooglePlus.' . $groups[$index]['id'], $groups[$index], 60);
         }
     }
 
@@ -211,5 +217,10 @@ class GooglePlusService implements SocialMediaServiceInterface
         $member_count = str_replace(",", "", $member_count_array[0]);
 
         return (int)$member_count;
+    }
+
+    private function scrapeName(simple_html_dom $html)
+    {
+        return $html->find('.Dm8wYc')[0]->text();
     }
 }

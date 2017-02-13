@@ -18,6 +18,10 @@ Route::middleware('auth')->group(function () {
     Route::name('social-media-service')->get('social-media-service/{socialMediaService}', 'PostingController@view');
 });
 
-Route::get('clear-cache', function () {
-    Cache::flush();
+Route::get('stats/{queue}', function (\App\Models\Queue $queue) {
+    return view('stats')->with(compact('queue'));
+});
+
+Route::get('q', function () {
+    //
 });
