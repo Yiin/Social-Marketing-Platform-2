@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Http\Requests\Account\CreateOrUpdateAccount;
 use App\Models\Account;
+use App\Models\SocialMediaService;
 use Illuminate\Http\Request;
 
 class AccountController extends Controller
@@ -25,6 +26,15 @@ class AccountController extends Controller
 
     public function store(CreateOrUpdateAccount $request)
     {
+        /**
+         * @var SocialMediaService $socialMediaService
+         */
+        $socialMediaService = SocialMediaService::find($request->get('social_media_service_id'));
+
+        if ($socialMediaService->impl()->login($request->get('username'), $request->get('password'))) {
+            return response()->json(['username' => ['Login failed.']], 401);
+        }
+
         Account::create($request->only((new Account)->getFillable()));
 
         return Account::all();
