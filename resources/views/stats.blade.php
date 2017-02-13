@@ -26,7 +26,9 @@
                                     <td>{{ $post->created_at->diffForHumans() }}</td>
                                     <td>{{ $post->data['groupName'] }}</td>
                                     <td>{{ $post->data['message'] }}</td>
-                                    <td>{{ $post->data['url'] }}</td>
+                                    <td>
+                                        <a href="{{ $post->data['url'] }}">{{ str_limit($post->data['url'], 40) }}</a>
+                                    </td>
                                 </tr>
                             @endforeach
                             </tbody>
