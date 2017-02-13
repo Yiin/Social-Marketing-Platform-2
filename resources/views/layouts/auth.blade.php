@@ -15,46 +15,22 @@
 
 
     <!-- Bootstrap core CSS     -->
-    <link href="../../assets/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet"/>
 
     <!--  Light Bootstrap Dashboard core CSS    -->
-    <link href="../../assets/css/light-bootstrap-dashboard.css" rel="stylesheet"/>
+    <link href="{{ asset('assets/css/light-bootstrap-dashboard.css') }}" rel="stylesheet"/>
 
     <!--  CSS for Demo Purpose, don't include it in your project     -->
-    <link href="../../assets/css/demo.css" rel="stylesheet"/>
+    <link href="{{ asset('assets/css/demo.css') }}" rel="stylesheet"/>
 
 
     <!--     Fonts and icons     -->
     <link href="http://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
-    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700,300' rel='stylesheet' type='text/css'>
-    <link href="../../assets/css/pe-icon-7-stroke.css" rel="stylesheet"/>
+    <link href="http://fonts.googleapis.com/css?family=Roboto:400,700,300" rel='stylesheet' type='text/css'>
+    <link href="{{ asset('assets/css/pe-icon-7-stroke.css') }}" rel="stylesheet"/>
 
 </head>
 <body>
-
-<nav class="navbar navbar-transparent navbar-absolute">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="../dashboard.html">{{ config('app.name') }}</a>
-        </div>
-        <div class="collapse navbar-collapse">
-
-            <ul class="nav navbar-nav navbar-right">
-                <li>
-                    <a href="{{ url('/register') }}">
-                        Register
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
 
 <div class="wrapper wrapper-full-page">
     <div class="full-page login-page" data-color="blue" data-image="{{ asset('assets/img/full-screen-image-1.jpg') }}">
