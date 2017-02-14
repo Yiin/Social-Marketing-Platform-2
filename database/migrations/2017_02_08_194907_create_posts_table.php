@@ -19,7 +19,7 @@ class CreatePostsTable extends Migration
             $table->integer('queue_id')->unsigned();
             $table->foreign('queue_id')->references('id')->on('queues')->onUpdate('cascade')->onDelete('cascade');
 
-            $table->json('data');
+            $table->text('data');
 
             $table->timestamps();
         });

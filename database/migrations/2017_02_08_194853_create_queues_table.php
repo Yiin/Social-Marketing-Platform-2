@@ -25,7 +25,7 @@ class CreateQueuesTable extends Migration
             $table->integer('template_id')->unsigned();
             $table->foreign('template_id')->references('id')->on('templates')->onUpdate('cascade')->onDelete('cascade');
 
-            $table->json('stats');
+            $table->text('stats');
 
             $table->timestamps();
         });
