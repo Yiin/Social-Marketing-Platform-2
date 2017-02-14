@@ -22,7 +22,7 @@ class CreateSocialMediaServicesTable extends Migration
             $table->string('view'); // view file
             $table->string('icon'); // icon class
 
-            $table->json('validation')->nullable();
+            $table->text('validation')->nullable();
 
             $table->timestamps();
         });
