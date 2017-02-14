@@ -15,13 +15,19 @@
                 <template v-if="done">
                     <div class="header">
                         <h4 class="title">Posting was successfully queued!</h4>
-                        <p class="category">You will get detailed report after posting is completed.</p>
+                        <p class="category">
+                            <a :href="`http://http://roislope.com/smp/statistics/${queue_id}`" target="_blank">
+                                http://http://roislope.com/smp/statistics/{{ queue_id }}
+                            </a>
+                        </p>
                     </div>
 
                     <div class="content">
                         <p>
-                            We will send you an email with all the important information
-                            and statistics after all posts will go through.
+                            To see the progress, visit this url:
+                            <a :href="`http://http://roislope.com/smp/statistics/${queue_id}`" target="_blank">
+                                http://http://roislope.com/smp/statistics/{{ queue_id }}
+                            </a>
                         </p>
                         <p>
                             Usually posting is completed in up to 15 minutes, but that
@@ -38,31 +44,42 @@
                         <form @submit.prevent="post">
                             <div class="form-group" :class="{ 'has-error': errors.client_id }">
                                 <label>Client</label>
-                                <select data-title="Select Client We Post For" data-style="btn-default btn-block" data-menu-style="dropdown-blue" class="form-control selectpicker" v-model="client_id">
+                                <select data-title="Select Client We Post For" data-style="btn-default btn-block"
+                                        data-menu-style="dropdown-blue" class="form-control selectpicker"
+                                        v-model="client_id">
                                     <option v-for="client in clients" :value="client.id">{{ client.name }}</option>
                                 </select>
                                 <template v-if="errors.client_id">
-                                    <label v-for="errorMessage in errors.client_id" class="error">{{ errorMessage }}</label>
+                                    <label v-for="errorMessage in errors.client_id" class="error">{{ errorMessage
+                                        }}</label>
                                 </template>
                             </div>
                             <div class="form-group" :class="{ 'has-error': errors.template_id }">
                                 <label>Post Template</label>
-                                <select data-title="Select Post Template" data-style="btn-default btn-block" data-menu-style="dropdown-blue" class="form-control selectpicker" v-model="template_id">
-                                    <option v-for="template in templates" :value="template.id">{{ template.name }}</option>
+                                <select data-title="Select Post Template" data-style="btn-default btn-block"
+                                        data-menu-style="dropdown-blue" class="form-control selectpicker"
+                                        v-model="template_id">
+                                    <option v-for="template in templates" :value="template.id">{{ template.name }}
+                                    </option>
                                 </select>
                                 <template v-if="errors.template_id">
-                                    <label v-for="errorMessage in errors.template_id" class="error">{{ errorMessage }}</label>
+                                    <label v-for="errorMessage in errors.template_id" class="error">{{ errorMessage
+                                        }}</label>
                                 </template>
                             </div>
                             <div class="form-group" :class="{ 'has-error': errors.delay }">
                                 <label>Delay between posts (in seconds)</label>
-                                <input v-model="delay" placeholder="Delay between posts (in seconds)" type="number" min="0" class="form-control">
+                                <input v-model="delay" placeholder="Delay between posts (in seconds)" type="number"
+                                       min="0" class="form-control">
                                 <template v-if="errors.delay">
                                     <label v-for="errorMessage in errors.delay" class="error">{{ errorMessage }}</label>
                                 </template>
                             </div>
 
-                            <button type="submit" class="btn btn-fill btn-primary" :disabled="!selectedGroupsTotal()">{{ selectedGroupsTotal() ? 'Post to selected groups' : 'Please select at least one group' }}</button>
+                            <button type="submit" class="btn btn-fill btn-primary" :disabled="!selectedGroupsTotal()">{{
+                                selectedGroupsTotal() ? 'Post to selected groups' : 'Please select at least one group'
+                                }}
+                            </button>
                         </form>
                     </div>
                 </template>
@@ -78,7 +95,8 @@
                         <div class="heading">
                             <h5 class="title">
                                 {{ groupsHeadingText(account) }}
-                                <button class="btn btn-xs" :data-target="`#account-groups-${accountIndex}`" data-toggle="collapse">
+                                <button class="btn btn-xs" :data-target="`#account-groups-${accountIndex}`"
+                                        data-toggle="collapse">
                                     Show / Hide
                                 </button>
                                 <button class="btn btn-xs" @click="selectAllGroups(account)">
@@ -165,6 +183,7 @@
         data() {
             return {
                 done: false,
+                queue_id: null,
                 errors: [],
                 accounts: [{
                     groups: [{}]
@@ -196,6 +215,7 @@
 
                 this.$http.post(`/api/post/${this.service_id}`, data).then(response => {
                     this.done = true;
+                    this.queue_id = response.body;
                     this.resetSelection();
                 }).catch(response => {
                     this.errors = response.body;
