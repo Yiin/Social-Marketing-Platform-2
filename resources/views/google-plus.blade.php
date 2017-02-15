@@ -4,9 +4,9 @@
 
     <google-plus-posting-panels
             service_id="{{ $service->id }}"
-            accountsjson="{{ json_encode($accounts) }}"
-            clientsjson="{{ json_encode($clients) }}"
-            templatesjson="{{ json_encode($templates) }}">
+            accountsjson="{{ $accounts->toJson()  }}"
+            clientsjson="{{ $clients->toJson()  }}"
+            templatesjson="{{ $templatess->toJson() }}">
     </google-plus-posting-panels>
 
 @endsection
