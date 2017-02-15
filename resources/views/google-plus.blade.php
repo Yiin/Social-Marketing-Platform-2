@@ -6,7 +6,7 @@
             service_id="{{ $service->id }}"
             accountsjson="{{ $accounts->toJson()  }}"
             clientsjson="{{ $clients->toJson()  }}"
-            templatesjson="{{ $templatess->toJson() }}">
+            templatesjson="{{ $templates->toJson() }}">
     </google-plus-posting-panels>
 
 @endsection
