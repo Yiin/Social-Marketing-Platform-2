@@ -15,7 +15,7 @@ class ReportStats extends Mailable
     /**
      * @var Queue
      */
-    private $q;
+    public $q;
 
     /**
      * Create a new message instance.
@@ -33,6 +33,6 @@ class ReportStats extends Mailable
      */
     public function build()
     {
-        return $this->view('emails.stats')->with(['queue' => $this->q]);
+        return $this->view('emails.stats');
     }
 }
