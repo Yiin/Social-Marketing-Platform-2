@@ -11,7 +11,7 @@
 <h1>Posting is done, you can see stats in the page linked below.</h1>
 
 <p>
-    <a href="{{ route('stats', ['queue' => $queue->id]) }}"></a>
+    <a href="{{ route('stats', ['queue' => $q->id]) }}"></a>
 </p>
 </body>
 </html>
