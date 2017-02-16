@@ -2515,12 +2515,36 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = {
     props: ['service_id', 'clientsjson', 'templatesjson', 'accountsjson'],
     data: function data() {
         return {
             done: false,
+            queue_id: null,
             errors: [],
             accounts: [{
                 groups: [{}]
@@ -2557,6 +2581,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
             this.$http.post('/api/post/' + this.service_id, data).then(function (response) {
                 _this.done = true;
+                _this.queue_id = response.body;
                 _this.resetSelection();
             }).catch(function (response) {
                 _this.errors = response.body;
@@ -30231,9 +30256,25 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "col-md-6"
   }, [_c('div', {
     staticClass: "card"
-  }, [(_vm.done) ? [_vm._m(1), _vm._v(" "), _c('div', {
+  }, [(_vm.done) ? [_c('div', {
+    staticClass: "header"
+  }, [_c('h4', {
+    staticClass: "title"
+  }, [_vm._v("Posting was successfully queued!")]), _vm._v(" "), _c('p', {
+    staticClass: "category"
+  }, [_c('a', {
+    attrs: {
+      "href": ("https://smp.roislope.com/stats/" + _vm.queue_id),
+      "target": "_blank"
+    }
+  }, [_vm._v("\n                            https://smp.roislope.com/stats/" + _vm._s(_vm.queue_id) + "\n                        ")])])]), _vm._v(" "), _c('div', {
     staticClass: "content"
-  }, [_c('p', [_vm._v("\n                        We will send you an email with all the important information\n                        and statistics after all posts will go through.\n                    ")]), _vm._v(" "), _c('p', [_vm._v("\n                        Usually posting is completed in up to 15 minutes, but that\n                        can vary depending on number of posts.\n                    ")]), _vm._v(" "), _c('button', {
+  }, [_c('p', [_vm._v("\n                        To see the progress, visit this url:\n                        "), _c('a', {
+    attrs: {
+      "href": ("https://smp.roislope.com/stats/" + _vm.queue_id),
+      "target": "_blank"
+    }
+  }, [_vm._v("\n                            https://smp.roislope.com/stats/" + _vm._s(_vm.queue_id) + "\n                        ")])]), _vm._v(" "), _c('p', [_vm._v("\n                        A link above will be sent to client email\n                        (" + _vm._s(_vm.clients.filter(function (client) { return client.id === _vm.client_id; })[0].email) + ")\n                        once posting is done.\n                    ")]), _vm._v(" "), _c('p', [_vm._v("\n                        Usually posting is completed in up to 15 minutes, but that\n                        can vary depending on number of posts.\n                    ")]), _vm._v(" "), _c('button', {
     staticClass: "btn",
     on: {
       "click": function($event) {
@@ -30324,7 +30365,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       domProps: {
         "value": template.id
       }
-    }, [_vm._v(_vm._s(template.name))])
+    }, [_vm._v(_vm._s(template.name) + "\n                                ")])
   })), _vm._v(" "), (_vm.errors.template_id) ? _vm._l((_vm.errors.template_id), function(errorMessage) {
     return _c('label', {
       staticClass: "error"
@@ -30369,11 +30410,11 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       "type": "submit",
       "disabled": !_vm.selectedGroupsTotal()
     }
-  }, [_vm._v(_vm._s(_vm.selectedGroupsTotal() ? 'Post to selected groups' : 'Please select at least one group'))])])])]], 2)]), _vm._v(" "), _c('div', {
+  }, [_vm._v(_vm._s(_vm.selectedGroupsTotal() ? 'Post to selected groups' : 'Please select at least one group') + "\n                        ")])])])]], 2)]), _vm._v(" "), _c('div', {
     staticClass: "col-md-12"
   }, [_c('div', {
     staticClass: "card"
-  }, [_vm._m(2), _vm._v(" "), _c('div', {
+  }, [_vm._m(1), _vm._v(" "), _c('div', {
     staticClass: "content"
   }, [_vm._l((_vm.accounts), function(account, accountIndex) {
     return [_c('div', {
@@ -30407,7 +30448,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       }
     }, [_c('table', {
       staticClass: "table groups"
-    }, [_vm._m(3, true), _vm._v(" "), _c('tbody', _vm._l((account.groups), function(group, index) {
+    }, [_vm._m(2, true), _vm._v(" "), _c('tbody', _vm._l((account.groups), function(group, index) {
       return _c('tr', {
         class: {
           selected: group.selected
@@ -30421,7 +30462,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
         staticClass: "text-center"
       }, [_vm._v(_vm._s(index + 1))]), _vm._v(" "), _c('td', {
         staticClass: "highlight"
-      }, [_vm._v(_vm._s(group.name))]), _vm._v(" "), _c('td', [_vm._v(_vm._s(group.members))]), _vm._v(" "), _c('td', [_vm._v(_vm._s(group.categories ? group.categories.length : 0))]), _vm._v(" "), _vm._m(4, true)])
+      }, [_vm._v(_vm._s(group.name))]), _vm._v(" "), _c('td', [_vm._v(_vm._s(group.members))]), _vm._v(" "), _c('td', [_vm._v(_vm._s(group.categories ? group.categories.length : 0))]), _vm._v(" "), _vm._m(3, true)])
     }))])])]
   })], 2)])])])
 },staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -30430,14 +30471,6 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   }, [_c('h4', {
     staticClass: "title"
   }, [_vm._v("Google Plus Accounts")])])
-},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('div', {
-    staticClass: "header"
-  }, [_c('h4', {
-    staticClass: "title"
-  }, [_vm._v("Posting was successfully queued!")]), _vm._v(" "), _c('p', {
-    staticClass: "category"
-  }, [_vm._v("You will get detailed report after posting is completed.")])])
 },function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('div', {
     staticClass: "header"

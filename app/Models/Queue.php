@@ -33,12 +33,23 @@ class Queue extends Model
         'template_id',
         'stats',
         'stats->posts',
-        'stats->backlinks'
+        'stats->backlinks',
+        'stats->jobs'
     ];
 
     protected $casts = [
         'stats' => 'array',
     ];
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    public function template()
+    {
+        return $this->belongsTo(Template::class);
+    }
 
     public function posts()
     {

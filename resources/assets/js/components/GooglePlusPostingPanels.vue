@@ -16,8 +16,8 @@
                     <div class="header">
                         <h4 class="title">Posting was successfully queued!</h4>
                         <p class="category">
-                            <a :href="`http://http://roislope.com/smp/statistics/${queue_id}`" target="_blank">
-                                http://http://roislope.com/smp/statistics/{{ queue_id }}
+                            <a :href="`https://smp.roislope.com/stats/${queue_id}`" target="_blank">
+                                https://smp.roislope.com/stats/{{ queue_id }}
                             </a>
                         </p>
                     </div>
@@ -25,9 +25,14 @@
                     <div class="content">
                         <p>
                             To see the progress, visit this url:
-                            <a :href="`http://http://roislope.com/smp/statistics/${queue_id}`" target="_blank">
-                                http://http://roislope.com/smp/statistics/{{ queue_id }}
+                            <a :href="`https://smp.roislope.com/stats/${queue_id}`" target="_blank">
+                                https://smp.roislope.com/stats/{{ queue_id }}
                             </a>
+                        </p>
+                        <p>
+                            A link above will be sent to client email
+                            ({{ clients.filter(client => client.id === client_id)[0].email }})
+                            once posting is done.
                         </p>
                         <p>
                             Usually posting is completed in up to 15 minutes, but that

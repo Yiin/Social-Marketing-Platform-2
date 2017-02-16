@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Mail\ReportStats;
 use App\Models\Account;
 use App\Models\Post;
 use App\Models\Queue;
@@ -66,6 +67,13 @@ class PostToGooglePlus implements ShouldQueue
     public function handle()
     {
         $this->_queue = Queue::find($this->_queue->id);
+
+        $jobs = $this->_queue->stats['jobs'] - 1;
+        $this->_queue->update(['stats->jobs' => $jobs]);
+
+        if ($jobs == 0) {
+            \Mail::to($this->_queue->client->email)->send(new ReportStats($this->_queue));
+        }
 
         $accountId = $this->group['account_id'];
 

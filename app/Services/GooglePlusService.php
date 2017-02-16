@@ -103,9 +103,11 @@ class GooglePlusService implements SocialMediaServiceInterface
             'template_id' => $template_id,
             'stats' => [
                 'posts' => 0,
-                'backlinks' => 0
+                'backlinks' => 0,
+                'jobs' => 0
             ]
         ]);
+        $jobs = 0;
 
         $template = Template::find($template_id);
 
@@ -130,8 +132,12 @@ class GooglePlusService implements SocialMediaServiceInterface
                 dispatch((new PostToGooglePlus(
                     $queue, $message, $url, $group, $categoryId
                 ))->delay(Carbon::now()->addSeconds($delay)));
+
+                $jobs++;
             }
         }
+
+        $queue->update(['stats->jobs' => $jobs]);
 
         return $queue;
     }
