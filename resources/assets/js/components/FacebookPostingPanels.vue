@@ -287,4 +287,5 @@
             setTimeout($('[data-toggle="collapse"]').collapse);
         }
     }
+
 </script>

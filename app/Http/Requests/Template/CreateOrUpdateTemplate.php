@@ -28,7 +28,7 @@ class CreateOrUpdateTemplate extends FormRequest
             'name' => 'required',
             'image_url' => '',
             'description' => '',
-            'message' => 'required',
+            'message' => '',
             'caption' => ''
         ];
     }

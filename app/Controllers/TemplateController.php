@@ -38,7 +38,7 @@ class TemplateController extends Controller
      */
     public function store(CreateOrUpdateTemplate $request)
     {
-        Template::create($request->only((new Template)->getFillable()));
+        Template::create($request->all());
 
         return redirect()->route('template.index');
     }
