@@ -5,7 +5,12 @@
             <th class="text-center">#</th>
             <th>Name</th>
             <th>Access Token</th>
-            <th>Groups File</th>
+            <th>
+                Groups File
+                <a href="https://m.facebook.com/groups/?category=groups&ref=group_browse" target="_blank">
+                    (html of this page)
+                </a>
+            </th>
             <th class="text-right">Actions</th>
         </tr>
         </thead>
