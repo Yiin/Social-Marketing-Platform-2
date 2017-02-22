@@ -218,7 +218,7 @@
                     });
                 });
 
-                this.$http.post(`/google/post`, data).then(response => {
+                this.$http.post(`/api/google/post`, data).then(response => {
                     this.done = true;
                     this.queue_id = response.body;
                     this.resetSelection();

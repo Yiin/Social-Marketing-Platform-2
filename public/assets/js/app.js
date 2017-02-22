@@ -12945,7 +12945,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 });
             });
 
-            this.$http.post('/facebook/post', data).then(function (response) {
+            this.$http.post('/api/facebook/post', data).then(function (response) {
                 _this.done = true;
                 _this.queue_id = response.body;
                 _this.resetSelection();
@@ -13467,7 +13467,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 });
             });
 
-            this.$http.post('/google/post', data).then(function (response) {
+            this.$http.post('/api/google/post', data).then(function (response) {
                 _this.done = true;
                 _this.queue_id = response.body;
                 _this.resetSelection();
