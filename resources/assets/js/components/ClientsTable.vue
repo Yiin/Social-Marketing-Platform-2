@@ -12,8 +12,12 @@
         <tr is="client-row" v-for="(client, index) in clients" :index="index" :client="client" :onDelete="onDelete"></tr>
         <tr>
             <td></td>
-            <td><input type="text" class="form-control" :class="{ error: errors.name }" placeholder="Name" v-model="client.name"></td>
-            <td><input type="text" class="form-control" :class="{ error: errors.email }" placeholder="Email" v-model="client.email"></td>
+            <td>
+                <input type="text" class="form-control" :class="{ error: errors.name }" placeholder="Name" v-model="client.name">
+            </td>
+            <td>
+                <input type="text" class="form-control" :class="{ error: errors.email }" placeholder="Email" v-model="client.email">
+            </td>
             <td class="text-right">
                 <button @click="create" class="btn btn-primary btn-simple-btn-xs">
                     Create client
@@ -40,7 +44,7 @@
             create() {
                 this.errors = {};
 
-                this.$http.post('http://roislope.com/smp/public/client', this.client).then(response => {
+                this.$http.post('/client', this.client).then(response => {
                     this.client = {};
                     this.$set(this, 'clients', response.body);
                 }).catch(response => {

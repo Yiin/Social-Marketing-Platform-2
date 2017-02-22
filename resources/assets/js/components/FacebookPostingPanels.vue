@@ -200,15 +200,17 @@
                 console.log(this.accounts);
 
                 this.accounts.forEach(account => {
-                    account.groups.filter(group => group.selected).forEach(group => {
+                    account.groups.filter(group => group.selected
+                    ).forEach(group => {
                         data.queue.push({
                             account_id: account.id,
                             groupId: group.groupId
                         });
-                    });
+                    })
+                    ;
                 });
 
-                this.$http.post(`http://roislope.com/smp/public/api/facebook/post`, data).then(response => {
+                this.$http.post(`/facebook/post`, data).then(response => {
                     this.done = true;
                     this.queue_id = response.body;
                     this.resetSelection();

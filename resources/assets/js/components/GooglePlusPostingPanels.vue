@@ -16,8 +16,8 @@
                     <div class="header">
                         <h4 class="title">Posting was successfully queued!</h4>
                         <p class="category">
-                            <a :href="`http://roislope.com/smp/public/google/stats/${queue_id}`" target="_blank">
-                                http://roislope.com/smp/public/google/stats/{{ queue_id }}
+                            <a :href="`https://smp.roislope.com/google/stats/${queue_id}`" target="_blank">
+                                https://smp.roislope.com/google/stats/{{ queue_id }}
                             </a>
                         </p>
                     </div>
@@ -25,8 +25,8 @@
                     <div class="content">
                         <p>
                             To see the progress, visit this url:
-                            <a :href="`http://roislope.com/smp/public/google/stats/${queue_id}`" target="_blank">
-                                http://roislope.com/smp/public/google/stats/{{ queue_id }}
+                            <a :href="`https://smp.roislope.com/google/stats/${queue_id}`" target="_blank">
+                                https://smp.roislope.com/google/stats/{{ queue_id }}
                             </a>
                         </p>
                         <p>
@@ -218,7 +218,7 @@
                     });
                 });
 
-                this.$http.post(`http://roislope.com/smp/public/api/google/post`, data).then(response => {
+                this.$http.post(`/google/post`, data).then(response => {
                     this.done = true;
                     this.queue_id = response.body;
                     this.resetSelection();
