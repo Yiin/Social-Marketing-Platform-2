@@ -15,6 +15,9 @@ use Illuminate\Database\Query\Builder;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property-read \App\Models\SocialMediaService $socialMediaService
+ * @property string app_id
+ * @property string app_secret
+ * @property string access_token
  * @method static Builder|Account whereCreatedAt($value)
  * @method static Builder|Account whereId($value)
  * @method static Builder|Account wherePassword($value)
@@ -25,7 +28,14 @@ use Illuminate\Database\Query\Builder;
  */
 class Account extends Model
 {
-    protected $fillable = ['social_media_service_id', 'username', 'password'];
+    protected $fillable = [
+        'social_media_service_id',
+        'username',
+        'password',
+        'app_id',
+        'app_secret',
+        'access_token'
+    ];
 
     public function socialMediaService()
     {
@@ -35,8 +45,8 @@ class Account extends Model
     static public function withGroups($social_media_service_id)
     {
         return Account::where('social_media_service_id', $social_media_service_id)->get()->map(function ($account) {
-            if ($account->socialMediaService->impl()->login($account->username, $account->password)) {
-                $account->groups = $account->socialMediaService->impl()->groups();
+            if ($account->socialMediaService->getInstance()->login($account->username, $account->password)) {
+                $account->groups = $account->socialMediaService->getInstance()->groups();
             } else {
                 $account->groups = [];
             }

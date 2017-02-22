@@ -6,15 +6,6 @@ use Illuminate\Support\ServiceProvider;
 
 class ComposerServiceProvider extends ServiceProvider
 {
-    protected $pages;
-
-    public function __construct($app)
-    {
-        $this->pages = collect(config('app.routes'));
-
-        parent::__construct($app);
-    }
-
     /**
      * Bootstrap the application services.
      *
@@ -23,38 +14,22 @@ class ComposerServiceProvider extends ServiceProvider
     public function boot()
     {
         \View::composer('*', function ($view) {
-            $view->with('user', \Auth::user())
+            $view
+                ->with('user', \Auth::user())
+                ->with('navigationMenu', resolve('App\Services\NavigationMenuService'))
                 ->with('currentPageTitle', $this->currentPageTitle())
-                ->with('currentPageIcon', $this->currentPageIcon())
-                ->with('navLinks', $this->navLinks());
+                ->with('currentPageIcon', $this->currentPageIcon());
         });
     }
 
     private function currentPageTitle()
     {
-        return $this->pages->where('route', \Route::currentRouteName())->first()['title'];
+        return \Route::currentRouteName();
     }
 
     private function currentPageIcon()
     {
-        return $this->pages->where('route', \Route::currentRouteName())->first()['icon'];
-    }
-
-    private function navLinks()
-    {
-        $navLinks = [];
-
-        foreach ($this->pages as $linkData) {
-            $link = new \stdClass;
-
-            $link->route = $linkData['route'];
-            $link->icon = $linkData['icon'];
-            $link->title = $linkData['title'];
-
-            $navLinks[] = $link;
-        }
-
-        return $navLinks;
+        return '';
     }
 
     /**

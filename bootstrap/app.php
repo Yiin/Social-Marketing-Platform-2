@@ -26,6 +26,16 @@ foreach (glob(base_path('/app/Vendor/*.php')) as $filename) {
 }
 set_include_path($includePath);
 
+
+function stripslashes_deep($value)
+{
+    $value = is_array($value) ?
+        array_map('stripslashes_deep', $value) :
+        stripslashes($value);
+
+    return $value;
+}
+
 /*
 |--------------------------------------------------------------------------
 | Bind Important Interfaces

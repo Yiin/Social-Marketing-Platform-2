@@ -55,22 +55,29 @@
         <div class="sidebar-wrapper">
 
             <ul class="nav">
-                @foreach($navLinks as $link)
-                    <li class="{{ \Route::currentRouteName() != $link->route ?: 'active' }}">
-                        <a href="{{ route($link->route) }}">
-                            <i class="{{ $link->icon }}"></i>
-                            <p>{{ $link->title }}</p>
-                        </a>
-                    </li>
+                @foreach($navigationMenu->getItems() as $item)
+
+                    @include('navigation-menu.item', ['item' => $item])
+
                 @endforeach
-                @foreach(\App\Models\SocialMediaService::all() as $service)
-                    <li class="{{ (\Route::currentRouteName() != 'social-media-service' || \Route::getCurrentRoute()->parameter('socialMediaService')->id != $service->id) ?: 'active' }}">
-                        <a href="{{ route('social-media-service', ['socialMediaService' => $service->id]) }}">
-                            <i class="{{ $service->icon }}"></i>
-                            <p>{{ $service->name }}</p>
-                        </a>
-                    </li>
-                @endforeach
+
+                {{--@foreach($navLinks as $link)--}}
+                {{--<li class="{{ \Route::currentRouteName() != $link->route ?: 'active' }}">--}}
+                {{--<a href="{{ route($link->route) }}">--}}
+                {{--<i class="{{ $link->icon }}"></i>--}}
+                {{--<p>{{ $link->title }}</p>--}}
+                {{--</a>--}}
+                {{--</li>--}}
+                {{--@endforeach--}}
+
+                {{--@foreach(\App\Models\SocialMediaService::all() as $service)--}}
+                {{--<li class="{{ (\Route::currentRouteName() != 'social-media-service' || \Route::getCurrentRoute()->parameter('socialMediaService')->id != $service->id) ?: 'active' }}">--}}
+                {{--<a href="{{ route('social-media-service', ['socialMediaService' => $service->id]) }}">--}}
+                {{--<i class="{{ $service->icon }}"></i>--}}
+                {{--<p>{{ $service->name }}</p>--}}
+                {{--</a>--}}
+                {{--</li>--}}
+                {{--@endforeach--}}
             </ul>
         </div>
     </div>

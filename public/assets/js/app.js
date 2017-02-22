@@ -1302,14 +1302,19 @@ module.exports = g;
 
 __webpack_require__(39);
 
-Vue.component('accounts-table', __webpack_require__(46));
-Vue.component('account-row', __webpack_require__(45));
+Vue.component('clients-table', __webpack_require__(46));
+Vue.component('client-row', __webpack_require__(45));
 
-Vue.component('clients-table', __webpack_require__(48));
-Vue.component('client-row', __webpack_require__(47));
+Vue.component('google-accounts-table', __webpack_require__(48));
+Vue.component('google-account-row', __webpack_require__(47));
+
+Vue.component('facebook-accounts-table', __webpack_require__(74));
+Vue.component('facebook-account-row', __webpack_require__(73));
 
 Vue.component('google-plus-accounts-table', __webpack_require__(49));
 Vue.component('google-plus-posting-panels', __webpack_require__(50));
+
+Vue.component('facebook-posting-panels', __webpack_require__(80));
 
 var app = new Vue({
     el: '#app'
@@ -2213,184 +2218,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["default"] = {
-    props: ['account', 'onDelete', 'index', 'services'],
-    data: function data() {
-        return {
-            errors: {},
-            editing: false,
-            confirm: false
-        };
-    },
-
-    methods: {
-        edit: function edit() {
-            this.editing = true;
-
-            setTimeout(function () {
-                window.jQuery('.selectpicker').selectpicker();
-            });
-        },
-        save: function save() {
-            var _this = this;
-
-            this.errors = {};
-
-            this.$http.put('/account/' + this.account.id, this.account).then(function () {
-                _this.editing = false;
-            }).catch(function (response) {
-                _this.errors = response.body;
-            });
-        },
-        remove: function remove() {
-            this.confirm = true;
-        },
-        confirmRemove: function confirmRemove() {
-            this.editing = false;
-            this.confirm = false;
-            this.$http.delete('/account/' + this.account.id).then(this.onDelete.bind(null, this.account.id));
-        },
-        cancelRemove: function cancelRemove() {
-            this.confirm = false;
-        }
-    }
-};
-
-/***/ }),
-/* 34 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["default"] = {
-    props: ['data', 'sms'],
-    data: function data() {
-        return {
-            accounts: [],
-            account: {},
-            errors: {}
-        };
-    },
-
-    computed: {
-        services: function services() {
-            return JSON.parse(this.sms);
-        }
-    },
-    methods: {
-        create: function create() {
-            var _this = this;
-
-            this.errors = {};
-
-            this.$http.post('/account', this.account).then(function (response) {
-                _this.account = {};
-                _this.$set(_this, 'accounts', response.body);
-            }).catch(function (response) {
-                _this.$set(_this, 'errors', response.body);
-            });
-        },
-        onDelete: function onDelete(id) {
-            this.$set(this, 'accounts', this.accounts.filter(function (account) {
-                return account.id !== id;
-            }));
-        }
-    },
-    mounted: function mounted() {
-        this.accounts = JSON.parse(this.data);
-        console.log(this.accounts);
-    }
-};
-
-/***/ }),
-/* 35 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = {
     props: ['client', 'onDelete', 'index'],
@@ -2428,7 +2255,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 };
 
 /***/ }),
-/* 36 */
+/* 34 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2491,6 +2318,180 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     },
     mounted: function mounted() {
         this.clients = JSON.parse(this.data);
+    }
+};
+
+/***/ }),
+/* 35 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = {
+    props: ['account', 'onDelete', 'index'],
+    data: function data() {
+        return {
+            errors: {},
+            editing: false,
+            confirm: false
+        };
+    },
+
+    methods: {
+        edit: function edit() {
+            this.editing = true;
+
+            setTimeout(function () {
+                window.jQuery('.selectpicker').selectpicker();
+            });
+        },
+        save: function save() {
+            var _this = this;
+
+            this.errors = {};
+
+            this.$http.put('/google-account/' + this.account.id, this.account).then(function () {
+                _this.editing = false;
+            }).catch(function (response) {
+                _this.errors = response.body;
+            });
+        },
+        remove: function remove() {
+            this.confirm = true;
+        },
+        confirmRemove: function confirmRemove() {
+            this.editing = false;
+            this.confirm = false;
+            this.$http.delete('/google-account/' + this.account.id).then(this.onDelete.bind(null, this.account.id));
+        },
+        cancelRemove: function cancelRemove() {
+            this.confirm = false;
+        }
+    }
+};
+
+/***/ }),
+/* 36 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = {
+    props: ['data'],
+    data: function data() {
+        return {
+            accounts: [],
+            account: {},
+            errors: {},
+            loginUrl: null
+        };
+    },
+
+    methods: {
+        create: function create() {
+            var _this = this;
+
+            this.errors = {};
+            this.loginUrl = null;
+
+            this.$http.post('/google-account', this.account).then(function (response) {
+                if (response.body.loginUrl) {
+                    _this.loginUrl = response.body.loginUrl;
+                } else {
+                    _this.account = {};
+                    _this.$set(_this, 'accounts', response.body);
+                }
+            }).catch(function (response) {
+                _this.$set(_this, 'errors', response.body);
+            });
+        },
+        onDelete: function onDelete(id) {
+            this.$set(this, 'accounts', this.accounts.filter(function (account) {
+                return account.id !== id;
+            }));
+        }
+    },
+    mounted: function mounted() {
+        this.accounts = JSON.parse(this.data);
+        console.log(this.accounts);
     }
 };
 
@@ -2718,7 +2719,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 
 /* harmony default export */ __webpack_exports__["default"] = {
-    props: ['service_id', 'clientsjson', 'templatesjson', 'accountsjson'],
+    props: ['clientsjson', 'templatesjson', 'accountsjson'],
     data: function data() {
         return {
             done: false,
@@ -2757,7 +2758,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 });
             });
 
-            this.$http.post('/api/post/' + this.service_id, data).then(function (response) {
+            this.$http.post('/api/google/post', data).then(function (response) {
                 _this.done = true;
                 _this.queue_id = response.body;
                 _this.resetSelection();
@@ -2904,7 +2905,7 @@ exports = module.exports = __webpack_require__(3)();
 
 
 // module
-exports.push([module.i, "\n.heading {\n    margin: 20px;\n}\n.heading > .title > button {\n    margin-left: 15px;\n}\ntable.groups tbody tr {\n    cursor: pointer;\n}\ntable.groups tbody tr:hover {\n    background: rgba(74, 119, 234, 0.37);\n}\ntable.groups tbody tr.selected {\n    background: #4a77ea;\n    color: white;\n}\ntable.groups tbody tr.selected > td.highlight {\n    font-weight: bold;\n}\n.explanation {\n    font-weight: normal;\n    font-size: 12px;\n}\n", ""]);
+exports.push([module.i, "\ntd[contenteditable=\"true\"] {\n    border-left: 1px solid;\n}\n", ""]);
 
 // exports
 
@@ -2918,7 +2919,7 @@ exports = module.exports = __webpack_require__(3)();
 
 
 // module
-exports.push([module.i, "\ntd[contenteditable=\"true\"] {\n    border-left: 1px solid;\n}\n", ""]);
+exports.push([module.i, "\n.heading {\n    margin: 20px;\n}\n.heading > .title > button {\n    margin-left: 15px;\n}\ntable.groups tbody tr {\n    cursor: pointer;\n}\ntable.groups tbody tr:hover {\n    background: rgba(74, 119, 234, 0.37);\n}\ntable.groups tbody tr.selected {\n    background: #4a77ea;\n    color: white;\n}\ntable.groups tbody tr.selected > td.highlight {\n    font-weight: bold;\n}\n.explanation {\n    font-weight: normal;\n    font-size: 12px;\n}\n", ""]);
 
 // exports
 
@@ -30262,85 +30263,13 @@ return jQuery;
 
 
 /* styles */
-__webpack_require__(59)
+__webpack_require__(60)
 
 var Component = __webpack_require__(1)(
   /* script */
   __webpack_require__(33),
   /* template */
   __webpack_require__(54),
-  /* scopeId */
-  null,
-  /* cssModules */
-  null
-)
-Component.options.__file = "C:\\Users\\Stanislovas\\Projects\\Current\\smp2\\resources\\assets\\js\\components\\AccountRow.vue"
-if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
-if (Component.options.functional) {console.error("[vue-loader] AccountRow.vue: functional components are not supported with templates, they should use render functions.")}
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-d20ca246", Component.options)
-  } else {
-    hotAPI.reload("data-v-d20ca246", Component.options)
-  }
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 46 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var Component = __webpack_require__(1)(
-  /* script */
-  __webpack_require__(34),
-  /* template */
-  __webpack_require__(53),
-  /* scopeId */
-  null,
-  /* cssModules */
-  null
-)
-Component.options.__file = "C:\\Users\\Stanislovas\\Projects\\Current\\smp2\\resources\\assets\\js\\components\\AccountsTable.vue"
-if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
-if (Component.options.functional) {console.error("[vue-loader] AccountsTable.vue: functional components are not supported with templates, they should use render functions.")}
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-78f61e70", Component.options)
-  } else {
-    hotAPI.reload("data-v-78f61e70", Component.options)
-  }
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 47 */
-/***/ (function(module, exports, __webpack_require__) {
-
-
-/* styles */
-__webpack_require__(60)
-
-var Component = __webpack_require__(1)(
-  /* script */
-  __webpack_require__(35),
-  /* template */
-  __webpack_require__(55),
   /* scopeId */
   null,
   /* cssModules */
@@ -30367,12 +30296,12 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 48 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(1)(
   /* script */
-  __webpack_require__(36),
+  __webpack_require__(34),
   /* template */
   __webpack_require__(56),
   /* scopeId */
@@ -30401,6 +30330,78 @@ module.exports = Component.exports
 
 
 /***/ }),
+/* 47 */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+/* styles */
+__webpack_require__(58)
+
+var Component = __webpack_require__(1)(
+  /* script */
+  __webpack_require__(35),
+  /* template */
+  __webpack_require__(51),
+  /* scopeId */
+  null,
+  /* cssModules */
+  null
+)
+Component.options.__file = "C:\\Users\\Stanislovas\\Projects\\Current\\smp2\\resources\\assets\\js\\components\\GoogleAccountRow.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
+if (Component.options.functional) {console.error("[vue-loader] GoogleAccountRow.vue: functional components are not supported with templates, they should use render functions.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-25d84114", Component.options)
+  } else {
+    hotAPI.reload("data-v-25d84114", Component.options)
+  }
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 48 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Component = __webpack_require__(1)(
+  /* script */
+  __webpack_require__(36),
+  /* template */
+  __webpack_require__(55),
+  /* scopeId */
+  null,
+  /* cssModules */
+  null
+)
+Component.options.__file = "C:\\Users\\Stanislovas\\Projects\\Current\\smp2\\resources\\assets\\js\\components\\GoogleAccountsTable.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
+if (Component.options.functional) {console.error("[vue-loader] GoogleAccountsTable.vue: functional components are not supported with templates, they should use render functions.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-d57b64e2", Component.options)
+  } else {
+    hotAPI.reload("data-v-d57b64e2", Component.options)
+  }
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
 /* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30408,7 +30409,7 @@ var Component = __webpack_require__(1)(
   /* script */
   __webpack_require__(37),
   /* template */
-  __webpack_require__(51),
+  __webpack_require__(52),
   /* scopeId */
   null,
   /* cssModules */
@@ -30440,13 +30441,13 @@ module.exports = Component.exports
 
 
 /* styles */
-__webpack_require__(58)
+__webpack_require__(59)
 
 var Component = __webpack_require__(1)(
   /* script */
   __webpack_require__(38),
   /* template */
-  __webpack_require__(52),
+  __webpack_require__(53),
   /* scopeId */
   null,
   /* cssModules */
@@ -30477,6 +30478,117 @@ module.exports = Component.exports
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('tr', [_c('td', {
+    staticClass: "text-center"
+  }, [_vm._v(_vm._s(_vm.index + 1))]), _vm._v(" "), _c('td', [(_vm.editing) ? _c('input', {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: (_vm.account.username),
+      expression: "account.username"
+    }],
+    staticClass: "form-control",
+    class: {
+      error: _vm.errors.username
+    },
+    attrs: {
+      "type": "text"
+    },
+    domProps: {
+      "value": _vm._s(_vm.account.username)
+    },
+    on: {
+      "keydown": function($event) {
+        if (_vm._k($event.keyCode, "enter", 13)) { return; }
+        _vm.save($event)
+      },
+      "input": function($event) {
+        if ($event.target.composing) { return; }
+        _vm.account.username = $event.target.value
+      }
+    }
+  }) : [_vm._v(_vm._s(_vm.account.username))]], 2), _vm._v(" "), _c('td', [(_vm.editing) ? _c('input', {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: (_vm.account.password),
+      expression: "account.password"
+    }],
+    staticClass: "form-control",
+    class: {
+      error: _vm.errors.password
+    },
+    attrs: {
+      "type": "password"
+    },
+    domProps: {
+      "value": _vm._s(_vm.account.password)
+    },
+    on: {
+      "keydown": function($event) {
+        if (_vm._k($event.keyCode, "enter", 13)) { return; }
+        _vm.save($event)
+      },
+      "input": function($event) {
+        if ($event.target.composing) { return; }
+        _vm.account.password = $event.target.value
+      }
+    }
+  }) : [_vm._v(_vm._s("•".repeat(_vm.account.password.length)))]], 2), _vm._v(" "), _c('td', {
+    staticClass: "text-right"
+  }, [(_vm.editing) ? _c('button', {
+    staticClass: "btn btn-success btn-xs",
+    on: {
+      "click": _vm.save
+    }
+  }, [_vm._v("\n            Save "), _c('i', {
+    staticClass: "fa fa-save"
+  })]) : _c('button', {
+    staticClass: "btn btn-primary btn-xs",
+    attrs: {
+      "type": "button"
+    },
+    on: {
+      "click": _vm.edit
+    }
+  }, [_vm._v("\n            Edit "), _c('i', {
+    staticClass: "fa fa-edit"
+  })]), _vm._v(" "), (_vm.confirm) ? [_c('button', {
+    staticClass: "btn btn-danger btn-fill btn-xs",
+    on: {
+      "click": _vm.confirmRemove
+    }
+  }, [_vm._v("\n                Confirm deletion "), _c('i', {
+    staticClass: "fa fa-remove"
+  })]), _vm._v(" "), _c('button', {
+    staticClass: "btn btn-default btn-xs",
+    on: {
+      "click": _vm.cancelRemove
+    }
+  }, [_vm._v("\n                Cancel "), _c('i', {
+    staticClass: "fa fa-ban"
+  })])] : _c('button', {
+    staticClass: "btn btn-danger btn-xs",
+    on: {
+      "click": _vm.remove
+    }
+  }, [_vm._v("\n            Delete "), _c('i', {
+    staticClass: "fa fa-remove"
+  })])], 2)])
+},staticRenderFns: []}
+module.exports.render._withStripped = true
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+     require("vue-hot-reload-api").rerender("data-v-25d84114", module.exports)
+  }
+}
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('div', [_c('div', {
     staticClass: "table-responsive"
   }, [_c('table', {
@@ -30500,7 +30612,7 @@ if (false) {
 }
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -30528,17 +30640,17 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "category"
   }, [_c('a', {
     attrs: {
-      "href": ("https://smp.roislope.com/stats/" + _vm.queue_id),
+      "href": ("https://smp.roislope.com/google/stats/" + _vm.queue_id),
       "target": "_blank"
     }
-  }, [_vm._v("\n                            https://smp.roislope.com/stats/" + _vm._s(_vm.queue_id) + "\n                        ")])])]), _vm._v(" "), _c('div', {
+  }, [_vm._v("\n                            https://smp.roislope.com/google/stats/" + _vm._s(_vm.queue_id) + "\n                        ")])])]), _vm._v(" "), _c('div', {
     staticClass: "content"
   }, [_c('p', [_vm._v("\n                        To see the progress, visit this url:\n                        "), _c('a', {
     attrs: {
-      "href": ("https://smp.roislope.com/stats/" + _vm.queue_id),
+      "href": ("https://smp.roislope.com/google/stats/" + _vm.queue_id),
       "target": "_blank"
     }
-  }, [_vm._v("\n                            https://smp.roislope.com/stats/" + _vm._s(_vm.queue_id) + "\n                        ")])]), _vm._v(" "), _c('p', [_vm._v("\n                        A link above will be sent to client email\n                        (" + _vm._s(_vm.clients.filter(function (client) { return client.id === _vm.client_id; })[0].email) + ")\n                        once posting is done.\n                    ")]), _vm._v(" "), _c('p', [_vm._v("\n                        Usually posting is completed in up to 15 minutes, but that\n                        can vary depending on number of posts.\n                    ")]), _vm._v(" "), _c('button', {
+  }, [_vm._v("\n                            https://smp.roislope.com/google/stats/" + _vm._s(_vm.queue_id) + "\n                        ")])]), _vm._v(" "), _c('p', [_vm._v("\n                        A link above will be sent to client email\n                        (" + _vm._s(_vm.clients.filter(function (client) { return client.id === _vm.client_id; })[0].email) + ")\n                        once posting is done.\n                    ")]), _vm._v(" "), _c('p', [_vm._v("\n                        Usually posting is completed in up to 15 minutes, but that\n                        can vary depending on number of posts.\n                    ")]), _vm._v(" "), _c('button', {
     staticClass: "btn",
     on: {
       "click": function($event) {
@@ -30763,265 +30875,7 @@ if (false) {
 }
 
 /***/ }),
-/* 53 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('table', {
-    staticClass: "table"
-  }, [_vm._m(0), _vm._v(" "), _c('tbody', [_vm._l((_vm.accounts), function(account, index) {
-    return _c("account-row", {
-      tag: "tr",
-      attrs: {
-        "services": _vm.services,
-        "account": account,
-        "onDelete": _vm.onDelete,
-        "index": index
-      }
-    })
-  }), _vm._v(" "), _c('tr', [_c('td'), _vm._v(" "), _c('td', [_c('select', {
-    directives: [{
-      name: "model",
-      rawName: "v-model",
-      value: (_vm.account.social_media_service_id),
-      expression: "account.social_media_service_id"
-    }],
-    staticClass: "form-control selectpicker",
-    class: {
-      error: _vm.errors.social_media_service_id
-    },
-    attrs: {
-      "data-title": "Select Service",
-      "data-style": "btn-default btn-block",
-      "data-menu-style": "dropdown-blue"
-    },
-    on: {
-      "change": function($event) {
-        _vm.account.social_media_service_id = Array.prototype.filter.call($event.target.options, function(o) {
-          return o.selected
-        }).map(function(o) {
-          var val = "_value" in o ? o._value : o.value;
-          return val
-        })[0]
-      }
-    }
-  }, _vm._l((_vm.services), function(service) {
-    return _c('option', {
-      domProps: {
-        "value": service.id
-      }
-    }, [_vm._v(_vm._s(service.name))])
-  }))]), _vm._v(" "), _c('td', [_c('input', {
-    directives: [{
-      name: "model",
-      rawName: "v-model",
-      value: (_vm.account.username),
-      expression: "account.username"
-    }],
-    staticClass: "form-control",
-    class: {
-      error: _vm.errors.username
-    },
-    attrs: {
-      "type": "text",
-      "placeholder": "Username",
-      "name": "username"
-    },
-    domProps: {
-      "value": _vm._s(_vm.account.username)
-    },
-    on: {
-      "input": function($event) {
-        if ($event.target.composing) { return; }
-        _vm.account.username = $event.target.value
-      }
-    }
-  })]), _vm._v(" "), _c('td', [_c('input', {
-    directives: [{
-      name: "model",
-      rawName: "v-model",
-      value: (_vm.account.password),
-      expression: "account.password"
-    }],
-    staticClass: "form-control",
-    class: {
-      error: _vm.errors.password
-    },
-    attrs: {
-      "type": "password",
-      "placeholder": "Password",
-      "name": "password"
-    },
-    domProps: {
-      "value": _vm._s(_vm.account.password)
-    },
-    on: {
-      "input": function($event) {
-        if ($event.target.composing) { return; }
-        _vm.account.password = $event.target.value
-      }
-    }
-  })]), _vm._v(" "), _c('td', {
-    staticClass: "text-right"
-  }, [_c('button', {
-    staticClass: "btn btn-primary btn-simple-btn-xs",
-    on: {
-      "click": _vm.create
-    }
-  }, [_vm._v("\n                Add account\n            ")])])])], 2)])
-},staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('thead', [_c('tr', [_c('th', {
-    staticClass: "text-center"
-  }, [_vm._v("#")]), _vm._v(" "), _c('th', [_vm._v("Type")]), _vm._v(" "), _c('th', [_vm._v("Account Username")]), _vm._v(" "), _c('th', [_vm._v("Password")]), _vm._v(" "), _c('th', {
-    staticClass: "text-right"
-  }, [_vm._v("Actions")])])])
-}]}
-module.exports.render._withStripped = true
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-     require("vue-hot-reload-api").rerender("data-v-78f61e70", module.exports)
-  }
-}
-
-/***/ }),
 /* 54 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('tr', [_c('td', {
-    staticClass: "text-center"
-  }, [_vm._v(_vm._s(_vm.index + 1))]), _vm._v(" "), _c('td', [(_vm.editing) ? [_c('div', [_c('select', {
-    directives: [{
-      name: "model",
-      rawName: "v-model",
-      value: (_vm.account.social_media_service_id),
-      expression: "account.social_media_service_id"
-    }],
-    staticClass: "form-control selectpicker",
-    class: {
-      error: _vm.errors.social_media_service_id
-    },
-    attrs: {
-      "data-title": "Select Service",
-      "data-style": "btn-default btn-block",
-      "data-menu-style": "dropdown-blue"
-    },
-    on: {
-      "change": function($event) {
-        _vm.account.social_media_service_id = Array.prototype.filter.call($event.target.options, function(o) {
-          return o.selected
-        }).map(function(o) {
-          var val = "_value" in o ? o._value : o.value;
-          return val
-        })[0]
-      }
-    }
-  }, _vm._l((_vm.services), function(service) {
-    return _c('option', {
-      domProps: {
-        "value": service.id,
-        "selected": service.id == _vm.account.social_media_service_id
-      }
-    }, [_vm._v(_vm._s(service.name))])
-  }))])] : [_vm._v(_vm._s(_vm.services.find(function (service) { return service.id == _vm.account.social_media_service_id; }).name))]], 2), _vm._v(" "), _c('td', [(_vm.editing) ? _c('input', {
-    directives: [{
-      name: "model",
-      rawName: "v-model",
-      value: (_vm.account.username),
-      expression: "account.username"
-    }],
-    staticClass: "form-control",
-    class: {
-      error: _vm.errors.username
-    },
-    attrs: {
-      "type": "text"
-    },
-    domProps: {
-      "value": _vm._s(_vm.account.username)
-    },
-    on: {
-      "input": function($event) {
-        if ($event.target.composing) { return; }
-        _vm.account.username = $event.target.value
-      }
-    }
-  }) : [_vm._v(_vm._s(_vm.account.username))]], 2), _vm._v(" "), _c('td', [(_vm.editing) ? _c('input', {
-    directives: [{
-      name: "model",
-      rawName: "v-model",
-      value: (_vm.account.password),
-      expression: "account.password"
-    }],
-    staticClass: "form-control",
-    class: {
-      error: _vm.errors.password
-    },
-    attrs: {
-      "type": "password"
-    },
-    domProps: {
-      "value": _vm._s(_vm.account.password)
-    },
-    on: {
-      "input": function($event) {
-        if ($event.target.composing) { return; }
-        _vm.account.password = $event.target.value
-      }
-    }
-  }) : [_vm._v(_vm._s("•".repeat(_vm.account.password.length)))]], 2), _vm._v(" "), _c('td', {
-    staticClass: "text-right"
-  }, [(_vm.editing) ? _c('button', {
-    staticClass: "btn btn-success btn-xs",
-    on: {
-      "click": _vm.save
-    }
-  }, [_vm._v("\n            Save "), _c('i', {
-    staticClass: "fa fa-save"
-  })]) : _c('button', {
-    staticClass: "btn btn-primary btn-xs",
-    attrs: {
-      "type": "button"
-    },
-    on: {
-      "click": _vm.edit
-    }
-  }, [_vm._v("\n            Edit "), _c('i', {
-    staticClass: "fa fa-edit"
-  })]), _vm._v(" "), (_vm.confirm) ? [_c('button', {
-    staticClass: "btn btn-danger btn-fill btn-xs",
-    on: {
-      "click": _vm.confirmRemove
-    }
-  }, [_vm._v("\n                Confirm deletion "), _c('i', {
-    staticClass: "fa fa-remove"
-  })]), _vm._v(" "), _c('button', {
-    staticClass: "btn btn-default btn-xs",
-    on: {
-      "click": _vm.cancelRemove
-    }
-  }, [_vm._v("\n                Cancel "), _c('i', {
-    staticClass: "fa fa-ban"
-  })])] : _c('button', {
-    staticClass: "btn btn-danger btn-xs",
-    on: {
-      "click": _vm.remove
-    }
-  }, [_vm._v("\n            Delete "), _c('i', {
-    staticClass: "fa fa-remove"
-  })])], 2)])
-},staticRenderFns: []}
-module.exports.render._withStripped = true
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-     require("vue-hot-reload-api").rerender("data-v-d20ca246", module.exports)
-  }
-}
-
-/***/ }),
-/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -31114,6 +30968,108 @@ if (false) {
   module.hot.accept()
   if (module.hot.data) {
      require("vue-hot-reload-api").rerender("data-v-d482e062", module.exports)
+  }
+}
+
+/***/ }),
+/* 55 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('table', {
+    staticClass: "table"
+  }, [_vm._m(0), _vm._v(" "), _c('tbody', [_vm._l((_vm.accounts), function(account, index) {
+    return _c("google-account-row", {
+      tag: "tr",
+      attrs: {
+        "account": account,
+        "onDelete": _vm.onDelete,
+        "index": index
+      }
+    })
+  }), _vm._v(" "), _c('tr', [_c('td'), _vm._v(" "), _c('td', [_c('input', {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: (_vm.account.username),
+      expression: "account.username"
+    }],
+    staticClass: "form-control",
+    class: {
+      error: _vm.errors.username
+    },
+    attrs: {
+      "type": "text",
+      "placeholder": "Username or Email",
+      "name": "username"
+    },
+    domProps: {
+      "value": _vm._s(_vm.account.username)
+    },
+    on: {
+      "keydown": function($event) {
+        if (_vm._k($event.keyCode, "enter", 13)) { return; }
+        _vm.create($event)
+      },
+      "input": function($event) {
+        if ($event.target.composing) { return; }
+        _vm.account.username = $event.target.value
+      }
+    }
+  })]), _vm._v(" "), _c('td', [_c('input', {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: (_vm.account.password),
+      expression: "account.password"
+    }],
+    staticClass: "form-control",
+    class: {
+      error: _vm.errors.password
+    },
+    attrs: {
+      "type": "password",
+      "placeholder": "Password",
+      "name": "password"
+    },
+    domProps: {
+      "value": _vm._s(_vm.account.password)
+    },
+    on: {
+      "keydown": function($event) {
+        if (_vm._k($event.keyCode, "enter", 13)) { return; }
+        _vm.create($event)
+      },
+      "input": function($event) {
+        if ($event.target.composing) { return; }
+        _vm.account.password = $event.target.value
+      }
+    }
+  })]), _vm._v(" "), _c('td', {
+    staticClass: "text-right"
+  }, [(_vm.loginUrl) ? _c('a', {
+    staticClass: "btn btn-success btn-simple-btn-xs",
+    attrs: {
+      "href": _vm.loginUrl
+    }
+  }, [_vm._v("\n                Confirm login\n            ")]) : _c('button', {
+    staticClass: "btn btn-primary btn-simple-btn-xs",
+    on: {
+      "click": _vm.create
+    }
+  }, [_vm._v("\n                Add account\n            ")])])])], 2)])
+},staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('thead', [_c('tr', [_c('th', {
+    staticClass: "text-center"
+  }, [_vm._v("#")]), _vm._v(" "), _c('th', [_vm._v("Username")]), _vm._v(" "), _c('th', [_vm._v("Password")]), _vm._v(" "), _c('th', {
+    staticClass: "text-right"
+  }, [_vm._v("Actions")])])])
+}]}
+module.exports.render._withStripped = true
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+     require("vue-hot-reload-api").rerender("data-v-d57b64e2", module.exports)
   }
 }
 
@@ -32747,13 +32703,13 @@ var content = __webpack_require__(40);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(5)("a117be76", content, false);
+var update = __webpack_require__(5)("7cbe1199", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!./../../../../node_modules/css-loader/index.js!./../../../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-62713f44!./../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./GooglePlusPostingPanels.vue", function() {
-     var newContent = require("!!./../../../../node_modules/css-loader/index.js!./../../../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-62713f44!./../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./GooglePlusPostingPanels.vue");
+   module.hot.accept("!!./../../../../node_modules/css-loader/index.js!./../../../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-25d84114!./../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./GoogleAccountRow.vue", function() {
+     var newContent = require("!!./../../../../node_modules/css-loader/index.js!./../../../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-25d84114!./../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./GoogleAccountRow.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -32773,13 +32729,13 @@ var content = __webpack_require__(41);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(5)("573d7c4f", content, false);
+var update = __webpack_require__(5)("a117be76", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!./../../../../node_modules/css-loader/index.js!./../../../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-d20ca246!./../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./AccountRow.vue", function() {
-     var newContent = require("!!./../../../../node_modules/css-loader/index.js!./../../../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-d20ca246!./../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./AccountRow.vue");
+   module.hot.accept("!!./../../../../node_modules/css-loader/index.js!./../../../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-62713f44!./../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./GooglePlusPostingPanels.vue", function() {
+     var newContent = require("!!./../../../../node_modules/css-loader/index.js!./../../../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-62713f44!./../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./GooglePlusPostingPanels.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -41465,6 +41421,1017 @@ __webpack_require__(12);
 __webpack_require__(13);
 module.exports = __webpack_require__(14);
 
+
+/***/ }),
+/* 66 */,
+/* 67 */,
+/* 68 */,
+/* 69 */,
+/* 70 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = {
+    props: ['account', 'onDelete', 'index'],
+    data: function data() {
+        return {
+            errors: {},
+            editing: false,
+            confirm: false,
+            groupsFile: null
+        };
+    },
+
+    methods: {
+        remove: function remove() {
+            this.confirm = true;
+        },
+        confirmRemove: function confirmRemove() {
+            this.editing = false;
+            this.confirm = false;
+            this.$http.delete('/facebook-account/' + this.account.id).then(this.onDelete.bind(null, this.account.id));
+        },
+        cancelRemove: function cancelRemove() {
+            this.confirm = false;
+        },
+        upload: function upload() {
+            var _this = this;
+
+            this.$http.post('facebook-account-groups', {
+                facebook_account_id: this.account.id,
+                html: this.groupsFile
+            }).then(function () {
+                location.reload();
+            }).catch(function () {
+                _this.groupsFile = null;
+            });
+        },
+        onFileChange: function onFileChange(e) {
+            var _this2 = this;
+
+            var reader = new FileReader();
+            var files = e.target.files;
+            if (!files.length) return;
+
+            reader.readAsText(files[0]);
+
+            this.groupsFile = null;
+            reader.onload = function (e) {
+                _this2.$set(_this2, 'groupsFile', e.target.result);
+            };
+        }
+    }
+};
+
+/***/ }),
+/* 71 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = {
+    props: ['data'],
+    data: function data() {
+        return {
+            accounts: [],
+            account: {},
+            errors: {},
+            loginUrl: null
+        };
+    },
+
+    methods: {
+        create: function create() {
+            var _this = this;
+
+            this.errors = {};
+            this.loginUrl = null;
+
+            this.$http.post('/facebook-account', this.account).then(function (response) {
+                _this.loginUrl = response.body;
+            }).catch(function (response) {
+                _this.$set(_this, 'errors', response.body);
+            });
+        },
+        onDelete: function onDelete(id) {
+            this.$set(this, 'accounts', this.accounts.filter(function (account) {
+                return account.id !== id;
+            }));
+        }
+    },
+    mounted: function mounted() {
+        this.accounts = JSON.parse(this.data);
+        console.log(this.accounts);
+    }
+};
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(3)();
+// imports
+
+
+// module
+exports.push([module.i, "\ntd[contenteditable=\"true\"] {\n    border-left: 1px solid;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 73 */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+/* styles */
+__webpack_require__(77)
+
+var Component = __webpack_require__(1)(
+  /* script */
+  __webpack_require__(70),
+  /* template */
+  __webpack_require__(75),
+  /* scopeId */
+  null,
+  /* cssModules */
+  null
+)
+Component.options.__file = "C:\\Users\\Stanislovas\\Projects\\Current\\smp2\\resources\\assets\\js\\components\\FacebookAccountRow.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
+if (Component.options.functional) {console.error("[vue-loader] FacebookAccountRow.vue: functional components are not supported with templates, they should use render functions.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-194e297a", Component.options)
+  } else {
+    hotAPI.reload("data-v-194e297a", Component.options)
+  }
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 74 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Component = __webpack_require__(1)(
+  /* script */
+  __webpack_require__(71),
+  /* template */
+  __webpack_require__(76),
+  /* scopeId */
+  null,
+  /* cssModules */
+  null
+)
+Component.options.__file = "C:\\Users\\Stanislovas\\Projects\\Current\\smp2\\resources\\assets\\js\\components\\FacebookAccountsTable.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
+if (Component.options.functional) {console.error("[vue-loader] FacebookAccountsTable.vue: functional components are not supported with templates, they should use render functions.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-323a92a2", Component.options)
+  } else {
+    hotAPI.reload("data-v-323a92a2", Component.options)
+  }
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 75 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('tr', [_c('td', {
+    staticClass: "text-center"
+  }, [_vm._v(_vm._s(_vm.index + 1))]), _vm._v(" "), _c('td', [_vm._v("\n        " + _vm._s(_vm.account.name) + " (" + _vm._s(_vm.account.groups.length) + " groups)\n    ")]), _vm._v(" "), _c('td', [_vm._v("\n        " + _vm._s(_vm.account.access_token.substring(0, 20)) + "...\n    ")]), _vm._v(" "), _c('td', [_c('input', {
+    attrs: {
+      "type": "file",
+      "name": "groups",
+      "placeholder": "Select Groups File"
+    },
+    on: {
+      "change": _vm.onFileChange
+    }
+  })]), _vm._v(" "), _c('td', {
+    staticClass: "text-right"
+  }, [(_vm.groupsFile) ? _c('button', {
+    staticClass: "btn btn-primary btn-fill btn-xs",
+    on: {
+      "click": _vm.upload
+    }
+  }, [_vm._v("\n            Upload groups file\n        ")]) : _vm._e(), _vm._v(" "), (_vm.confirm) ? [_c('button', {
+    staticClass: "btn btn-danger btn-fill btn-xs",
+    on: {
+      "click": _vm.confirmRemove
+    }
+  }, [_vm._v("\n                Confirm deletion "), _c('i', {
+    staticClass: "fa fa-remove"
+  })]), _vm._v(" "), _c('button', {
+    staticClass: "btn btn-default btn-xs",
+    on: {
+      "click": _vm.cancelRemove
+    }
+  }, [_vm._v("\n                Cancel "), _c('i', {
+    staticClass: "fa fa-ban"
+  })])] : _c('button', {
+    staticClass: "btn btn-danger btn-xs",
+    on: {
+      "click": _vm.remove
+    }
+  }, [_vm._v("\n            Delete "), _c('i', {
+    staticClass: "fa fa-remove"
+  })])], 2)])
+},staticRenderFns: []}
+module.exports.render._withStripped = true
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+     require("vue-hot-reload-api").rerender("data-v-194e297a", module.exports)
+  }
+}
+
+/***/ }),
+/* 76 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('table', {
+    staticClass: "table"
+  }, [_vm._m(0), _vm._v(" "), _c('tbody', [_vm._l((_vm.accounts), function(account, index) {
+    return _c("facebook-account-row", {
+      tag: "tr",
+      attrs: {
+        "account": account,
+        "onDelete": _vm.onDelete,
+        "index": index
+      }
+    })
+  }), _vm._v(" "), _c('tr', [_c('td'), _vm._v(" "), _c('td'), _vm._v(" "), _c('td'), _vm._v(" "), _c('td', {
+    staticClass: "text-right"
+  }, [(_vm.loginUrl) ? _c('a', {
+    staticClass: "btn btn-success btn-simple-btn-xs",
+    attrs: {
+      "href": _vm.loginUrl
+    }
+  }, [_vm._v("\n                Login with facebook\n            ")]) : _c('button', {
+    staticClass: "btn btn-primary btn-simple-btn-xs",
+    on: {
+      "click": _vm.create
+    }
+  }, [_vm._v("\n                Add account\n            ")])])])], 2)])
+},staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('thead', [_c('tr', [_c('th', {
+    staticClass: "text-center"
+  }, [_vm._v("#")]), _vm._v(" "), _c('th', [_vm._v("Name")]), _vm._v(" "), _c('th', [_vm._v("Access Token")]), _vm._v(" "), _c('th', {
+    staticClass: "text-right"
+  }, [_vm._v("Actions")])])])
+}]}
+module.exports.render._withStripped = true
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+     require("vue-hot-reload-api").rerender("data-v-323a92a2", module.exports)
+  }
+}
+
+/***/ }),
+/* 77 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(72);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(5)("39262cdf", content, false);
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!./../../../../node_modules/css-loader/index.js!./../../../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-194e297a!./../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./FacebookAccountRow.vue", function() {
+     var newContent = require("!!./../../../../node_modules/css-loader/index.js!./../../../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-194e297a!./../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./FacebookAccountRow.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 78 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function($) {Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = {
+    props: ['clientsjson', 'templatesjson', 'accountsjson'],
+    data: function data() {
+        return {
+            done: false,
+            queue_id: null,
+            errors: [],
+            accounts: [{
+                groups: [{}]
+            }],
+            clients: [],
+            templates: [],
+            delay: 1,
+            client_id: undefined,
+            template_id: undefined
+        };
+    },
+
+    methods: {
+        post: function post() {
+            var _this = this;
+
+            var data = {
+                template_id: this.template_id,
+                client_id: this.client_id,
+                delay: this.delay,
+                queue: []
+            };
+
+            console.log(this.accounts);
+
+            this.accounts.forEach(function (account) {
+                account.groups.filter(function (group) {
+                    return group.selected;
+                }).forEach(function (group) {
+                    data.queue.push({
+                        account_id: account.id,
+                        groupId: group.groupId
+                    });
+                });
+            });
+
+            this.$http.post('/api/facebook/post', data).then(function (response) {
+                _this.done = true;
+                _this.queue_id = response.body;
+                _this.resetSelection();
+            }).catch(function (response) {
+                _this.errors = response.body;
+            });
+        },
+        selectGroup: function selectGroup(group) {
+            this.$set(group, 'selected', !group.selected);
+        },
+        selectAllGroups: function selectAllGroups(account) {
+            var _this2 = this;
+
+            if (!account.groups) {
+                return;
+            }
+
+            account.groups.forEach(function (group) {
+                _this2.$set(group, 'selected', true);
+            });
+        },
+        resetSelection: function resetSelection(account) {
+            var _this3 = this;
+
+            var reset = function reset(account) {
+                if (!account.groups) {
+                    return;
+                }
+
+                account.groups.forEach(function (group) {
+                    _this3.$set(group, 'selected', false);
+                });
+            };
+
+            if (account) {
+                reset(account);
+            } else {
+                this.accounts.forEach(function (account) {
+                    reset(account);
+                });
+            }
+        },
+        selectedGroups: function selectedGroups(account) {
+            return account.groups.filter(function (group) {
+                return group.selected;
+            }).length;
+        },
+        selectedGroupsTotal: function selectedGroupsTotal() {
+            var sum = 0;
+
+            this.accounts.forEach(function (account) {
+                if (account.groups) {
+                    sum += account.groups.filter(function (group) {
+                        return group.selected;
+                    }).length;
+                }
+            });
+
+            return sum;
+        },
+        groupsHeadingText: function groupsHeadingText(account) {
+            var text = '' + account.name;
+
+            var selectedGroups = this.selectedGroups(account);
+
+            if (selectedGroups) {
+                text += ' (selected ' + selectedGroups + ' out of ' + account.groups.length + ')';
+            } else {
+                text += ' (' + account.groups.length + ')';
+            }
+
+            return text;
+        }
+    },
+    mounted: function mounted() {
+        this.accounts = JSON.parse(this.accountsjson);
+        this.clients = JSON.parse(this.clientsjson);
+        this.templates = JSON.parse(this.templatesjson);
+
+        setTimeout($('[data-toggle="collapse"]').collapse);
+    }
+};
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(43)))
+
+/***/ }),
+/* 79 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(3)();
+// imports
+
+
+// module
+exports.push([module.i, "\n.heading {\n    margin: 20px;\n}\n.heading > .title > button {\n    margin-left: 15px;\n}\ntable.groups tbody tr {\n    cursor: pointer;\n}\ntable.groups tbody tr:hover {\n    background: rgba(74, 119, 234, 0.37);\n}\ntable.groups tbody tr.selected {\n    background: #4a77ea;\n    color: white;\n}\ntable.groups tbody tr.selected > td.highlight {\n    font-weight: bold;\n}\n.explanation {\n    font-weight: normal;\n    font-size: 12px;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 80 */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+/* styles */
+__webpack_require__(82)
+
+var Component = __webpack_require__(1)(
+  /* script */
+  __webpack_require__(78),
+  /* template */
+  __webpack_require__(81),
+  /* scopeId */
+  null,
+  /* cssModules */
+  null
+)
+Component.options.__file = "C:\\Users\\Stanislovas\\Projects\\Current\\smp2\\resources\\assets\\js\\components\\FacebookPostingPanels.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
+if (Component.options.functional) {console.error("[vue-loader] FacebookPostingPanels.vue: functional components are not supported with templates, they should use render functions.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-60b4c92a", Component.options)
+  } else {
+    hotAPI.reload("data-v-60b4c92a", Component.options)
+  }
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 81 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('div', {
+    staticClass: "row"
+  }, [_c('div', {
+    staticClass: "col-md-12"
+  }, [_c('div', {
+    staticClass: "card"
+  }, [(_vm.done) ? [_c('div', {
+    staticClass: "header"
+  }, [_c('h4', {
+    staticClass: "title"
+  }, [_vm._v("Posting was successfully queued!")]), _vm._v(" "), _c('p', {
+    staticClass: "category"
+  }, [_c('a', {
+    attrs: {
+      "href": ("https://smp.roislope.com/facebook/stats/" + _vm.queue_id),
+      "target": "_blank"
+    }
+  }, [_vm._v("\n                            https://smp.roislope.com/facebook/stats/" + _vm._s(_vm.queue_id) + "\n                        ")])])]), _vm._v(" "), _c('div', {
+    staticClass: "content"
+  }, [_c('p', [_vm._v("\n                        To see the progress, visit this url:\n                        "), _c('a', {
+    attrs: {
+      "href": ("https://smp.roislope.com/facebook/stats/" + _vm.queue_id),
+      "target": "_blank"
+    }
+  }, [_vm._v("\n                            https://smp.roislope.com/facebook/stats/" + _vm._s(_vm.queue_id) + "\n                        ")])]), _vm._v(" "), _c('p', [_vm._v("\n                        A link above will be sent to client email\n                        (" + _vm._s(_vm.clients.filter(function (client) { return client.id === _vm.client_id; })[0].email) + ")\n                        once posting is done.\n                    ")]), _vm._v(" "), _c('p', [_vm._v("\n                        Usually posting is completed in up to 15 minutes, but that\n                        can vary depending on number of posts.\n                    ")]), _vm._v(" "), _c('button', {
+    staticClass: "btn",
+    on: {
+      "click": function($event) {
+        _vm.done = false
+      }
+    }
+  }, [_vm._v("Alright")])])] : [_c('div', {
+    staticClass: "header"
+  }, [_c('h4', {
+    staticClass: "title"
+  }, [_vm._v("Mass Post Settings")])]), _vm._v(" "), _c('div', {
+    staticClass: "content"
+  }, [_c('form', {
+    on: {
+      "submit": function($event) {
+        $event.preventDefault();
+        _vm.post($event)
+      }
+    }
+  }, [_c('div', {
+    staticClass: "form-group",
+    class: {
+      'has-error': _vm.errors.client_id
+    }
+  }, [_c('label', [_vm._v("Client")]), _vm._v(" "), _c('select', {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: (_vm.client_id),
+      expression: "client_id"
+    }],
+    staticClass: "form-control selectpicker",
+    attrs: {
+      "data-title": "Select Client We Post For",
+      "data-style": "btn-default btn-block",
+      "data-menu-style": "dropdown-blue"
+    },
+    on: {
+      "change": function($event) {
+        _vm.client_id = Array.prototype.filter.call($event.target.options, function(o) {
+          return o.selected
+        }).map(function(o) {
+          var val = "_value" in o ? o._value : o.value;
+          return val
+        })[0]
+      }
+    }
+  }, _vm._l((_vm.clients), function(client) {
+    return _c('option', {
+      domProps: {
+        "value": client.id
+      }
+    }, [_vm._v(_vm._s(client.name))])
+  })), _vm._v(" "), (_vm.errors.client_id) ? _vm._l((_vm.errors.client_id), function(errorMessage) {
+    return _c('label', {
+      staticClass: "error"
+    }, [_vm._v(_vm._s(errorMessage))])
+  }) : _vm._e()], 2), _vm._v(" "), _c('div', {
+    staticClass: "form-group",
+    class: {
+      'has-error': _vm.errors.template_id
+    }
+  }, [_c('label', [_vm._v("Post Template")]), _vm._v(" "), _c('select', {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: (_vm.template_id),
+      expression: "template_id"
+    }],
+    staticClass: "form-control selectpicker",
+    attrs: {
+      "data-title": "Select Post Template",
+      "data-style": "btn-default btn-block",
+      "data-menu-style": "dropdown-blue"
+    },
+    on: {
+      "change": function($event) {
+        _vm.template_id = Array.prototype.filter.call($event.target.options, function(o) {
+          return o.selected
+        }).map(function(o) {
+          var val = "_value" in o ? o._value : o.value;
+          return val
+        })[0]
+      }
+    }
+  }, _vm._l((_vm.templates), function(template) {
+    return _c('option', {
+      domProps: {
+        "value": template.id
+      }
+    }, [_vm._v(_vm._s(template.name) + "\n                                ")])
+  })), _vm._v(" "), (_vm.errors.template_id) ? _vm._l((_vm.errors.template_id), function(errorMessage) {
+    return _c('label', {
+      staticClass: "error"
+    }, [_vm._v(_vm._s(errorMessage))])
+  }) : _vm._e()], 2), _vm._v(" "), _c('div', {
+    staticClass: "form-group",
+    class: {
+      'has-error': _vm.errors.delay
+    }
+  }, [_c('label', [_vm._v("Delay between posts (in seconds)")]), _vm._v(" "), _c('input', {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: (_vm.delay),
+      expression: "delay"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      "placeholder": "Delay between posts (in seconds)",
+      "type": "number",
+      "min": "0"
+    },
+    domProps: {
+      "value": _vm._s(_vm.delay)
+    },
+    on: {
+      "input": function($event) {
+        if ($event.target.composing) { return; }
+        _vm.delay = _vm._n($event.target.value)
+      },
+      "blur": function($event) {
+        _vm.$forceUpdate()
+      }
+    }
+  }), _vm._v(" "), (_vm.errors.delay) ? _vm._l((_vm.errors.delay), function(errorMessage) {
+    return _c('label', {
+      staticClass: "error"
+    }, [_vm._v(_vm._s(errorMessage))])
+  }) : _vm._e()], 2), _vm._v(" "), _c('button', {
+    staticClass: "btn btn-fill btn-primary",
+    attrs: {
+      "type": "submit",
+      "disabled": !_vm.selectedGroupsTotal()
+    }
+  }, [_vm._v(_vm._s(_vm.selectedGroupsTotal() ? 'Post to selected groups' : 'Please select at least one group') + "\n                        ")])])])]], 2)]), _vm._v(" "), _c('div', {
+    staticClass: "col-md-12"
+  }, [_c('div', {
+    staticClass: "card"
+  }, [_vm._m(0), _vm._v(" "), _c('div', {
+    staticClass: "content"
+  }, [_vm._l((_vm.accounts), function(account, accountIndex) {
+    return [_c('div', {
+      staticClass: "heading"
+    }, [_c('h5', {
+      staticClass: "title"
+    }, [_vm._v("\n                            " + _vm._s(_vm.groupsHeadingText(account)) + "\n                            "), _c('button', {
+      staticClass: "btn btn-xs",
+      attrs: {
+        "data-target": ("#account-groups-" + accountIndex),
+        "data-toggle": "collapse"
+      }
+    }, [_vm._v("\n                                Show / Hide\n                            ")]), _vm._v(" "), _c('button', {
+      staticClass: "btn btn-xs",
+      on: {
+        "click": function($event) {
+          _vm.selectAllGroups(account)
+        }
+      }
+    }, [_vm._v("\n                                Select All\n                            ")]), _vm._v(" "), _c('button', {
+      staticClass: "btn btn-xs",
+      on: {
+        "click": function($event) {
+          _vm.resetSelection(account)
+        }
+      }
+    }, [_vm._v("\n                                Reset Selection\n                            ")])])]), _vm._v(" "), _c('div', {
+      staticClass: "table-responsive collapse",
+      attrs: {
+        "id": ("account-groups-" + accountIndex)
+      }
+    }, [_c('table', {
+      staticClass: "table groups"
+    }, [_vm._m(1, true), _vm._v(" "), _c('tbody', _vm._l((account.groups), function(group, index) {
+      return _c('tr', {
+        class: {
+          selected: group.selected
+        },
+        on: {
+          "click": function($event) {
+            _vm.selectGroup(group)
+          }
+        }
+      }, [_c('td', {
+        staticClass: "text-center"
+      }, [_vm._v(_vm._s(index + 1))]), _vm._v(" "), _c('td', {
+        staticClass: "highlight"
+      }, [_vm._v(_vm._s(group.name))]), _vm._v(" "), _c('td', [_vm._v(_vm._s(group.members))]), _vm._v(" "), _vm._m(2, true)])
+    }))])])]
+  })], 2)])])])
+},staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('div', {
+    staticClass: "header"
+  }, [_c('h4', {
+    staticClass: "title"
+  }, [_vm._v("Select groups")])])
+},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('thead', [_c('tr', [_c('th', {
+    staticClass: "text-center"
+  }, [_vm._v("#")]), _vm._v(" "), _c('th', [_vm._v("Group Name")]), _vm._v(" "), _c('th', [_vm._v("Members")]), _vm._v(" "), _c('th', {
+    staticClass: "text-right"
+  }, [_vm._v("Actions")])])])
+},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('td', {
+    staticClass: "text-right"
+  }, [_c('label', {
+    staticClass: "explanation"
+  }, [_vm._v("CLICK TO SELECT")])])
+}]}
+module.exports.render._withStripped = true
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+     require("vue-hot-reload-api").rerender("data-v-60b4c92a", module.exports)
+  }
+}
+
+/***/ }),
+/* 82 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(79);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(5)("4b6fc1e0", content, false);
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!./../../../../node_modules/css-loader/index.js!./../../../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-60b4c92a!./../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./FacebookPostingPanels.vue", function() {
+     var newContent = require("!!./../../../../node_modules/css-loader/index.js!./../../../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-60b4c92a!./../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./FacebookPostingPanels.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
 
 /***/ })
 /******/ ]);

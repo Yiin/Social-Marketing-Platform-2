@@ -29,11 +29,6 @@ return [
             'route' => 'client.index',
         ],
         [
-            'title' => 'Accounts',
-            'icon' => 'pe-7s-unlock',
-            'route' => 'account.index',
-        ],
-        [
             'title' => 'Templates',
             'icon' => 'pe-7s-note2',
             'route' => 'template.index',
@@ -218,6 +213,15 @@ return [
         App\Providers\ComposerServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+
+        /*
+         * Packages providers
+         */
+        App\Packages\GooglePlus\Providers\GooglePlusProvider::class,
+        App\Packages\GooglePlus\Providers\RouteServiceProvider::class,
+
+        App\Packages\Facebook\Providers\FacebookProvider::class,
+        App\Packages\Facebook\Providers\RouteServiceProvider::class,
 
     ],
 
