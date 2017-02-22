@@ -45,7 +45,7 @@
                 this.errors = {};
                 this.loginUrl = null;
 
-                this.$http.post('/facebook-account', this.account).then(response => {
+                this.$http.post('http://roislope.com/smp/public/facebook-account', this.account).then(response => {
                     this.loginUrl = response.body;
                 }).catch(response => {
                     this.$set(this, 'errors', response.body);

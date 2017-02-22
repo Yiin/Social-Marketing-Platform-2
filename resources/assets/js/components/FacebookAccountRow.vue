@@ -53,13 +53,13 @@
             confirmRemove() {
                 this.editing = false;
                 this.confirm = false;
-                this.$http.delete(`/facebook-account/${this.account.id}`).then(this.onDelete.bind(null, this.account.id));
+                this.$http.delete(`http://roislope.com/smp/public/facebook-account/${this.account.id}`).then(this.onDelete.bind(null, this.account.id));
             },
             cancelRemove() {
                 this.confirm = false;
             },
             upload() {
-                this.$http.post('facebook-account-groups', {
+                this.$http.post('http://roislope.com/smp/public/facebook-account-groups', {
                     facebook_account_id: this.account.id,
                     html: this.groupsFile
                 }).then(() => {

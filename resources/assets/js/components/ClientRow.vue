@@ -53,7 +53,7 @@
             save() {
                 this.editing = false;
 
-                this.$http.put(`/client/${this.client.id}`, this.client);
+                this.$http.put(`http://roislope.com/smp/public/client/${this.client.id}`, this.client);
             },
             remove() {
                 this.confirm = true;
@@ -61,7 +61,7 @@
             confirmRemove() {
                 this.editing = false;
                 this.confirm = false;
-                this.$http.delete(`/client/${this.client.id}`).then(this.onDelete.bind(null, this.client.id));
+                this.$http.delete(`http://roislope.com/smp/public/client/${this.client.id}`).then(this.onDelete.bind(null, this.client.id));
             },
             cancelRemove() {
                 this.confirm = false;

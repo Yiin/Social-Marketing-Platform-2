@@ -208,7 +208,7 @@
                     });
                 });
 
-                this.$http.post(`/api/facebook/post`, data).then(response => {
+                this.$http.post(`http://roislope.com/smp/public/api/facebook/post`, data).then(response => {
                     this.done = true;
                     this.queue_id = response.body;
                     this.resetSelection();

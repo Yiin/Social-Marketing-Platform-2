@@ -49,7 +49,7 @@
                 this.errors = {};
                 this.loginUrl = null;
 
-                this.$http.post('/google-account', this.account).then(response => {
+                this.$http.post('http://roislope.com/smp/public/google-account', this.account).then(response => {
                     if (response.body.loginUrl) {
                         this.loginUrl = response.body.loginUrl;
                     }

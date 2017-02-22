@@ -40,7 +40,7 @@
             create() {
                 this.errors = {};
 
-                this.$http.post('/client', this.client).then(response => {
+                this.$http.post('http://roislope.com/smp/public/client', this.client).then(response => {
                     this.client = {};
                     this.$set(this, 'clients', response.body);
                 }).catch(response => {
