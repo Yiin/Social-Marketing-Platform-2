@@ -12684,6 +12684,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = {
     props: ['data'],
@@ -31312,7 +31317,12 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
 },staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('thead', [_c('tr', [_c('th', {
     staticClass: "text-center"
-  }, [_vm._v("#")]), _vm._v(" "), _c('th', [_vm._v("Name")]), _vm._v(" "), _c('th', [_vm._v("Access Token")]), _vm._v(" "), _c('th', [_vm._v("Groups File")]), _vm._v(" "), _c('th', {
+  }, [_vm._v("#")]), _vm._v(" "), _c('th', [_vm._v("Name")]), _vm._v(" "), _c('th', [_vm._v("Access Token")]), _vm._v(" "), _c('th', [_vm._v("\n            Groups File\n            "), _c('a', {
+    attrs: {
+      "href": "https://m.facebook.com/groups/?category=groups&ref=group_browse",
+      "target": "_blank"
+    }
+  }, [_vm._v("\n                (html of this page)\n            ")])]), _vm._v(" "), _c('th', {
     staticClass: "text-right"
   }, [_vm._v("Actions")])])])
 }]}
