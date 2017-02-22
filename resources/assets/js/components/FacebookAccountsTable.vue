@@ -5,6 +5,7 @@
             <th class="text-center">#</th>
             <th>Name</th>
             <th>Access Token</th>
+            <th>Groups File</th>
             <th class="text-right">Actions</th>
         </tr>
         </thead>
