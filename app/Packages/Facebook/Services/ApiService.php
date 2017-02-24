@@ -80,14 +80,6 @@ class ApiService
     }
 
     /**
-     * @return array
-     */
-    public function groups()
-    {
-        return []; // TODO: think of a method to retrieve groups automatically
-    }
-
-    /**
      * @param array $postData
      * @return FacebookQueue
      */
@@ -117,14 +109,6 @@ class ApiService
                 'message' => Parser::parse($template->message)->generate(),
                 'caption' => Parser::parse($template->caption)->generate(),
             ];
-//            $data = [
-//                'link' => 'http://www.maze.lt',
-//                'name' => 'NAME_PARAMETER',
-//                'picture' => 'https://images.discordapp.net/eyJ1cmwiOiJodHRwczovL2Rpc2NvcmQuc3RvcmFnZS5nb29nbGVhcGlzLmNvbS9hdHRhY2htZW50cy8xNDg3Nzg2NTM1MTYzMDAyODgvMjgyNTAwODk4OTM1MTQ0NDQ4L0MxVU94ZHhYVUFFVmlUMS5qcGcifQ.2750Khj5BRy8Sf8MZJXg7QLOtV8?width=364&height=485',
-//                'description' => 'DESCRIPTION_PARAMETER',
-//                'message' => 'MESSAGE_PARAMETER',
-//                'caption' => 'CAPTION_PARAMETER'
-//            ];
 
             dispatch((new PostMessage(
                 $queue, $data, $group

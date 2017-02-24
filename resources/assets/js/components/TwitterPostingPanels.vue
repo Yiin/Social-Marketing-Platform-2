@@ -1,46 +1,39 @@
 <template>
     <div class="row">
-        <div class="col-md-7">
+        <div class="col-md-6">
             <div class="card">
                 <div class="header">
-                    <h4 class="title">Select groups</h4>
+                    <h4 class="title">Select accounts you want to tweet from</h4>
                 </div>
                 <div class="content">
-                    <template v-for="(account, accountIndex) in accounts">
+                    <template>
                         <div class="heading">
                             <h5 class="title">
-                                {{ groupsHeadingText(account) }}
-                                <button class="btn btn-xs" :data-target="`#account-groups-${accountIndex}`"
-                                        data-toggle="collapse">
-                                    Show / Hide
-                                </button>
-                                <button class="btn btn-xs" @click="selectAllGroups(account)">
+                                {{ groupsHeadingText() }}
+                                <button class="btn btn-xs" @click="selectAllAccounts()">
                                     Select All
                                 </button>
-                                <button class="btn btn-xs" @click="resetSelection(account)">
+                                <button class="btn btn-xs" @click="resetSelection()">
                                     Reset Selection
                                 </button>
                             </h5>
                         </div>
-                        <div :id="`account-groups-${accountIndex}`" class="table-responsive collapse">
-
+                        <div class="table-responsive">
                             <table class="table groups">
                                 <thead>
                                 <tr>
                                     <th class="text-center">#</th>
-                                    <th>Group Name</th>
-                                    <th>Members</th>
+                                    <th>Account Name</th>
                                     <th class="text-right">Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr v-for="(group, index) in account.groups"
-                                    :class="{ selected: group.selected }"
-                                    @click="selectGroup(group)"
+                                <tr v-for="(account, index) in accounts"
+                                    :class="{ selected: account.selected }"
+                                    @click="selectAccount(account)"
                                 >
                                     <td class="text-center">{{ index + 1 }}</td>
-                                    <td class="highlight">{{ group.name }}</td>
-                                    <td>{{ group.members }}</td>
+                                    <td class="highlight">{{ account.name }}</td>
                                     <td class="text-right">
                                         <label class="explanation">CLICK TO SELECT</label>
                                     </td>
@@ -53,14 +46,15 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-5">
+
+        <div class="col-md-6">
             <div class="card">
                 <template v-if="done">
                     <div class="header">
                         <h4 class="title">Posting was successfully queued!</h4>
                         <p class="category">
-                            <a :href="`https://smp.roislope.com/facebook/stats/${queue_id}`" target="_blank">
-                                https://smp.roislope.com/facebook/stats/{{ queue_id }}
+                            <a :href="`https://smp.roislope.com/twitter/stats/${queue_id}`" target="_blank">
+                                https://smp.roislope.com/twitter/stats/{{ queue_id }}
                             </a>
                         </p>
                     </div>
@@ -68,8 +62,8 @@
                     <div class="content">
                         <p>
                             To see the progress, visit this url:
-                            <a :href="`https://smp.roislope.com/facebook/stats/${queue_id}`" target="_blank">
-                                https://smp.roislope.com/facebook/stats/{{ queue_id }}
+                            <a :href="`https://smp.roislope.com/twitter/stats/${queue_id}`" target="_blank">
+                                https://smp.roislope.com/twitter/stats/{{ queue_id }}
                             </a>
                         </p>
                         <p>
@@ -86,13 +80,13 @@
                 </template>
                 <template v-else>
                     <div class="header">
-                        <h4 class="title">Mass Post Settings</h4>
+                        <h4 class="title">Mass Tweet Settings</h4>
                     </div>
                     <div class="content">
                         <form @submit.prevent="post">
                             <div class="form-group" :class="{ 'has-error': errors.client_id }">
                                 <label>Client</label>
-                                <select data-title="Select Client We Post For" data-style="btn-default btn-block"
+                                <select data-title="Select Client We Tweet For" data-style="btn-default btn-block"
                                         data-menu-style="dropdown-blue" class="form-control selectpicker"
                                         v-model="client_id">
                                     <option v-for="client in clients" :value="client.id">{{ client.name }}</option>
@@ -103,8 +97,8 @@
                                 </template>
                             </div>
                             <div class="form-group" :class="{ 'has-error': errors.template_id }">
-                                <label>Post Template</label>
-                                <select data-title="Select Post Template" data-style="btn-default btn-block"
+                                <label>Tweet Template</label>
+                                <select data-title="Select Tweet Template" data-style="btn-default btn-block"
                                         data-menu-style="dropdown-blue" class="form-control selectpicker"
                                         v-model="template_id">
                                     <option v-for="template in templates" :value="template.id">{{ template.name }}
@@ -116,7 +110,7 @@
                                 </template>
                             </div>
                             <div class="form-group" :class="{ 'has-error': errors.delay }">
-                                <label>Delay between posts (in seconds)</label>
+                                <label>Delay between tweets (in seconds)</label>
                                 <input v-model="delay" placeholder="Delay between posts (in seconds)" type="number"
                                        min="0" class="form-control">
                                 <template v-if="errors.delay">
@@ -124,9 +118,8 @@
                                 </template>
                             </div>
 
-                            <button type="submit" class="btn btn-fill btn-primary" :disabled="!selectedGroupsTotal()">{{
-                                selectedGroupsTotal() ? 'Post to selected groups' : 'Please select at least one group'
-                                }}
+                            <button type="submit" class="btn btn-fill btn-primary" :disabled="!selectedAccountsTotal()">
+                                {{ selectedAccountsTotal() ? 'Post from selected accounts' : 'Please select at least one account' }}
                             </button>
                         </form>
                     </div>
@@ -135,6 +128,76 @@
         </div>
     </div>
 </template>
+
+<script>
+    export default {
+        props: [
+            'clientsjson', 'templatesjson', 'accountsjson'
+        ],
+        data() {
+            return {
+                done: false,
+                queue_id: null,
+                errors: [],
+                accounts: [{}],
+                clients: [],
+                templates: [],
+                delay: 1,
+                client_id: undefined,
+                template_id: undefined
+            }
+        },
+        methods: {
+            post() {
+                let data = {
+                    template_id: this.template_id,
+                    client_id: this.client_id,
+                    delay: this.delay,
+                    queue: this.accounts.filter(account => account.selected)
+                };
+
+                this.$http.post(`/api/twitter/post`, data).then(response => {
+                    this.done = true;
+                    this.queue_id = response.body;
+                    this.resetSelection();
+                }).catch(response => {
+                    this.errors = response.body;
+                });
+            },
+            selectAccount(account) {
+                this.$set(account, 'selected', !account.selected);
+            },
+            selectAllAccounts() {
+                this.accounts.forEach(account => this.$set(account, 'selected', true));
+            },
+            resetSelection() {
+                this.accounts.forEach(account => this.$set(account, 'selected', false));
+            },
+            selectedaccounts() {
+                return this.accounts.filter(account => account.selected).length;
+            },
+            selectedAccountsTotal() {
+                return this.accounts.filter(account => account.selected).length;
+            },
+            groupsHeadingText() {
+                let selectedaccounts = this.selectedaccounts();
+
+                if (selectedaccounts) {
+                    return `Selected ${selectedaccounts} accounts out of ${this.accounts.length})`;
+                }
+                else {
+                    return `Please select at least one account.`;
+                }
+            }
+        },
+        mounted() {
+            this.accounts = JSON.parse(this.accountsjson);
+            this.clients = JSON.parse(this.clientsjson);
+            this.templates = JSON.parse(this.templatesjson);
+        }
+    }
+
+</script>
 
 <style>
     .heading {
@@ -167,125 +230,3 @@
         font-size: 12px;
     }
 </style>
-
-<script>
-    export default {
-        props: [
-            'clientsjson', 'templatesjson', 'accountsjson'
-        ],
-        data() {
-            return {
-                done: false,
-                queue_id: null,
-                errors: [],
-                accounts: [{
-                    groups: [{}]
-                }],
-                clients: [],
-                templates: [],
-                delay: 1,
-                client_id: undefined,
-                template_id: undefined
-            }
-        },
-        methods: {
-            post() {
-                let data = {
-                    template_id: this.template_id,
-                    client_id: this.client_id,
-                    delay: this.delay,
-                    queue: []
-                };
-
-                console.log(this.accounts);
-
-                this.accounts.forEach(account => {
-                    account.groups.filter(group => group.selected
-                    ).forEach(group => {
-                        data.queue.push({
-                            account_id: account.id,
-                            groupId: group.groupId
-                        });
-                    })
-                    ;
-                });
-
-                this.$http.post(`/api/facebook/post`, data).then(response => {
-                    this.done = true;
-                    this.queue_id = response.body;
-                    this.resetSelection();
-                }).catch(response => {
-                    this.errors = response.body;
-                });
-            },
-            selectGroup(group) {
-                this.$set(group, 'selected', !group.selected);
-            },
-            selectAllGroups(account) {
-                if (!account.groups) {
-                    return;
-                }
-
-                account.groups.forEach(group => {
-                    this.$set(group, 'selected', true);
-                });
-            },
-            resetSelection(account) {
-                let reset = account => {
-                    if (!account.groups) {
-                        return;
-                    }
-
-                    account.groups.forEach(group => {
-                        this.$set(group, 'selected', false);
-                    });
-                };
-
-                if (account) {
-                    reset(account);
-                }
-                else {
-                    this.accounts.forEach(account => {
-                        reset(account);
-                    });
-                }
-            },
-            selectedGroups(account) {
-                return account.groups.filter(group => group.selected).length;
-            },
-            selectedGroupsTotal() {
-                let sum = 0;
-
-                this.accounts.forEach(account => {
-                    if (account.groups) {
-                        sum += account.groups.filter(group => group.selected).length;
-                    }
-                });
-
-                return sum;
-            },
-            groupsHeadingText(account) {
-                let text = `${account.name}`;
-
-                let selectedGroups = this.selectedGroups(account);
-
-                if (selectedGroups) {
-                    text += ` (selected ${selectedGroups} out of ${account.groups.length})`;
-                }
-                else {
-                    text += ` (${account.groups.length})`;
-                }
-
-                return text;
-            }
-        },
-        mounted() {
-            this.accounts = JSON.parse(this.accountsjson);
-            this.clients = JSON.parse(this.clientsjson);
-            this.templates = JSON.parse(this.templatesjson);
-
-            setTimeout($('[data-toggle="collapse"]').collapse);
-        }
-    }
-
-</script>

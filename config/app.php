@@ -223,6 +223,9 @@ return [
         App\Packages\Facebook\Providers\FacebookProvider::class,
         App\Packages\Facebook\Providers\RouteServiceProvider::class,
 
+        App\Packages\Twitter\Providers\TwitterProvider::class,
+        App\Packages\Twitter\Providers\RouteServiceProvider::class,
+
     ],
 
     /*

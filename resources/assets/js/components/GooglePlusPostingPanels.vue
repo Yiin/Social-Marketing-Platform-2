@@ -1,16 +1,61 @@
 <template>
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-8">
             <div class="card">
                 <div class="header">
-                    <h4 class="title">Google Plus Accounts</h4>
+                    <h4 class="title">Select groups</h4>
                 </div>
                 <div class="content">
-                    <google-plus-accounts-table :accounts="accounts"></google-plus-accounts-table>
+                    <template v-for="(account, accountIndex) in accounts">
+                        <div class="heading">
+                            <h5 class="title">
+                                {{ groupsHeadingText(account) }}
+                                <button class="btn btn-xs" :data-target="`#account-groups-${accountIndex}`"
+                                        data-toggle="collapse">
+                                    Show / Hide
+                                </button>
+                                <button class="btn btn-xs" @click="selectAllGroups(account)">
+                                    Select All
+                                </button>
+                                <button class="btn btn-xs" @click="resetSelection(account)">
+                                    Reset Selection
+                                </button>
+                            </h5>
+                        </div>
+                        <div :id="`account-groups-${accountIndex}`" class="table-responsive collapse">
+
+                            <table class="table groups">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">#</th>
+                                    <th>Group Name</th>
+                                    <th>Members</th>
+                                    <th>Categories</th>
+                                    <th class="text-right">Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="(group, index) in account.groups"
+                                    :class="{ selected: group.selected }"
+                                    @click="selectGroup(group)"
+                                >
+                                    <td class="text-center">{{ index + 1 }}</td>
+                                    <td class="highlight">{{ group.name }}</td>
+                                    <td>{{ group.members }}</td>
+                                    <td>{{ group.categories ? group.categories.length : 0 }}</td>
+                                    <td class="text-right">
+                                        <label class="explanation">CLICK TO SELECT</label>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card">
                 <template v-if="done">
                     <div class="header">
@@ -88,61 +133,6 @@
                         </form>
                     </div>
                 </template>
-            </div>
-        </div>
-        <div class="col-md-12">
-            <div class="card">
-                <div class="header">
-                    <h4 class="title">Select groups</h4>
-                </div>
-                <div class="content">
-                    <template v-for="(account, accountIndex) in accounts">
-                        <div class="heading">
-                            <h5 class="title">
-                                {{ groupsHeadingText(account) }}
-                                <button class="btn btn-xs" :data-target="`#account-groups-${accountIndex}`"
-                                        data-toggle="collapse">
-                                    Show / Hide
-                                </button>
-                                <button class="btn btn-xs" @click="selectAllGroups(account)">
-                                    Select All
-                                </button>
-                                <button class="btn btn-xs" @click="resetSelection(account)">
-                                    Reset Selection
-                                </button>
-                            </h5>
-                        </div>
-                        <div :id="`account-groups-${accountIndex}`" class="table-responsive collapse">
-
-                            <table class="table groups">
-                                <thead>
-                                <tr>
-                                    <th class="text-center">#</th>
-                                    <th>Group Name</th>
-                                    <th>Members</th>
-                                    <th>Categories</th>
-                                    <th class="text-right">Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr v-for="(group, index) in account.groups"
-                                    :class="{ selected: group.selected }"
-                                    @click="selectGroup(group)"
-                                >
-                                    <td class="text-center">{{ index + 1 }}</td>
-                                    <td class="highlight">{{ group.name }}</td>
-                                    <td>{{ group.members }}</td>
-                                    <td>{{ group.categories ? group.categories.length : 0 }}</td>
-                                    <td class="text-right">
-                                        <label class="explanation">CLICK TO SELECT</label>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-
-                        </div>
-                    </template>
-                </div>
             </div>
         </div>
     </div>
