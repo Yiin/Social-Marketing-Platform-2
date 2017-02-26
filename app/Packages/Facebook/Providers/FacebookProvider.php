@@ -1,21 +1,19 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Stanislovas
- * Date: 2017-02-22
- * Time: 12:41
- */
 
 namespace App\Packages\Facebook\Providers;
 
 use App\Packages\Facebook\Repositories\FacebookAccountsRepository;
+use App\Packages\Facebook\Services\ApiService;
+use App\Services\CurlService;
+use App\Services\NavigationMenuService;
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 
 class FacebookProvider extends ServiceProvider
 {
     public function boot()
     {
-        $nav = $this->app->make('App\Services\NavigationMenuService');
+        $nav = $this->app->make(NavigationMenuService::class);
 
         $navItem = $nav->addItem('Facebook', 'fa fa-facebook', 'facebook.index');
 
@@ -25,8 +23,12 @@ class FacebookProvider extends ServiceProvider
 
     public function register()
     {
-        $this->app->singleton(FacebookAccountsRepository::class, function ($app) {
-            return new FacebookAccountsRepository($app->make('App\Packages\Facebook\Services\ApiService'));
+        $this->app->singleton(ApiService::class, function () {
+            return new ApiService;
+        });
+
+        $this->app->singleton(FacebookAccountsRepository::class, function (Application $app) {
+            return new FacebookAccountsRepository($app->make(ApiService::class));
         });
     }
 }

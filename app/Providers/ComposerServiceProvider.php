@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\NavigationMenuService;
 use Illuminate\Support\ServiceProvider;
 
 class ComposerServiceProvider extends ServiceProvider
@@ -16,7 +17,7 @@ class ComposerServiceProvider extends ServiceProvider
         \View::composer('*', function ($view) {
             $view
                 ->with('user', \Auth::user())
-                ->with('navigationMenu', resolve('App\Services\NavigationMenuService'))
+                ->with('navigationMenu', $this->app->make(NavigationMenuService::class))
                 ->with('currentPageTitle', $this->currentPageTitle())
                 ->with('currentPageIcon', $this->currentPageIcon());
         });
