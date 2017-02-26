@@ -15,6 +15,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @mixin \Eloquent
+ * @property int $google_queue_id
+ * @property-read \App\Packages\GooglePlus\Models\GoogleQueue $queue
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\GooglePlus\Models\GooglePost whereCommunityName($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\GooglePlus\Models\GooglePost whereCreatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\GooglePlus\Models\GooglePost whereGoogleQueueId($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\GooglePlus\Models\GooglePost whereId($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\GooglePlus\Models\GooglePost whereMessage($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\GooglePlus\Models\GooglePost whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\GooglePlus\Models\GooglePost whereUrl($value)
  */
 class GooglePost extends Model
 {

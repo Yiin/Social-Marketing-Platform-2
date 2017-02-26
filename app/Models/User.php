@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * App\Models\User
@@ -26,10 +27,21 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User wherePassword($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User whereRememberToken($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Permission[] $permissions
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Role[] $roles
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\User role($roles)
  */
 class User extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, HasRoles;
+
+    const ROLE_ADMIN = 'admin';
+    const ROLE_RESELLER = 'reseller';
+    const ROLE_CLIENT = 'client';
+
+    const MANAGE_RESELLERS = 'manage resellers';
+    const MANAGE_CLIENTS = 'manage clients';
+    const USE_ALL_SERVICES = 'use all services';
 
     /**
      * The attributes that are mass assignable.

@@ -16,7 +16,8 @@
     "facebook/graph-sdk": "^5.4",
     "laracasts/flash": "^2.0",
     "laravel/framework": "5.4.*",
-    "laravel/tinker": "~1.0"
+    "laravel/tinker": "~1.0",
+    "spatie/laravel-permission": "^1.11"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",

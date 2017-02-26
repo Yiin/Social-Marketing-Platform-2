@@ -8,6 +8,8 @@ use App\Models\Template;
 use Illuminate\Database\Eloquent\Model;
 
 /**
+ * App\Packages\Twitter\Models\TwitterQueue
+ *
  * @property integer client_id
  * @property integer template_id
  * @property integer tweet_count
@@ -16,6 +18,24 @@ use Illuminate\Database\Eloquent\Model;
  * @property Template template
  * @property array tweets
  * @property mixed id
+ * @property int $id
+ * @property int $client_id
+ * @property int $template_id
+ * @property int $tweet_count
+ * @property int $jobs
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ * @property-read \App\Models\Client $client
+ * @property-read \App\Models\Template $template
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Packages\Twitter\Models\Tweet[] $tweets
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\Twitter\Models\TwitterQueue whereClientId($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\Twitter\Models\TwitterQueue whereCreatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\Twitter\Models\TwitterQueue whereId($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\Twitter\Models\TwitterQueue whereJobs($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\Twitter\Models\TwitterQueue whereTemplateId($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\Twitter\Models\TwitterQueue whereTweetCount($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Packages\Twitter\Models\TwitterQueue whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class TwitterQueue extends Model
 {

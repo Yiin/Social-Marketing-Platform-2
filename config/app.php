@@ -203,6 +203,7 @@ return [
         Laravel\Tinker\TinkerServiceProvider::class,
         DaveJamesMiller\Breadcrumbs\ServiceProvider::class,
         Laracasts\Flash\FlashServiceProvider::class,
+        Spatie\Permission\PermissionServiceProvider::class,
 
         /*
          * Application Service Providers...

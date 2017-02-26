@@ -21,6 +21,11 @@ class GooglePlusProvider extends ServiceProvider
 
     public function register()
     {
+        // nxsAPI_GP
+        $this->app->singleton(nxsAPI_GP::class, function ($app) {
+            return new nxsAPI_GP;
+        });
+
         $this->app->singleton(ApiService::class, function ($app) {
             return new ApiService($app->make('nxsAPI_GP'), $app->make('App\Services\CurlService'));
         });

@@ -42,11 +42,6 @@ class AppServiceProvider extends ServiceProvider
             return new CurlService;
         });
 
-        // nxsAPI_GP
-        $this->app->singleton(nxsAPI_GP::class, function ($app) {
-            return new nxsAPI_GP;
-        });
-
         $this->app->singleton(NavigationMenuService::class, function ($app) {
             return new NavigationMenuService;
         });
