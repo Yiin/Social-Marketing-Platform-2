@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\NavigationMenuService;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\View;
 
 class ComposerServiceProvider extends ServiceProvider
 {
@@ -14,7 +15,7 @@ class ComposerServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        \View::composer('*', function ($view) {
+        \View::composer('*', function (View $view) {
             $view
                 ->with('user', \Auth::user())
                 ->with('navigationMenu', $this->app->make(NavigationMenuService::class))
