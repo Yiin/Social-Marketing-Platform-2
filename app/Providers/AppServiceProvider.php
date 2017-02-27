@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
             return \Hash::check($value, $parameters[0]);
         });
 
-        $nav = $this->app->make('App\Services\NavigationMenuService');
+        $nav = $this->app->make(NavigationMenuService::class);
 
         foreach (config('app.routes') as $item) {
             $nav->addItem($item['title'], $item['icon'], $item['route']);
@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         // HTTP Requests
-        $this->app->singleton(CurlService::class, function ($app) {
+        $this->app->singleton(CurlService::class, function () {
             return new CurlService;
         });
 

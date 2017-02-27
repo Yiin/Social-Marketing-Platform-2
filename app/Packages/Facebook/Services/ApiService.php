@@ -29,17 +29,10 @@ class ApiService
     private $facebook;
 
     /**
-     * @var CurlService
-     */
-    private $curl;
-
-    /**
      * FacebookService constructor.
-     * @param CurlService $curl
      */
-    public function __construct(CurlService $curl)
+    public function __construct()
     {
-        $this->curl = $curl;
 
         $this->facebook = new Facebook([
             'app_id' => env('FACEBOOK_APP_ID'),
