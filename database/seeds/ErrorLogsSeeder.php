@@ -1,9 +1,8 @@
 <?php
 
-use App\Models\Template;
 use Illuminate\Database\Seeder;
 
-class TemplatesSeeder extends Seeder
+class ErrorLogsSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -12,6 +11,6 @@ class TemplatesSeeder extends Seeder
      */
     public function run()
     {
-        factory(Template::class, 16)->create();
+        factory(\App\Models\ErrorLog::class, 100)->create();
     }
 }

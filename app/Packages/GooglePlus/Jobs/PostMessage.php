@@ -2,6 +2,7 @@
 
 namespace App\Packages\GooglePlus\Jobs;
 
+use App\Models\ErrorLog;
 use App\Packages\GooglePlus\Mail\ReportStats;
 use App\Packages\GooglePlus\Models\GoogleAccount;
 use App\Packages\GooglePlus\Models\GooglePost;
@@ -91,6 +92,7 @@ class PostMessage implements ShouldQueue
 
         if (!$success) {
             // We couldn't, so let's just stop right here.
+            ErrorLog::report('Google+ error: Login failed for account ' . $account->username);
             return;
         }
 
@@ -106,7 +108,7 @@ class PostMessage implements ShouldQueue
          * If we failed, log and stop.
          */
         if (!is_array($result) || !isset($result['isPosted']) || $result['isPosted'] != '1') {
-            \Log::error('GooglePlus - ' . $result);
+            ErrorLog::report('Google+ error: ' . $result);
             return;
         }
 

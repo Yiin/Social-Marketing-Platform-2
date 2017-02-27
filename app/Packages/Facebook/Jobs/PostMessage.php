@@ -2,6 +2,7 @@
 
 namespace App\Packages\Facebook\Jobs;
 
+use App\Models\ErrorLog;
 use App\Packages\Facebook\Mail\ReportStats;
 use App\Packages\Facebook\Models\FacebookAccount;
 use App\Packages\Facebook\Models\FacebookGroup;
@@ -78,13 +79,12 @@ class PostMessage implements ShouldQueue
             'app_secret' => env('FACEBOOK_APP_SECRET')
         ]);
         $facebook->setDefaultAccessToken($account->access_token);
-//        \Log::debug(print_r($this->post, true));
 
         try {
-            $r = $facebook->post("/{$this->group['groupId']}/feed", $this->post, $account->access_token);//->getBody();
+            $r = $facebook->post("/{$this->group['groupId']}/feed", $this->post, $account->access_token);
         } catch (FacebookSDKException $e) {
             // When validation fails or other local issues
-            \Log::error('Facebook - ' . $e->getMessage());
+            ErrorLog::report('Facebook error: ' . $e->getMessage());
             return;
         }
         list($groupid, $postid) = explode('_', json_decode($r->getBody())->id);
