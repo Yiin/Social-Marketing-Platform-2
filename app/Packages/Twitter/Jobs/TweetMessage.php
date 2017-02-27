@@ -2,6 +2,7 @@
 
 namespace App\Packages\Twitter\Jobs;
 
+use App\Models\ErrorLog;
 use App\Packages\Twitter\Mail\ReportStats;
 use App\Packages\Twitter\Models\Tweet;
 use App\Packages\Twitter\Models\TwitterAccount;
@@ -85,11 +86,11 @@ class TweetMessage implements ShouldQueue
         $tweet = $apiService->postTweet($account, $this->post);
 
         if (!$tweet) {
-            Log::error('Twitter error: could\'t connect.');
+            ErrorLog::report('Twitter error: Connection error.');
             return;
         }
         if (isset($tweet->errors)) {
-            Log::error('Twitter error: ' . $tweet->errors[0]->message);
+            ErrorLog::report('Twitter error: ' . $tweet->errors[0]->message);
             return;
         }
 

@@ -42,3 +42,9 @@ $factory->define(App\Models\Template::class, function (Faker\Generator $faker) {
         'caption' => $faker->title
     ];
 });
+
+$factory->define(App\Models\ErrorLog::class, function (Faker\Generator $faker) {
+    return [
+        'message' => $faker->sentence(random_int(5, 8))
+    ];
+});

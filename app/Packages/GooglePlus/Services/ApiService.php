@@ -208,8 +208,8 @@ class ApiService
                 $groups[$index]['name'] = $name;
             }
 
-            // Cache for 1 hour
-            Cache::put('GooglePlus.' . $groups[$index]['id'], $groups[$index], 60);
+            // Cache for 10 minutes
+            Cache::put('GooglePlus.' . $groups[$index]['id'], $groups[$index], 10);
         }
     }
 
