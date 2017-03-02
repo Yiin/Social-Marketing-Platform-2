@@ -1,33 +1,37 @@
-@if(empty($item->getChilds()))
+@if(empty($item->requires_permision) || $user->hasPermissionTo($item->requires_permision))
 
-    <li class="{{ \Route::currentRouteName() === $item->route ? 'active' : '' }}">
-        <a href="{{ $item->href() }}">
-            <i class="{{ $item->icon }}"></i>
-            <p>{{ $item->title }}</p>
-        </a>
-    </li>
+    @if(empty($item->getChilds()))
 
-@else
+        <li class="{{ \Route::currentRouteName() === $item->route ? 'active' : '' }}">
+            <a href="{{ $item->href() }}">
+                <i class="{{ $item->icon }}"></i>
+                <p>{{ $item->title }}</p>
+            </a>
+        </li>
 
-    <li>
-        <a data-toggle="collapse" href="#{{ ($hashtag = str_random()) }}">
-            <i class="{{ $item->icon }}"></i>
-            <p>
-                {{ $item->title }}
-                <b class="caret"></b>
-            </p>
-        </a>
-        <div class="collapse" id="{{ $hashtag }}">
-            <ul class="nav">
+    @else
 
-                @foreach($item->getChilds() as $child)
+        <li>
+            <a data-toggle="collapse" href="#{{ ($hashtag = str_random()) }}">
+                <i class="{{ $item->icon }}"></i>
+                <p>
+                    {{ $item->title }}
+                    <b class="caret"></b>
+                </p>
+            </a>
+            <div class="collapse" id="{{ $hashtag }}">
+                <ul class="nav">
 
-                    @include('navigation-menu.item', ['item' => $child])
+                    @foreach($item->getChilds() as $child)
 
-                @endforeach
+                        @include('navigation-menu.item', ['item' => $child])
 
-            </ul>
-        </div>
-    </li>
+                    @endforeach
+
+                </ul>
+            </div>
+        </li>
+
+    @endif
 
 @endif

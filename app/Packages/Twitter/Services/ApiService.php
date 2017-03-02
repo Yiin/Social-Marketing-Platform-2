@@ -38,7 +38,7 @@ class ApiService
         if ($connection->http_code == '200') {
             return $access_token;
         }
-        throw new \Exception('Couldn\t connect to Twitter.');
+        throw new \Exception('Couldn\'t connect to Twitter.');
     }
 
     public function tweet($tweetData)

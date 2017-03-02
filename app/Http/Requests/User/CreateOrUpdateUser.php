@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Template;
+namespace App\Http\Requests\User;
 
-use Auth;
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateOrUpdateTemplate extends FormRequest
+class CreateOrUpdateUser extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -14,9 +13,6 @@ class CreateOrUpdateTemplate extends FormRequest
      */
     public function authorize()
     {
-        if ($template = $this->route()->parameter('template')) {
-            return $template->user_id == Auth::id();
-        }
         return true;
     }
 
@@ -28,12 +24,9 @@ class CreateOrUpdateTemplate extends FormRequest
     public function rules()
     {
         return [
-            'url' => '',
             'name' => 'required',
-            'image_url' => '',
-            'description' => '',
-            'message' => '',
-            'caption' => ''
+            'email' => 'required|email|unique:users',
+            'role_id' => 'exists:roles,id',
         ];
     }
 }

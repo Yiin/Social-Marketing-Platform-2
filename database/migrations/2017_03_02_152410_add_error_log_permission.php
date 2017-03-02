@@ -1,10 +1,13 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
-class CreateClientsTable extends Migration
+class AddErrorLogPermission extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +16,9 @@ class CreateClientsTable extends Migration
      */
     public function up()
     {
-        Schema::create('clients', function (Blueprint $table) {
-            $table->increments('id');
+        $viewErrorsLog = Permission::create(['name' => User::VIEW_ERRORS_LOG]);
 
-            $table->string('name');
-            $table->string('email');
-
-            $table->timestamps();
-        });
+        Role::findByName(User::ROLE_ADMIN)->givePermissionTo($viewErrorsLog);
     }
 
     /**
@@ -30,6 +28,6 @@ class CreateClientsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('clients');
+        //
     }
 }

@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $caption
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
+ * @property int|null user_id
  * @method static \Illuminate\Database\Query\Builder|\App\Models\Template whereCaption($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\Template whereCreatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\Template whereDescription($value)

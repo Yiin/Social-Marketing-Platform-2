@@ -6,12 +6,13 @@ use App\Models\Client;
 use App\Models\Template;
 use App\Packages\GooglePlus\Models\GoogleQueue;
 use App\Packages\GooglePlus\Repositories\GoogleAccountsRepository;
+use Auth;
 
 class PagesController
 {
     public function index(GoogleAccountsRepository $accountsRepository)
     {
-        $clients = Client::all();
+        $clients = Auth::user()->clients()->get();
         $accounts = $accountsRepository->accounts();
         $templates = Template::all();
 

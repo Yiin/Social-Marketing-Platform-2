@@ -15,12 +15,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string fbid
  * @package App\Packages\Facebook\Models
  * @property int $id
- * @property string $fbid
- * @property string $name
- * @property string $access_token
+ * @property string user_id
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Packages\Facebook\Models\FacebookGroup[] $groups
  * @method static \Illuminate\Database\Query\Builder|\App\Packages\Facebook\Models\FacebookAccount whereAccessToken($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Packages\Facebook\Models\FacebookAccount whereCreatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Packages\Facebook\Models\FacebookAccount whereFbid($value)

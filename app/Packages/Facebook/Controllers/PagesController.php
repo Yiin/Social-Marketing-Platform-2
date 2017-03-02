@@ -6,14 +6,15 @@ use App\Models\Client;
 use App\Models\Template;
 use App\Packages\Facebook\Models\FacebookQueue;
 use App\Packages\Facebook\Repositories\FacebookAccountsRepository;
+use Auth;
 
 class PagesController
 {
     public function index(FacebookAccountsRepository $accountsRepository)
     {
-        $clients = Client::all();
+        $clients = Auth::user()->clients;
         $accounts = $accountsRepository->accounts();
-        $templates = Template::all();
+        $templates = Auth::user()->templates;
 
         return view('facebook.index')->with(compact('clients', 'accounts', 'templates'));
     }

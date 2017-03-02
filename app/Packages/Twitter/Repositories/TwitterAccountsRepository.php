@@ -4,6 +4,7 @@ namespace App\Packages\Twitter\Repositories;
 
 use App\Packages\Twitter\Models\TwitterAccount;
 use App\Packages\Twitter\Services\ApiService;
+use Auth;
 use Illuminate\Support\Facades\Redirect;
 
 /**
@@ -35,7 +36,7 @@ class TwitterAccountsRepository
      */
     public function accounts()
     {
-        return TwitterAccount::all();
+        return TwitterAccount::where('user_id', Auth::id())->get();
     }
 
     /**
@@ -65,6 +66,7 @@ class TwitterAccountsRepository
         $account->name = $token['screen_name'];
         $account->oauth_token = $token['oauth_token'];
         $account->oauth_secret = $token['oauth_token_secret'];
+        $account->user_id = Auth::id();
 
         $account->save();
 

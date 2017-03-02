@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Requests\Requests\User;
+namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -24,7 +24,6 @@ class ChangeUserPassword extends FormRequest
     public function rules()
     {
         return [
-            'password' => 'required|password:' . $this->route('user')->password,
             'new_password' => 'required|confirmed'
         ];
     }

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Stanislovas
- * Date: 2017-02-22
- * Time: 12:48
- */
 
 namespace App\Packages\Facebook\Services;
 

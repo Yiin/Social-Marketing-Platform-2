@@ -56,16 +56,6 @@
                         {{ method_field('PATCH') }}
                         {{ csrf_field() }}
 
-                        <div class="form-group {{ $errors->has('password') ? 'has-error has-feedback' : '' }}">
-                            <label>Current Password</label>
-                            <input type="password" class="form-control" name="password" placeholder="Current Password">
-
-                            @if($errors->has('password'))
-                                @foreach($errors->get('password') as $error)
-                                    <label class="error">{{ $error }}</label>
-                                @endforeach
-                            @endif
-                        </div>
                         <div class="form-group {{ $errors->has('new_password') ? 'has-error has-feedback' : '' }}">
                             <label>New Password</label>
                             <input type="password" class="form-control" name="new_password" placeholder="New Password">

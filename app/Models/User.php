@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Doctrine\DBAL\Query\QueryBuilder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
@@ -19,6 +21,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property string $api_token
+ * @method static \App\Models\User create($attributes)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User whereApiToken($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User whereCreatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User whereEmail($value)
@@ -29,7 +32,9 @@ use Spatie\Permission\Traits\HasRoles;
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User whereUpdatedAt($value)
  * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Permission[] $permissions
  * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Role[] $roles
- * @method static \Illuminate\Database\Query\Builder|\App\Models\User role($roles)
+ * @property mixed clients
+ * @property mixed templates
+ * @method static \Illuminate\Database\Query\Builder role($roles)
  */
 class User extends Authenticatable
 {
@@ -39,9 +44,10 @@ class User extends Authenticatable
     const ROLE_RESELLER = 'reseller';
     const ROLE_CLIENT = 'client';
 
-    const MANAGE_RESELLERS = 'manage resellers';
-    const MANAGE_CLIENTS = 'manage clients';
-    const USE_ALL_SERVICES = 'use all services';
+    const MANAGE_RESELLERS = 'manage_resellers';
+    const MANAGE_CLIENTS = 'manage_clients';
+    const USE_ALL_SERVICES = 'use_all_services';
+    const VIEW_ERRORS_LOG = 'view_errors_log';
 
     /**
      * The attributes that are mass assignable.
@@ -51,8 +57,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'password',
-        'api_token'
+        'api_token',
+        'reseller_id'
     ];
 
     /**
@@ -64,4 +70,20 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    /**
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function clients()
+    {
+        if ($this->hasRole(self::ROLE_ADMIN)) {
+            return User::role(self::ROLE_CLIENT);
+        }
+        return $this->hasMany(User::class, 'reseller_id')->role(self::ROLE_CLIENT);
+    }
+
+    public function templates()
+    {
+        return $this->hasMany(Template::class);
+    }
 }

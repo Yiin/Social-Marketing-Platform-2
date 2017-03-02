@@ -1,6 +1,6 @@
 <?php
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'permission:' . App\Models\User::USE_ALL_SERVICES])->group(function () {
     Route::resource('facebook-account', 'AccountsController');
     Route::name('facebook-groups-file')->post('facebook-account-groups', 'AccountsController@groupsUpload');
     Route::name('facebook.token')->get('facebook-account-token', 'AccountsController@token');

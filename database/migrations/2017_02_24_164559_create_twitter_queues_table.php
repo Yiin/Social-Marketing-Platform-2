@@ -16,7 +16,7 @@ class CreateTwitterQueuesTable extends Migration
             $table->increments('id');
 
             $table->integer('client_id')->unsigned();
-            $table->foreign('client_id')->references('id')->on('clients')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('client_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
 
             $table->integer('template_id')->unsigned();
             $table->foreign('template_id')->references('id')->on('templates')->onUpdate('cascade')->onDelete('cascade');

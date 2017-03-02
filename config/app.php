@@ -1,39 +1,8 @@
 <?php
 
+use App\Models\User;
+
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Routes in sidebar
-    |--------------------------------------------------------------------------
-    |
-    | What pages should be displayed in dashboard sidebar.
-    | Yeah.
-    |
-    */
-
-    'routes' => [
-        [
-            'title' => 'Dashboard',
-            'icon' => 'pe-7s-graph',
-            'route' => 'dashboard',
-        ],
-        [
-            'title' => 'My Profile',
-            'icon' => 'pe-7s-user',
-            'route' => 'profile',
-        ],
-        [
-            'title' => 'Clients',
-            'icon' => 'pe-7s-users',
-            'route' => 'client.index',
-        ],
-        [
-            'title' => 'Templates',
-            'icon' => 'pe-7s-note2',
-            'route' => 'template.index',
-        ]
-    ],
 
     /*
     |--------------------------------------------------------------------------

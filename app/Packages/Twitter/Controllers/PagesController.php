@@ -7,12 +7,13 @@ use App\Models\Client;
 use App\Models\Template;
 use App\Packages\Twitter\Models\TwitterQueue;
 use App\Packages\Twitter\Repositories\TwitterAccountsRepository;
+use Auth;
 
 class PagesController extends Controller
 {
     public function index(TwitterAccountsRepository $accountsRepository)
     {
-        $clients = Client::all();
+        $clients = Auth::user()->clients;
         $accounts = $accountsRepository->accounts();
         $templates = Template::all();
 

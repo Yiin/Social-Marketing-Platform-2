@@ -2,9 +2,9 @@
 
 namespace App\Packages\Facebook\Providers;
 
+use App\Models\User;
 use App\Packages\Facebook\Repositories\FacebookAccountsRepository;
 use App\Packages\Facebook\Services\ApiService;
-use App\Services\CurlService;
 use App\Services\NavigationMenuService;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
@@ -15,7 +15,7 @@ class FacebookProvider extends ServiceProvider
     {
         $nav = $this->app->make(NavigationMenuService::class);
 
-        $navItem = $nav->addItem('Facebook', 'fa fa-facebook', 'facebook.index');
+        $navItem = $nav->addItem('Facebook', 'fa fa-facebook', 'facebook.index', User::USE_ALL_SERVICES);
 
         $navItem->addChild('Accounts', '', 'facebook-account.index');
         $navItem->addChild('Posting', '', 'facebook.index');

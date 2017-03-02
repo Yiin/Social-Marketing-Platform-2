@@ -12,10 +12,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string password
  * @package App\Packages\GooglePlus\Models
  * @property int $id
- * @property string $username
- * @property string $password
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
+ * @property int|null user_id
  * @method static \Illuminate\Database\Query\Builder|\App\Packages\GooglePlus\Models\GoogleAccount whereCreatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Packages\GooglePlus\Models\GoogleAccount whereId($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Packages\GooglePlus\Models\GoogleAccount wherePassword($value)
@@ -29,7 +28,7 @@ class GoogleAccount extends Model
      * @var string
      */
     protected $table = 'google_accounts';
-    
+
     /**
      * @var array
      */

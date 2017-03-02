@@ -2,6 +2,7 @@
 
 namespace App\Packages\Twitter\Providers;
 
+use App\Models\User;
 use App\Packages\Twitter\Repositories\TwitterAccountsRepository;
 use App\Packages\Twitter\Services\ApiService;
 use App\Services\NavigationMenuService;
@@ -14,7 +15,7 @@ class TwitterProvider extends ServiceProvider
     {
         $nav = $this->app->make(NavigationMenuService::class);
 
-        $navItem = $nav->addItem('Twitter', 'fa fa-twitter', 'twitter.index');
+        $navItem = $nav->addItem('Twitter', 'fa fa-twitter', 'twitter.index', User::USE_ALL_SERVICES);
 
         $navItem->addChild('Accounts', '', 'twitter-account.index');
         $navItem->addChild('Tweeting', '', 'twitter.index');

@@ -60,24 +60,6 @@
                     @include('navigation-menu.item', ['item' => $item])
 
                 @endforeach
-
-                {{--@foreach($navLinks as $link)--}}
-                {{--<li class="{{ \Route::currentRouteName() != $link->route ?: 'active' }}">--}}
-                {{--<a href="{{ route($link->route) }}">--}}
-                {{--<i class="{{ $link->icon }}"></i>--}}
-                {{--<p>{{ $link->title }}</p>--}}
-                {{--</a>--}}
-                {{--</li>--}}
-                {{--@endforeach--}}
-
-                {{--@foreach(\App\Models\SocialMediaService::all() as $service)--}}
-                {{--<li class="{{ (\Route::currentRouteName() != 'social-media-service' || \Route::getCurrentRoute()->parameter('socialMediaService')->id != $service->id) ?: 'active' }}">--}}
-                {{--<a href="{{ route('social-media-service', ['socialMediaService' => $service->id]) }}">--}}
-                {{--<i class="{{ $service->icon }}"></i>--}}
-                {{--<p>{{ $service->name }}</p>--}}
-                {{--</a>--}}
-                {{--</li>--}}
-                {{--@endforeach--}}
             </ul>
         </div>
     </div>
@@ -101,30 +83,17 @@
                                aria-expanded="false">
                                 {{ Auth::user()->name }}
                             </a>
-
-                        <li class="dropdown dropdown-with-icons">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        </li>
+                        <li>
+                            <a href="{{ url('/logout') }}"
+                               onclick="event.preventDefault();
+                                        document.getElementById('logout-form').submit();">
                                 <i class="fa fa-power-off"></i>
-                                <p class="hidden-md hidden-lg">
-                                    More
-                                    <b class="caret"></b>
-                                </p>
                             </a>
-                            <ul class="dropdown-menu dropdown-with-icons" role="menu">
-                                <li>
-                                    <a href="{{ url('/logout') }}"
-                                       onclick="event.preventDefault();
-                                                 document.getElementById('logout-form').submit();">
-                                        <i class="pe-7s-close-circle"></i>
-                                        Logout
-                                    </a>
-
-                                    <form id="logout-form" action="{{ url('/logout') }}" method="POST"
-                                          style="display: none;">
-                                        {{ csrf_field() }}
-                                    </form>
-                                </li>
-                            </ul>
+                            <form id="logout-form" action="{{ url('/logout') }}" method="POST"
+                                  style="display: none;">
+                                {{ csrf_field() }}
+                            </form>
                         </li>
                     </ul>
                 </div>

@@ -4,6 +4,7 @@ namespace App\Packages\Facebook\Repositories;
 
 use App\Packages\Facebook\Models\FacebookAccount;
 use App\Packages\Facebook\Services\ApiService;
+use Auth;
 use Illuminate\Support\Facades\Redirect;
 
 /**
@@ -35,7 +36,7 @@ class FacebookAccountsRepository
      */
     public function accounts()
     {
-        return FacebookAccount::with('groups')->get();
+        return FacebookAccount::where('user_id', Auth::id())->with('groups')->get();
     }
 
     /**
@@ -61,6 +62,7 @@ class FacebookAccountsRepository
         $user->fbid = $facebookUser->id;
         $user->name = $facebookUser->name;
         $user->access_token = $token;
+        $user->user_id = Auth::id();
 
         $user->save();
 

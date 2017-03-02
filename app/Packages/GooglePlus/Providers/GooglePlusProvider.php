@@ -2,6 +2,7 @@
 
 namespace App\Packages\GooglePlus\Providers;
 
+use App\Models\User;
 use App\Packages\GooglePlus\Repositories\GoogleAccountsRepository;
 use App\Packages\GooglePlus\Services\ApiService;
 use App\Services\CurlService;
@@ -16,7 +17,7 @@ class GooglePlusProvider extends ServiceProvider
     {
         $nav = $this->app->make(NavigationMenuService::class);
 
-        $navItem = $nav->addItem('Google Plus', 'fa fa-google-plus', 'google.index');
+        $navItem = $nav->addItem('Google Plus', 'fa fa-google-plus', 'google.index', User::USE_ALL_SERVICES);
 
         $navItem->addChild('Accounts', '', 'google-account.index');
         $navItem->addChild('Posting', '', 'google.index');

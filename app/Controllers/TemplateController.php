@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Http\Requests\Template\CreateOrUpdateTemplate;
 use App\Models\Template;
+use Auth;
 use Illuminate\Http\Request;
 
 class TemplateController extends Controller
@@ -15,7 +16,7 @@ class TemplateController extends Controller
      */
     public function index()
     {
-        $templates = Template::all();
+        $templates = Auth::user()->templates;
 
         return view('template.index')->with(compact('templates'));
     }
@@ -38,7 +39,9 @@ class TemplateController extends Controller
      */
     public function store(CreateOrUpdateTemplate $request)
     {
-        Template::create($request->all());
+        $template = new Template($request->all());
+        $template->user_id = Auth::id();
+        $template->save();
 
         return redirect()->route('template.index');
     }

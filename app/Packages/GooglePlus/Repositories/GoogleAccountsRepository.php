@@ -4,6 +4,7 @@ namespace App\Packages\GooglePlus\Repositories;
 
 use App\Packages\GooglePlus\Models\GoogleAccount;
 use App\Packages\GooglePlus\Services\ApiService;
+use Auth;
 
 /**
  * Class GoogleAccountsRepository
@@ -34,7 +35,7 @@ class GoogleAccountsRepository
      */
     public function accounts()
     {
-        return GoogleAccount::all()->map(function (GoogleAccount $account) {
+        return GoogleAccount::where('user_id', Auth::id())->get()->map(function (GoogleAccount $account) {
             $account->groups = $this->apiService->login($account) ? $this->apiService->groups() : [];
 
             return $account;
@@ -59,6 +60,8 @@ class GoogleAccountsRepository
         if (!$result) {
             throw new \Exception('Login failed.');
         }
+
+        $account->user_id = Auth::id();
 
         // everything's ok, save account
         $account->save();

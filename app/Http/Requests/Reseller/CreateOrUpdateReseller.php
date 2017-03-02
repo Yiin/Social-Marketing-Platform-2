@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Requests\Client;
+namespace App\Http\Requests\Reseller;
 
 use App\Models\User;
 use Auth;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class CreateOrUpdateClient extends FormRequest
+class CreateOrUpdateReseller extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -16,10 +16,7 @@ class CreateOrUpdateClient extends FormRequest
      */
     public function authorize()
     {
-        if (Auth::user()->hasPermissionTo(User::MANAGE_CLIENTS)) {
-            if ($this->route()->parameter('client')) {
-                return $this->route()->parameter('client')->reseller_id == Auth::id();
-            }
+        if (Auth::user()->hasPermissionTo(User::MANAGE_RESELLERS)) {
             return true;
         }
         return false;
@@ -34,13 +31,13 @@ class CreateOrUpdateClient extends FormRequest
     {
         $unique = Rule::unique('users');
 
-        if ($client = $this->route()->parameter('client')) {
-            $unique = $unique->ignore($client->id);
+        if ($reseller = $this->route()->parameter('reseller')) {
+            $unique = $unique->ignore($reseller->id);
         }
 
         return [
             'name' => 'required',
-            'email' => ['required', 'email', $unique]
+            'email' => ['required', 'email', $unique],
         ];
     }
 }
