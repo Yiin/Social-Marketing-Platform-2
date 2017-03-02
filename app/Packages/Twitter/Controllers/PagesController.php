@@ -13,9 +13,9 @@ class PagesController extends Controller
 {
     public function index(TwitterAccountsRepository $accountsRepository)
     {
-        $clients = Auth::user()->clients;
+        $clients = Auth::user()->clients()->get();
         $accounts = $accountsRepository->accounts();
-        $templates = Template::all();
+        $templates = Auth::user()->templates;
 
         return view('twitter.index')->with(compact('clients', 'accounts', 'templates'));
     }

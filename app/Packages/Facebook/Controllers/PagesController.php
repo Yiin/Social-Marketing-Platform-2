@@ -12,7 +12,7 @@ class PagesController
 {
     public function index(FacebookAccountsRepository $accountsRepository)
     {
-        $clients = Auth::user()->clients;
+        $clients = Auth::user()->clients()->get();
         $accounts = $accountsRepository->accounts();
         $templates = Auth::user()->templates;
 

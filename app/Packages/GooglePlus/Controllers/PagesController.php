@@ -14,7 +14,7 @@ class PagesController
     {
         $clients = Auth::user()->clients()->get();
         $accounts = $accountsRepository->accounts();
-        $templates = Template::all();
+        $templates = Auth::user()->templates;
 
         return view('google.index')->with(compact('clients', 'accounts', 'templates'));
     }
