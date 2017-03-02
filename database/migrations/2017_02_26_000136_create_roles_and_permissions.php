@@ -30,12 +30,13 @@ class CreateRolesAndPermissions extends Migration
 
         // Delete one if exists and create root admin user
         User::where('name', 'admin')->delete();
-        $user = User::create([
-            'name' => env('ADMIN_USERNAME', 'admin'),
-            'email' => env('ADMIN_EMAIL', 'admin@example.com'),
-            'password' => env('ADMIN_PASSWORD', bcrypt('secret')),
+        $user = new User([
+            'name' => env('ADMIN_USERNAME', 'root'),
+            'email' => env('ADMIN_EMAIL', 'admin'),
             'api_token' => str_random(60)
         ]);
+        $user->password = bcrypt(env('ADMIN_PASSWORD'));
+        $user->save();
 
         $user->assignRole($admin);
     }
