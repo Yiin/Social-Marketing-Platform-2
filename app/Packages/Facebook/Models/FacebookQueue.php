@@ -11,6 +11,7 @@ namespace App\Packages\Facebook\Models;
 
 use App\Models\Client;
 use App\Models\Template;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -45,7 +46,7 @@ class FacebookQueue extends Model
 
     public function client()
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(User::class, 'client_id');
     }
 
     public function template()

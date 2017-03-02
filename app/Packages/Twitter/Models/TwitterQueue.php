@@ -5,6 +5,7 @@ namespace App\Packages\Twitter\Models;
 
 use App\Models\Client;
 use App\Models\Template;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -18,16 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property Template template
  * @property array tweets
  * @property mixed id
- * @property int $id
- * @property int $client_id
- * @property int $template_id
- * @property int $tweet_count
- * @property int $jobs
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
- * @property-read \App\Models\Client $client
- * @property-read \App\Models\Template $template
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Packages\Twitter\Models\Tweet[] $tweets
  * @method static \Illuminate\Database\Query\Builder|\App\Packages\Twitter\Models\TwitterQueue whereClientId($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Packages\Twitter\Models\TwitterQueue whereCreatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Packages\Twitter\Models\TwitterQueue whereId($value)
@@ -45,7 +38,7 @@ class TwitterQueue extends Model
 
     public function client()
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(User::class, 'client_id');
     }
 
     public function template()
