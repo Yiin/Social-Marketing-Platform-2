@@ -89,9 +89,9 @@ class ApiService
 
         foreach ($postData['queue'] as $group) {
             $data = [
-                'link' => $template->url,
+                'link' => Parser::parse($template->url)->generate(),
                 'name' => Parser::parse($template->name)->generate(),
-                'picture' => $template->image_url,
+                'picture' => Parser::parse($template->image_url)->generate(),
                 'description' => Parser::parse($template->description)->generate(),
                 'message' => Parser::parse($template->message)->generate(),
                 'caption' => Parser::parse($template->caption)->generate(),

@@ -124,18 +124,17 @@ class ApiService
                 continue;
             }
 
-            $url = $template->url;
+            $messageSpintax = Parser::parse($template->message);
 
             if ($template->image_url) {
-                $url = [
-                    'img' => $template->image_url
-                ];
+                $urlSpintax = Parser::parse($template->image_url);
+            } else {
+                $urlSpintax = Parser::parse($template->url);
             }
 
-            $spintax = Parser::parse($template->message);
-
             foreach ($group['categories'] as $categoryId) {
-                $message = $spintax->generate();
+                $message = $messageSpintax->generate();
+                $url = $template->image_url ? ['img' => $urlSpintax->generate()] : $urlSpintax->generate();
 
                 dispatch((new PostMessage(
                     $queue, $message, $url, $group, $categoryId
