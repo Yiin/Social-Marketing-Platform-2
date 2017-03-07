@@ -32,7 +32,7 @@
                                 <td>{{ $_client->name }}</td>
                                 <td>{{ $_client->email }}</td>
                                 <td class="text-right">
-                                    @can(App\Models\User::MANAGE_RESELLERS)
+                                    @can(App\Constants\Permission::MANAGE_RESELLERS)
                                         @if($_client->reseller_id)
                                             <a href="{{ route('reseller.edit', ['reseller' => $_client->reseller_id]) }}" class="btn btn-primary btn-xs">View Reseller</a>
                                         @endif

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Constants\Role;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
@@ -40,15 +41,6 @@ class User extends Authenticatable
 {
     use Notifiable, HasRoles;
 
-    const ROLE_ADMIN = 'admin';
-    const ROLE_RESELLER = 'reseller';
-    const ROLE_CLIENT = 'client';
-
-    const MANAGE_RESELLERS = 'manage_resellers';
-    const MANAGE_CLIENTS = 'manage_clients';
-    const USE_ALL_SERVICES = 'use_all_services';
-    const VIEW_ERRORS_LOG = 'view_errors_log';
-
     /**
      * The attributes that are mass assignable.
      *
@@ -76,10 +68,10 @@ class User extends Authenticatable
      */
     public function clients()
     {
-        if ($this->hasRole(self::ROLE_ADMIN)) {
-            return User::role(self::ROLE_CLIENT);
+        if ($this->hasRole(Role::ADMIN)) {
+            return User::role(Role::CLIENT);
         }
-        return $this->hasMany(User::class, 'reseller_id')->role(self::ROLE_CLIENT);
+        return $this->hasMany(User::class, 'reseller_id')->role(Role::CLIENT);
     }
 
     public function templates()

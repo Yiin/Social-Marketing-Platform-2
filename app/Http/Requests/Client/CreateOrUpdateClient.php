@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Client;
 
+use App\Constants\Permission;
 use App\Models\User;
 use Auth;
 use Illuminate\Foundation\Http\FormRequest;
@@ -16,7 +17,7 @@ class CreateOrUpdateClient extends FormRequest
      */
     public function authorize()
     {
-        if (Auth::user()->hasPermissionTo(User::MANAGE_CLIENTS)) {
+        if (Auth::user()->hasPermissionTo(Permission::MANAGE_CLIENTS)) {
             if ($this->route()->parameter('client')) {
                 return $this->route()->parameter('client')->reseller_id == Auth::id();
             }

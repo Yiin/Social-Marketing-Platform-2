@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Reseller;
 
+use App\Constants\Permission;
 use App\Models\User;
 use Auth;
 use Illuminate\Foundation\Http\FormRequest;
@@ -16,7 +17,7 @@ class CreateOrUpdateReseller extends FormRequest
      */
     public function authorize()
     {
-        if (Auth::user()->hasPermissionTo(User::MANAGE_RESELLERS)) {
+        if (Auth::user()->hasPermissionTo(Permission::MANAGE_RESELLERS)) {
             return true;
         }
         return false;

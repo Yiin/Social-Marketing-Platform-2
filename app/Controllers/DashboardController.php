@@ -1,21 +1,22 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Stanislovas
- * Date: 2017-02-07
- * Time: 20:39
- */
 
 namespace App\Controllers;
 
-
+use App\Modules\Errors\Models\ErrorLog;
 use App\Models\User;
+use Auth;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        return view('dashboard');
+        $blocks = [];
+
+        if (Auth::user()->hasPermissionTo(User::VIEW_ERRORS_LOG)) {
+            $block['errorsLog'] = ErrorLog::paginate(15);
+        }
+
+        return view('dashboard', compact('blocks'));
     }
 
     public function profile()

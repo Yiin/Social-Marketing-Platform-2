@@ -185,16 +185,21 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         /*
-         * Packages providers
+         * Pages providers
          */
-        App\Packages\GooglePlus\Providers\GooglePlusProvider::class,
-        App\Packages\GooglePlus\Providers\RouteServiceProvider::class,
+        App\Pages\DashboardPage::class,
 
-        App\Packages\Facebook\Providers\FacebookProvider::class,
-        App\Packages\Facebook\Providers\RouteServiceProvider::class,
+        /*
+         * Modules providers
+         */
+        App\Modules\GooglePlus\Providers\GooglePlusProvider::class,
+        App\Modules\GooglePlus\Providers\RouteServiceProvider::class,
 
-        App\Packages\Twitter\Providers\TwitterProvider::class,
-        App\Packages\Twitter\Providers\RouteServiceProvider::class,
+        App\Modules\Facebook\Providers\FacebookProvider::class,
+        App\Modules\Facebook\Providers\RouteServiceProvider::class,
+
+        App\Modules\Twitter\Providers\TwitterProvider::class,
+        App\Modules\Twitter\Providers\RouteServiceProvider::class,
 
     ],
 
