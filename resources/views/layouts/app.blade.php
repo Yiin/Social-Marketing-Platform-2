@@ -69,6 +69,14 @@
                     @include('navigation-menu.item', ['item' => $item])
 
                 @endforeach
+                @can(App\Constants\Permission::USE_ALL_SERVICES)
+                    <li>
+                        <a>
+                            <i class="fa fa-linkedin"></i>
+                            <p>LinkedIn (coming soon)</p>
+                        </a>
+                    </li>
+                @endcan
             </ul>
         </div>
     </div>
