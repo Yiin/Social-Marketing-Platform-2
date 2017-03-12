@@ -62,7 +62,7 @@
             save() {
                 this.errors = {};
 
-                this.$http.put(`/google-account/${this.account.id}`, this.account).then(() => {
+                this.$http.put(Laravel.routes['google-account.update'].replace('{google_account}', this.account.id), this.account).then(() => {
                     this.editing = false;
                 }).catch(response => {
                     this.errors = response.body;
@@ -74,7 +74,7 @@
             confirmRemove() {
                 this.editing = false;
                 this.confirm = false;
-                this.$http.delete(`/google-account/${this.account.id}`).then(this.onDelete.bind(null, this.account.id));
+                this.$http.delete(Laravel.routes['google-account.destroy'].replace('{google_account}', this.account.id)).then(this.onDelete.bind(null, this.account.id));
             },
             cancelRemove() {
                 this.confirm = false;

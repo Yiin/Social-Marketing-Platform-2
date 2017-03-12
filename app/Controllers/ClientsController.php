@@ -2,11 +2,11 @@
 
 namespace App\Controllers;
 
+use App\Constants\Role;
 use App\Http\Requests\Client\CreateOrUpdateClient;
 use App\Mail\SendUserPassword;
 use App\Models\User;
 use Auth;
-use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 /**
@@ -33,14 +33,14 @@ class ClientsController extends Controller
     public function store(CreateOrUpdateClient $request)
     {
         $data = [
-            'reseller_id' => Auth::user()->hasRole(User::ROLE_RESELLER) ? Auth::id() : null,
+            'reseller_id' => Auth::user()->hasRole(Role::RESELLER) ? Auth::id() : null,
             'api_token' => str_random()
         ];
         $user = new User(array_merge($request->all(), $data));
         $user->password = bcrypt($password = $request->has('password') ? $request->get('password') : str_random());
         $user->save();
 
-        $user->assignRole(User::ROLE_CLIENT);
+        $user->assignRole(Role::CLIENT);
 
         flash('Client created! Password: ' . $password);
 

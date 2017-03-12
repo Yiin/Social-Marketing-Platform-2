@@ -15,14 +15,14 @@ class CreateRolesAndPermissions extends Migration
     public function up()
     {
         // Create permissions
-        $canManageResellers = Permission::create(['name' => User::MANAGE_RESELLERS]);
-        $canManageClients = Permission::create(['name' => User::MANAGE_CLIENTS]);
-        $canUseAllServices = Permission::create(['name' => User::USE_ALL_SERVICES]);
+        $canManageResellers = Permission::create(['name' => App\Constants\Permission::MANAGE_RESELLERS]);
+        $canManageClients = Permission::create(['name' => App\Constants\Permission::MANAGE_CLIENTS]);
+        $canUseAllServices = Permission::create(['name' => App\Constants\Permission::USE_ALL_SERVICES]);
 
         // Create roles
-        $admin = Role::create(['name' => User::ROLE_ADMIN]);
-        $reseller = Role::create(['name' => User::ROLE_RESELLER]);
-        Role::create(['name' => User::ROLE_CLIENT]);
+        $admin = Role::create(['name' => App\Constants\Role::ADMIN]);
+        $reseller = Role::create(['name' => App\Constants\Role::RESELLER]);
+        Role::create(['name' => App\Constants\Role::CLIENT]);
 
         // Assign permissions to roles
         $admin->givePermissionTo($canManageResellers, $canManageClients, $canUseAllServices);

@@ -1,15 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Stanislovas
- * Date: 2017-02-07
- * Time: 20:39
- */
 
 namespace App\Controllers;
 
-
+use App\Modules\Errors\Models\ErrorLog;
 use App\Models\User;
+use Auth;
 
 class DashboardController extends Controller
 {

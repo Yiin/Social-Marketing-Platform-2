@@ -11,6 +11,6 @@ class ErrorLogsSeeder extends Seeder
      */
     public function run()
     {
-        factory(\App\Models\ErrorLog::class, 100)->create();
+        factory(\App\Modules\Errors\Models\ErrorLog::class, 100)->create();
     }
 }

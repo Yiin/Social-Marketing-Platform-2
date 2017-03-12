@@ -2,47 +2,24 @@
 
 namespace App\Services;
 
-class NavigationMenuItem
-{
-    private $childs;
-
-    public $route;
-    public $title;
-    public $icon;
-    public $requires_permision;
-
-    function __construct($title, $icon, $route, $requires_permision = null)
-    {
-        $this->title = $title;
-        $this->icon = $icon;
-        $this->route = $route;
-        $this->requires_permision = $requires_permision;
-        $this->childs = [];
-    }
-
-    public function addChild($title, $icon, $route, $requires_permision = null)
-    {
-        $item = new self($title, $icon, $route, $requires_permision);
-
-        $this->childs [] = $item;
-
-        return $this;
-    }
-
-    public function getChilds()
-    {
-        return $this->childs;
-    }
-
-    public function href()
-    {
-        return route($this->route);
-    }
-}
+use App\Components\NavigationMenuItem;
+use App\Constants\Permission;
+use App\Models\User;
 
 class NavigationMenuService
 {
     private $items = [];
+
+    public function __construct()
+    {
+        $this->addItem('Dashboard', 'pe-7s-graph', 'dashboard');
+        $this->addItem('My Profile', 'pe-7s-user', 'profile');
+
+        $this->addItem('Resellers', 'pe-7s-users', 'reseller.index', Permission::MANAGE_RESELLERS);
+        $this->addItem('Clients', 'pe-7s-users', 'client.index', Permission::MANAGE_CLIENTS);
+
+        $this->addItem('Templates', 'pe-7s-note2', 'template.index');
+    }
 
     public function addItem($title, $icon, $route, $requires_permision = null)
     {

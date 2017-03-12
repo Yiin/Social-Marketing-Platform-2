@@ -28,9 +28,18 @@
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
 
     <script>
-        window.Laravel = {!! json_encode([
+        <?php
+            $routes = [];
+
+            foreach (\Route::getRoutes() as $route) {
+                $routes [$route->getName()] = '/' . trim($route->uri(), '/');
+            }
+            ?>
+
+            window.Laravel = {!! json_encode([
             'csrfToken' => csrf_token(),
-            'apiToken' => $user->api_token
+            'apiToken' => $user->api_token,
+            'routes' => $routes
         ]) !!};
     </script>
 

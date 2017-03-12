@@ -16,9 +16,9 @@ class AddErrorLogPermission extends Migration
      */
     public function up()
     {
-        $viewErrorsLog = Permission::create(['name' => User::VIEW_ERRORS_LOG]);
+        $viewErrorsLog = Permission::create(['name' => \App\Constants\Permission::VIEW_ERRORS_LOG]);
 
-        Role::findByName(User::ROLE_ADMIN)->givePermissionTo($viewErrorsLog);
+        Role::findByName(\App\Constants\Role::ADMIN)->givePermissionTo($viewErrorsLog);
     }
 
     /**

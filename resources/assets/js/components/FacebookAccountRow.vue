@@ -53,13 +53,13 @@
             confirmRemove() {
                 this.editing = false;
                 this.confirm = false;
-                this.$http.delete(`/facebook-account/${this.account.id}`).then(this.onDelete.bind(null, this.account.id));
+                this.$http.delete(Laravel.routes['facebook-account.destroy'].replace('{facebook_account}', this.account.id)).then(this.onDelete.bind(null, this.account.id));
             },
             cancelRemove() {
                 this.confirm = false;
             },
             upload() {
-                this.$http.post('/facebook-account-groups', {
+                this.$http.post(Laravel.routes['facebook-groups-file'], {
                     facebook_account_id: this.account.id,
                     html: this.groupsFile
                 }).then(() => {
@@ -77,6 +77,7 @@
                 reader.readAsText(files[0]);
 
                 this.groupsFile = null;
+
                 reader.onload = (e) => {
                     this.$set(this, 'groupsFile', e.target.result);
                 };

@@ -16,7 +16,7 @@ class TemplateController extends Controller
      */
     public function index()
     {
-        $templates = Auth::user()->templates;
+        $templates = Auth::user()->privateTemplates;
 
         return view('template.index')->with(compact('templates'));
     }
