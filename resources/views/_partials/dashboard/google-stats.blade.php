@@ -54,7 +54,7 @@
                 Nothing to see here.
 
                 @can(App\Constants\Permission::USE_ALL_SERVICES)
-                    <a href="{{ route('google-plus.index') }}">Post something!</a>
+                    <a href="{{ route('google.index') }}">Post something!</a>
                 @endcan
             </div>
         @endif
