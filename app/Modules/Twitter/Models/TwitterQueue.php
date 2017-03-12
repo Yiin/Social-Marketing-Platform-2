@@ -3,7 +3,6 @@
 namespace App\Modules\Twitter\Models;
 
 
-use App\Models\Client;
 use App\Models\Template;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property integer template_id
  * @property integer tweet_count
  * @property integer jobs
- * @property Client client
+ * @property User client
  * @property Template template
  * @property array tweets
  * @property mixed id

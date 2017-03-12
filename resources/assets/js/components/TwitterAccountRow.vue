@@ -47,7 +47,7 @@
             confirmRemove() {
                 this.editing = false;
                 this.confirm = false;
-                this.$http.delete(`/twitter-account/${this.account.id}`).then(this.onDelete.bind(null, this.account.id));
+                this.$http.delete(Laravel.routes['twitter-account.destroy'].replace('{twitter_account}', this.account.id)).then(this.onDelete.bind(null, this.account.id));
             },
             cancelRemove() {
                 this.confirm = false;

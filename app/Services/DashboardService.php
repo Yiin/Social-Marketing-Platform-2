@@ -21,7 +21,7 @@ class DashboardService
      */
     public function __construct()
     {
-        $this->addErrorsLogBlock();
+        
     }
 
     /**
@@ -38,19 +38,5 @@ class DashboardService
     public function getBlocks()
     {
         return $this->blocks;
-    }
-
-    /**
-     *
-     */
-    private function addErrorsLogBlock()
-    {
-        $errorsLog = ErrorLog::orderBy('id', 'desc')->paginate(10);
-        $width = 7;
-
-        $block = new DashboardBlock('_partials.dashboard.errors-log', compact('errorsLog', 'width'));
-        $block->requiresPermission();
-
-        $this->addBlock($block);
     }
 }

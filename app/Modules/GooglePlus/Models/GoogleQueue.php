@@ -8,7 +8,6 @@
 
 namespace App\Modules\GooglePlus\Models;
 
-use App\Models\Client;
 use App\Models\Template;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $jobs
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
- * @property-read \App\Models\Client $client
+ * @property-read \App\Models\User $client
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Modules\GooglePlus\Models\GooglePost[] $posts
  * @property-read \App\Models\Template $template
  * @method static \Illuminate\Database\Query\Builder|\App\Modules\GooglePlus\Models\GoogleQueue whereBacklinks($value)

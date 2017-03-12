@@ -6,6 +6,10 @@
                     <h4 class="title">Select groups</h4>
                 </div>
                 <div class="content">
+                    <template v-if="!accounts.length">
+                        Nothing to see here.
+                        <a :href="Laravel.routes['facebook-account.index']">Add new account and its groups</a>.
+                    </template>
                     <template v-for="(account, accountIndex) in accounts">
                         <div class="heading">
                             <h5 class="title">
@@ -124,9 +128,8 @@
                                 </template>
                             </div>
 
-                            <button type="submit" class="btn btn-fill btn-primary" :disabled="!selectedGroupsTotal()">{{
-                                selectedGroupsTotal() ? 'Post to selected groups' : 'Please select at least one group'
-                                }}
+                            <button type="submit" class="btn btn-fill btn-primary" :disabled="!selectedGroupsTotal()">
+                                {{selectedGroupsTotal() ? 'Post to selected groups' : 'Please select at least one group' }}
                             </button>
                         </form>
                     </div>
@@ -185,7 +188,9 @@
                 templates: [],
                 delay: 1,
                 client_id: undefined,
-                template_id: undefined
+                template_id: undefined,
+
+                Laravel: {}
             }
         },
         methods: {
@@ -210,7 +215,7 @@
                     ;
                 });
 
-                this.$http.post(`/api/facebook/post`, data).then(response => {
+                this.$http.post(Laravel.routes['facebook.post'], data).then(response => {
                     this.done = true;
                     this.queue_id = response.body;
                     this.resetSelection();
@@ -283,6 +288,7 @@
             this.accounts = JSON.parse(this.accountsjson);
             this.clients = JSON.parse(this.clientsjson);
             this.templates = JSON.parse(this.templatesjson);
+            this.Laravel = Laravel;
 
             setTimeout($('[data-toggle="collapse"]').collapse);
         }

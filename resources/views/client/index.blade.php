@@ -22,6 +22,9 @@
                             <th class="text-center">#</th>
                             <th>Name</th>
                             <th>Email</th>
+                            @can(App\Constants\Permission::MANAGE_RESELLERS)
+                                <th>Reseller</th>
+                            @endcan
                             <th class="text-right">Actions</th>
                         </tr>
                         </thead>
@@ -31,12 +34,16 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $_client->name }}</td>
                                 <td>{{ $_client->email }}</td>
-                                <td class="text-right">
-                                    @can(App\Constants\Permission::MANAGE_RESELLERS)
-                                        @if($_client->reseller_id)
-                                            <a href="{{ route('reseller.edit', ['reseller' => $_client->reseller_id]) }}" class="btn btn-primary btn-xs">View Reseller</a>
+                                @can(App\Constants\Permission::MANAGE_RESELLERS)
+                                    <td>
+                                        @if($_client->reseller)
+                                            <a href="{{ route('reseller.edit', ['reseller' => $_client->reseller_id]) }}" class="btn btn-primary btn-xs">
+                                                {{ $_client->reseller->name }} ({{ $_client->reseller->email }})
+                                            </a>
                                         @endif
-                                    @endcan
+                                    </td>
+                                @endcan
+                                <td class="text-right">
                                     <a href="{{ route('client.edit', ['client' => $_client->id]) }}" class="btn btn-primary btn-xs">Edit</a>
                                     <a href="{{ route('client.destroy', ['client' => $_client->id]) }}" class="btn btn-danger btn-xs"
                                        onclick="event.preventDefault(); document.getElementById('delete-client-form-{{ $_client->id }}').submit();">

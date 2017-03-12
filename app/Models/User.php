@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use App\Constants\Role;
+use App\Modules\Facebook\Models\FacebookQueue;
+use App\Modules\GooglePlus\Models\GoogleQueue;
+use App\Modules\Twitter\Models\TwitterQueue;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
@@ -74,8 +77,33 @@ class User extends Authenticatable
         return $this->hasMany(User::class, 'reseller_id')->role(Role::CLIENT);
     }
 
-    public function templates()
+    public function reseller()
+    {
+        return $this->belongsTo(User::class, 'reseller_id');
+    }
+
+    public function facebookQueues()
+    {
+        return $this->hasManyThrough(FacebookQueue::class, User::class, 'reseller_id', 'client_id');
+    }
+
+    public function googleQueues()
+    {
+        return $this->hasManyThrough(GoogleQueue::class, User::class, 'reseller_id', 'client_id');
+    }
+
+    public function twitterQueues()
+    {
+        return $this->hasManyThrough(TwitterQueue::class, User::class, 'reseller_id', 'client_id');
+    }
+
+    public function privateTemplates()
     {
         return $this->hasMany(Template::class);
+    }
+
+    public function templates()
+    {
+        return $this->hasManyThrough(Template::class, User::class, 'reseller_id');
     }
 }

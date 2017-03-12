@@ -58,6 +58,8 @@ class ApiService
         $template = Template::find($template_id);
         $spintax = Parser::parse($template->message);
 
+        $time = Carbon::now();
+
         foreach ($tweetData['queue'] as $twitterAccount) {
             $twitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $twitterAccount['oauth_token'], $twitterAccount['oauth_secret']);
 
@@ -68,7 +70,7 @@ class ApiService
                 dispatch((new TweetMessage($queue,
                     "@{$follower['screen_name']} " . $spintax->generate(),
                     $twitterAccount
-                ))->delay(Carbon::now()->addSeconds($delay)));
+                ))->delay($time->addSeconds($delay)));
             }
 
             $jobs++;

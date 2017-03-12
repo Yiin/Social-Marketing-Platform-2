@@ -192,14 +192,16 @@ return [
         /*
          * Modules providers
          */
-        App\Modules\GooglePlus\Providers\GooglePlusProvider::class,
-        App\Modules\GooglePlus\Providers\RouteServiceProvider::class,
-
         App\Modules\Facebook\Providers\FacebookProvider::class,
         App\Modules\Facebook\Providers\RouteServiceProvider::class,
 
+        App\Modules\GooglePlus\Providers\GooglePlusProvider::class,
+        App\Modules\GooglePlus\Providers\RouteServiceProvider::class,
+
         App\Modules\Twitter\Providers\TwitterProvider::class,
         App\Modules\Twitter\Providers\RouteServiceProvider::class,
+
+        App\Modules\Errors\Providers\ErrorLogServiceProvider::class,
 
     ],
 

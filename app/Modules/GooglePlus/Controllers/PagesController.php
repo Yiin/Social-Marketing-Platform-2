@@ -2,7 +2,6 @@
 
 namespace App\Modules\GooglePlus\Controllers;
 
-use App\Models\Client;
 use App\Models\Template;
 use App\Modules\GooglePlus\Models\GoogleQueue;
 use App\Modules\GooglePlus\Repositories\GoogleAccountsRepository;

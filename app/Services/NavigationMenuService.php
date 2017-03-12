@@ -18,7 +18,7 @@ class NavigationMenuService
         $this->addItem('Resellers', 'pe-7s-users', 'reseller.index', Permission::MANAGE_RESELLERS);
         $this->addItem('Clients', 'pe-7s-users', 'client.index', Permission::MANAGE_CLIENTS);
 
-        $this->addItem('Templates', 'pe-7s-note2', 'template.index', Permission::MANAGE_CLIENTS);
+        $this->addItem('Templates', 'pe-7s-note2', 'template.index');
     }
 
     public function addItem($title, $icon, $route, $requires_permision = null)

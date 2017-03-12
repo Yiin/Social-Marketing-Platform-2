@@ -10,13 +10,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $blocks = [];
-
-        if (Auth::user()->hasPermissionTo(User::VIEW_ERRORS_LOG)) {
-            $block['errorsLog'] = ErrorLog::paginate(15);
-        }
-
-        return view('dashboard', compact('blocks'));
+        return view('dashboard');
     }
 
     public function profile()

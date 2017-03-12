@@ -84,6 +84,8 @@ class ApiService
 
         $template = Template::find($template_id);
 
+        $time = Carbon::now();
+
         foreach ($postData['queue'] as $group) {
             $data = [
                 'link' => $template->url,
@@ -96,7 +98,7 @@ class ApiService
 
             dispatch((new PostMessage(
                 $queue, $data, $group
-            ))->delay(Carbon::now()->addSeconds($delay)));
+            ))->delay($time->addSeconds($delay)));
 
             $jobs++;
         }

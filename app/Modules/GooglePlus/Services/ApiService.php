@@ -119,6 +119,8 @@ class ApiService
 
         $template = Template::find($template_id);
 
+        $time = Carbon::now();
+
         foreach ($groups as $group) {
             if (empty($group['categories'])) {
                 continue;
@@ -139,7 +141,7 @@ class ApiService
 
                 dispatch((new PostMessage(
                     $queue, $message, $url, $group, $categoryId
-                ))->delay(Carbon::now()->addSeconds($delay)));
+                ))->delay($time->addSeconds($delay)));
 
                 $jobs++;
             }

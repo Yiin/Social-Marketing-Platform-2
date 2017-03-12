@@ -9,7 +9,6 @@
 namespace App\Modules\Facebook\Models;
 
 
-use App\Models\Client;
 use App\Models\Template;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;

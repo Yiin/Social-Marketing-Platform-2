@@ -2,10 +2,12 @@
 
 namespace App\Modules\GooglePlus\Providers;
 
+use App\Components\DashboardBlock;
 use App\Constants\Permission;
 use App\Modules\GooglePlus\Repositories\GoogleAccountsRepository;
 use App\Modules\GooglePlus\Services\ApiService;
 use App\Services\CurlService;
+use App\Services\DashboardService;
 use App\Services\NavigationMenuService;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +23,8 @@ class GooglePlusProvider extends ServiceProvider
 
         $navItem->addChild('Accounts', '', 'google-account.index');
         $navItem->addChild('Posting', '', 'google.index');
+
+        $this->addDashboardBlocks();
     }
 
     public function register()
@@ -37,5 +41,14 @@ class GooglePlusProvider extends ServiceProvider
         $this->app->singleton(GoogleAccountsRepository::class, function (Application $app) {
             return new GoogleAccountsRepository($app->make(ApiService::class));
         });
+    }
+
+    private function addDashboardBlocks()
+    {
+        $dashboard = $this->app->make(DashboardService::class);
+
+        $googleBlock = new DashboardBlock('_partials.dashboard.google-stats');
+
+        $dashboard->addBlock($googleBlock);
     }
 }

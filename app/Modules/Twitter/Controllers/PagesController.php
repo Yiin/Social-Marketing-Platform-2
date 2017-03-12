@@ -3,8 +3,6 @@
 namespace App\Modules\Twitter\Controllers;
 
 use App\Controllers\Controller;
-use App\Models\Client;
-use App\Models\Template;
 use App\Modules\Twitter\Models\TwitterQueue;
 use App\Modules\Twitter\Repositories\TwitterAccountsRepository;
 use Auth;

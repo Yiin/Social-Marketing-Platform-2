@@ -2,8 +2,6 @@
 
 namespace App\Modules\Facebook\Controllers;
 
-use App\Models\Client;
-use App\Models\Template;
 use App\Modules\Facebook\Models\FacebookQueue;
 use App\Modules\Facebook\Repositories\FacebookAccountsRepository;
 use Auth;

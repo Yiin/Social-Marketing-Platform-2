@@ -6,7 +6,11 @@
                     <h4 class="title">Select accounts you want to tweet from</h4>
                 </div>
                 <div class="content">
-                    <template>
+                    <template v-if="!accounts.length">
+                        Nothing to see here.
+                        <a :href="Laravel.routes['twitter-account.index']">Add new Twitter account</a>.
+                    </template>
+                    <template v-else>
                         <div class="heading">
                             <h5 class="title">
                                 {{ groupsHeadingText() }}
@@ -144,7 +148,9 @@
                 templates: [],
                 delay: 1,
                 client_id: undefined,
-                template_id: undefined
+                template_id: undefined,
+
+                Laravel: {}
             }
         },
         methods: {
@@ -156,7 +162,7 @@
                     queue: this.accounts.filter(account => account.selected)
                 };
 
-                this.$http.post(`/api/twitter/post`, data).then(response => {
+                this.$http.post(Laravel.routes['twitter.post'], data).then(response => {
                     this.done = true;
                     this.queue_id = response.body;
                     this.resetSelection();
@@ -194,6 +200,8 @@
             this.accounts = JSON.parse(this.accountsjson);
             this.clients = JSON.parse(this.clientsjson);
             this.templates = JSON.parse(this.templatesjson);
+
+            this.Laravel = Laravel;
         }
     }
 

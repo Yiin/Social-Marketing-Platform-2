@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Constants\Role;
 use App\Http\Requests\Reseller\CreateOrUpdateReseller;
 use App\Mail\SendUserPassword;
 use App\Models\User;
@@ -15,7 +16,7 @@ class ResellersController extends Controller
      */
     public function index()
     {
-        $resellers = User::role(User::ROLE_RESELLER)->paginate(15);
+        $resellers = User::role(Role::RESELLER)->paginate(15);
 
         return view('reseller.index')->with(compact('resellers'));
     }
@@ -40,7 +41,8 @@ class ResellersController extends Controller
         $user->password = bcrypt($password = $request->has('password') ? $request->get('password') : str_random());
         $user->save();
 
-        $user->assignRole(User::ROLE_RESELLER);
+        $user->assignRole(Role::RESELLER);
+        $user->update(['reseller_id' => $user->id]);
 
         flash('Reseller created! Password: ' . $password);
 
@@ -57,7 +59,7 @@ class ResellersController extends Controller
      */
     public function edit(User $reseller)
     {
-        $resellers = User::role(User::ROLE_RESELLER)->paginate(15);
+        $resellers = User::role(Role::RESELLER)->paginate(15);
 
         return view('reseller.index')->with(compact('resellers', 'reseller'));
     }
