@@ -2,13 +2,11 @@
 
 namespace App\Providers;
 
-use App\Models\User;
 use App\Services\CurlService;
 use App\Services\DashboardService;
 use App\Services\NavigationMenuService;
-use Auth;
+use GuzzleHttp\Client as HttpClient;
 use Illuminate\Support\ServiceProvider;
-use nxsAPI_GP;
 use Schema;
 use Validator;
 
@@ -40,10 +38,16 @@ class AppServiceProvider extends ServiceProvider
             return new CurlService;
         });
 
+        $this->app->singleton(HttpClient::class, function () {
+            return new HttpClient;
+        });
+
+        // Navigation Menu
         $this->app->singleton(NavigationMenuService::class, function ($app) {
             return new NavigationMenuService;
         });
 
+        // Dashboard Blocks
         $this->app->singleton(DashboardService::class, function ($app) {
             return new DashboardService;
         });

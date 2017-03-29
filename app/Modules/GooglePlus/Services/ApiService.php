@@ -146,7 +146,7 @@ class ApiService
             }
         }
 
-        $queue->update(['stats->jobs' => $jobs]);
+        $queue->update(['jobs' => $jobs]);
 
         return $queue;
     }

@@ -83,7 +83,7 @@ class PostMessage implements ShouldQueue
         try {
             $r = $facebook->post("/{$this->group['groupId']}/feed", $this->post, $account->access_token);
         } catch (FacebookSDKException $e) {
-            // When validation fails or other local issues
+            echo $e->getMessage() . PHP_EOL;
             ErrorLog::report('Facebook error: ' . $e->getMessage());
             return;
         }

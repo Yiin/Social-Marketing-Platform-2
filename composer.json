@@ -14,9 +14,11 @@
     "davejamesmiller/laravel-breadcrumbs": "dev-laravel-5.4",
     "doctrine/dbal": "^2.5",
     "facebook/graph-sdk": "^5.4",
+    "guzzlehttp/guzzle": "^6.2",
     "laracasts/flash": "^2.0",
     "laravel/framework": "5.4.*",
     "laravel/tinker": "~1.0",
+    "pusher/pusher-php-server": "^2.6",
     "spatie/laravel-permission": "^1.11"
   },
   "require-dev": {

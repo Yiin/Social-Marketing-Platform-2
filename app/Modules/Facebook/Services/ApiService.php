@@ -9,6 +9,7 @@ use App\Vendor\Facebook\Facebook;
 use Carbon\Carbon;
 use ChillDev\Spintax\Parser;
 use Facebook\Exceptions\FacebookSDKException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redirect;
 use URL;
 
@@ -24,7 +25,6 @@ class ApiService
      */
     public function __construct()
     {
-
         $this->facebook = new Facebook([
             'app_id' => env('FACEBOOK_APP_ID'),
             'app_secret' => env('FACEBOOK_APP_SECRET')
@@ -39,7 +39,7 @@ class ApiService
         $helper = $this->facebook->getRedirectLoginHelper();
 
         $loginUrl = $helper->getLoginUrl(URL::to(route('facebook.token')), [
-            'publish_actions,publish_pages,manage_pages'
+            'publish_actions,user_managed_groups'
         ]);
 
         return $loginUrl;
@@ -65,7 +65,7 @@ class ApiService
 
     /**
      * @param array $postData
-     * @return FacebookQueue
+     * @return FacebookQueue|Model
      */
     public function post(array $postData)
     {

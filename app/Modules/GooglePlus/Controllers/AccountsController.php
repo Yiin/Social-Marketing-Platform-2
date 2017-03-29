@@ -26,7 +26,7 @@ class AccountsController extends Controller
 
     public function index()
     {
-        $accounts = GoogleAccount::all();
+        $accounts = $this->accountsRepository->accounts();
 
         return view('google.accounts')->with(compact('accounts'));
     }

@@ -28,11 +28,11 @@ Vue.http.interceptors.push((request, next) => {
  * CSRF token as a header based on the value of the "XSRF" token cookie.
  */
 
-window.axios = require('axios');
-
-window.axios.defaults.headers.common = {
-    'X-Requested-With': 'XMLHttpRequest'
-};
+// window.axios = require('axios');
+//
+// window.axios.defaults.headers.common = {
+//     'X-Requested-With': 'XMLHttpRequest'
+// };
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
@@ -41,8 +41,10 @@ window.axios.defaults.headers.common = {
  */
 
 // import Echo from "laravel-echo"
-
+//
+// window.Pusher = require('pusher-js');
+//
 // window.Echo = new Echo({
 //     broadcaster: 'pusher',
-//     key: 'your-pusher-key'
+//     key: '73c0ef2bb99ff15d6e1a'
 // });

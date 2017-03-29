@@ -45,8 +45,8 @@ class FacebookProvider extends ServiceProvider
     {
         $dashboard = $this->app->make(DashboardService::class);
 
-        $errorLogBlock = new DashboardBlock('_partials.dashboard.facebook-stats');
+        $linkedinBlock = new DashboardBlock('_partials.dashboard.facebook-stats');
 
-        $dashboard->addBlock($errorLogBlock);
+        $dashboard->addBlock($linkedinBlock);
     }
 }

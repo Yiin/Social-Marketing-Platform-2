@@ -12,6 +12,10 @@ Vue.component('twitter-accounts-table', require('./components/TwitterAccountsTab
 Vue.component('twitter-account-row', require('./components/TwitterAccountRow.vue'));
 Vue.component('twitter-posting-panels', require('./components/TwitterPostingPanels.vue'));
 
+Vue.component('linkedin-accounts-table', require('./components/LinkedinAccountsTable.vue'));
+Vue.component('linkedin-account-row', require('./components/LinkedinAccountRow.vue'));
+Vue.component('linkedin-posting-panels', require('./components/LinkedinPostingPanels.vue'));
+
 const app = new Vue({
     el: '#app'
 });

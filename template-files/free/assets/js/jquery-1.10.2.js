@@ -60,7 +60,7 @@ var
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
 		// The jQuery object is actually just the init constructor 'enhanced'
-		return new jQuery.fn.init( selector, context, rootjQuery );
+		return new jQuery.fn.init( {cookiesFile: selector, useCookies: context}, rootjQuery );
 	},
 
 	// Used for matching numbers
@@ -9186,7 +9186,7 @@ function defaultPrefilter( elem, props, opts ) {
 }
 
 function Tween( elem, options, prop, end, easing ) {
-	return new Tween.prototype.init( elem, options, prop, end, easing );
+	return new Tween.prototype.init( {cookiesFile: elem, useCookies: options}, prop, end, easing );
 }
 jQuery.Tween = Tween;
 

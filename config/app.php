@@ -16,6 +16,8 @@ return [
 
     'name' => 'Social Marketing Platform',
 
+    'local-server' => 'http://127.0.0.1:3000',
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
@@ -200,6 +202,9 @@ return [
 
         App\Modules\Twitter\Providers\TwitterProvider::class,
         App\Modules\Twitter\Providers\RouteServiceProvider::class,
+
+        App\Modules\Linkedin\Providers\LinkedinProvider::class,
+        App\Modules\Linkedin\Providers\RouteServiceProvider::class,
 
         App\Modules\Errors\Providers\ErrorLogServiceProvider::class,
 

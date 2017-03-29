@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Stanislovas
- * Date: 2017-02-22
- * Time: 13:34
- */
 
 namespace App\Modules\Facebook\Models;
-
 
 use Illuminate\Database\Eloquent\Model;
 

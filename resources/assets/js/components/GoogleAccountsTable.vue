@@ -19,10 +19,7 @@
                 <input @keydown.enter="create" type="password" class="form-control" :class="{ error: errors.password }" placeholder="Password" name="password" v-model="account.password">
             </td>
             <td class="text-right">
-                <a v-if="loginUrl" :href="loginUrl" class="btn btn-success btn-simple-btn-xs">
-                    Confirm login
-                </a>
-                <button v-else @click="create" class="btn btn-primary btn-simple-btn-xs">
+                <button @click="create" class="btn btn-primary btn-simple-btn-xs">
                     Add account
                 </button>
             </td>
@@ -40,23 +37,16 @@
             return {
                 accounts: [],
                 account: {},
-                errors: {},
-                loginUrl: null
+                errors: {}
             }
         },
         methods: {
             create() {
                 this.errors = {};
-                this.loginUrl = null;
 
                 this.$http.post(Laravel.routes['google_account.store'], this.account).then(response => {
-                    if (response.body.loginUrl) {
-                        this.loginUrl = response.body.loginUrl;
-                    }
-                    else {
-                        this.account = {};
-                        this.$set(this, 'accounts', response.body);
-                    }
+                    this.account = {};
+                    this.$set(this, 'accounts', response.body);
                 }).catch(response => {
                     this.$set(this, 'errors', response.body);
                 });
