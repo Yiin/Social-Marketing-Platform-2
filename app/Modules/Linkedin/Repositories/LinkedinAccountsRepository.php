@@ -3,6 +3,8 @@
 namespace App\Modules\Linkedin\Repositories;
 
 use App\Modules\Linkedin\Events\Authenticated;
+use App\Modules\Linkedin\Exceptions\AuthenticationException;
+use App\Modules\Linkedin\Exceptions\AuthorizationException;
 use App\Modules\Linkedin\Models\LinkedinAccount;
 use App\Modules\Linkedin\Models\LinkedinGroup;
 use App\Modules\Linkedin\Services\ApiService;
@@ -47,15 +49,14 @@ class LinkedinAccountsRepository
      * Fetch and save groups that user is member of
      *
      * @param LinkedinAccount $account
-     * @param bool $useLastSession
      */
-    public function fetchAndUpdateGroups(LinkedinAccount $account, $useLastSession = false)
+    public function fetchAndUpdateGroups(LinkedinAccount $account)
     {
-        $groups = $this->apiService->groups($account, $useLastSession);
+        $response = $this->apiService->groups($account);
 
         $account->groups()->delete();
 
-        foreach ($groups as $group) {
+        foreach ($response->groups as $group) {
             LinkedinGroup::create([
                 'linkedin_account_id' => $account->id,
                 'groupId' => $group->id,
@@ -83,25 +84,47 @@ class LinkedinAccountsRepository
         // check if account credentials are correct
         $response = $this->apiService->check($account);
 
-        // authentication failed
-        if (!$response->is_authenticated) {
-            throw new \Exception('Login failed.');
+        switch ($response->status) {
+            case 'ok':
+                $account->user_id = Auth::id();
+                $account->save();
+
+                $account->groups;
+
+                return $account;
+            case 'locked':
+                throw new AuthorizationException('Sign-In Verification required.');
+                break;
+            case 'unauthorized':
+                throw new AuthenticationException('Login failed.');
+                break;
         }
+    }
 
-        $account->user_id = Auth::id();
-        $account->save();
+    public function unlock($accountData, $code)
+    {
+        $account = new LinkedinAccount($accountData);
 
-        $this->fetchAndUpdateGroups($account, true);
+        // check if account credentials are correct
+        $response = $this->apiService->unlock($account, $code);
 
-        $account->groups;
+        switch ($response->status) {
+            case 'ok':
+                $account->user_id = Auth::id();
+                $account->save();
 
-        return $account;
+                $account->groups;
+
+                return $account;
+            case 'locked':
+                return null;
+        }
     }
 
     /**
      * @param LinkedinAccount $account
      * @param $data
-     * @return bool|\Illuminate\Http\JsonResponse
+     * @return mixed
      * @throws \Exception
      */
     public function update(LinkedinAccount $account, $data)
@@ -111,15 +134,23 @@ class LinkedinAccountsRepository
         // check if account credentials are correct
         $response = $this->apiService->check($account);
 
-        // authentication failed
-        if (!$response->is_authenticated) {
-            throw new \Exception('Login failed.');
+        switch ($response->status) {
+            case 'ok':
+                $account->user_id = Auth::id();
+                $account->save();
+
+                $account->groups;
+
+                return $account;
+
+            case 'locked':
+                throw new AuthorizationException('Sign-In Verification required.');
+                break;
+
+            case 'unauthorized':
+                throw new AuthenticationException('Login failed.');
+                break;
         }
-
-        // credentials are ok, update the account
-        $success = $account->save();
-
-        return $success;
     }
 
     /**

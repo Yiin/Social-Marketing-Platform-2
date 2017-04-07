@@ -9,7 +9,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.17.1",
+    "express": "^4.15.2",
+    "generic-pool": "^3.1.7",
+    "http-status-codes": "^1.1.6",
     "moment": "^2.18.1",
-    "phantom": "^4.0.1"
+    "phantom": "^4.0.1",
+    "phantom-pool": "^1.2.0"
   }
 }

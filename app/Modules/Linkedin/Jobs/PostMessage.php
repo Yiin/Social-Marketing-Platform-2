@@ -73,7 +73,7 @@ class PostMessage implements ShouldQueue
             /*
              * If yes, send an email to client we posted to.
              */
-            \Mail::to($queue->client->email)->send(new ReportStats($queue));
+//            \Mail::to($queue->client->email)->send(new ReportStats($queue));
         }
 
         $account = LinkedinAccount::find($this->group['account_id']);
@@ -84,6 +84,7 @@ class PostMessage implements ShouldQueue
 
         if (!$post || empty($post->link)) {
             ErrorLog::report("Could't post to group {$group->name} with {$account->email} account.");
+            return;
         }
 
         $queue->increment('post_count');

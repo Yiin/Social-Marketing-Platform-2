@@ -3,9 +3,12 @@
 namespace App\Modules\Linkedin\Controllers;
 
 use App\Controllers\Controller;
+use App\Modules\Linkedin\Exceptions\AuthenticationException;
+use App\Modules\Linkedin\Exceptions\AuthorizationException;
 use App\Modules\Linkedin\Models\LinkedinAccount;
 use App\Modules\Linkedin\Repositories\LinkedinAccountsRepository;
 use App\Modules\Linkedin\Requests\CreateOrUpdateLinkedinAccount;
+use App\Modules\Linkedin\Requests\UnlockLinkedinAccount;
 
 class AccountsController extends Controller
 {
@@ -42,11 +45,23 @@ class AccountsController extends Controller
     {
         try {
             $this->accountsRepository->create($request->all());
-        } catch (\Exception $e) {
-            return response()->json(['email' => [$e->getMessage()]], 401);
+        } catch (AuthenticationException $e) {
+            return response()->json(['email' => [$e->getMessage()]], \Symfony\Component\HttpFoundation\Response::HTTP_UNAUTHORIZED);
+        } catch (AuthorizationException $e) {
+            return response()->json(['status' => 'locked']);
         }
 
-        return LinkedinAccount::all();
+        return response()->json(['status' => 'authenticated', 'accounts' => $this->accountsRepository->accounts()]);
+    }
+
+    public function unlock(UnlockLinkedinAccount $request)
+    {
+        $account = $this->accountsRepository->unlock($request->only(['email', 'password']), $request->get('code'));
+
+        if ($account) {
+            return $this->accountsRepository->accounts();
+        }
+        return response()->json(['code' => ['Invalid code.']], \Symfony\Component\HttpFoundation\Response::HTTP_LOCKED);
     }
 
     public function update(CreateOrUpdateLinkedinAccount $request, LinkedinAccount $linkedin_account)
@@ -54,7 +69,7 @@ class AccountsController extends Controller
         try {
             $this->accountsRepository->update($linkedin_account, $request->all());
         } catch (\Exception $e) {
-            return response()->json(['email' => [$e->getMessage()]], 401);
+            return response()->json(['email' => [$e->getMessage()]], \Symfony\Component\HttpFoundation\Response::HTTP_UNAUTHORIZED);
         }
         return response('OK');
     }
@@ -64,6 +79,6 @@ class AccountsController extends Controller
         if ($this->accountsRepository->destroy($linkedin_account)) {
             return response('OK');
         }
-        return response("Couldn't delete.", 401);
+        return response("Couldn't delete.", \Symfony\Component\HttpFoundation\Response::HTTP_UNAUTHORIZED);
     }
 }

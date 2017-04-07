@@ -9,6 +9,7 @@ use App\Modules\Linkedin\Models\LinkedinQueue;
 use Carbon\Carbon;
 use ChillDev\Spintax\Parser;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 
 /**
  * Class LinkedinService
@@ -39,45 +40,91 @@ class ApiService
     /**
      * @param LinkedinAccount $account
      *
-     * @return mixed
+     * @return object
      */
     public function check(LinkedinAccount $account)
     {
-        $cookiesFile = storage_path("app/phantomjs/cookies/{$account->email}.json");
+        try {
+            $response = $this->http->post('localhost:3000/authenticate', [
+                'form_params' => [
+                    'email' => $account->email,
+                    'password' => $account->password
+                ]
+            ]);
+        } catch (RequestException $e) {
+            $response = $e->getResponse();
+        }
 
-        $output = shell_exec($cmd = implode(' ', [
-            'node',
-            '--harmony-async-await',
-            app_path("Modules/Linkedin/resources/js/phantomjs/check-auth.js"),
-            "--email", escapeshellarg($account->email),
-            "--password", escapeshellarg($account->password),
-            "--loadCookies 0",
-            "--cookiesFile", escapeshellarg($cookiesFile)
-        ]));
+        switch ($response->getStatusCode()) {
+            case \Symfony\Component\HttpFoundation\Response::HTTP_OK:
+                return (object)['status' => 'ok'];
 
-        return json_decode($output);
+            case \Symfony\Component\HttpFoundation\Response::HTTP_LOCKED:
+                return (object)['status' => 'locked'];
+
+            case \Symfony\Component\HttpFoundation\Response::HTTP_UNAUTHORIZED:
+                return (object)['status' => 'unauthorized'];
+        }
+        return (object)['status' => 'unknown'];
+    }
+
+
+    /**
+     * @param LinkedinAccount $account
+     * @param string $code
+     *
+     * @return object
+     */
+    public function unlock(LinkedinAccount $account, $code)
+    {
+        try {
+            $response = $this->http->post('localhost:3000/unlock', [
+                'form_params' => [
+                    'email' => $account->email,
+                    'password' => $account->password,
+                    'code' => $code
+                ]
+            ]);
+        } catch (RequestException $e) {
+            $response = $e->getResponse();
+        }
+
+        switch ($response->getStatusCode()) {
+            case \Symfony\Component\HttpFoundation\Response::HTTP_OK:
+                return (object)['status' => 'ok'];
+
+            case \Symfony\Component\HttpFoundation\Response::HTTP_EXPECTATION_FAILED:
+                return (object)['status' => 'locked'];
+        }
+        return (object)['status' => 'unknown'];
     }
 
     /**
      * Get list of user groups
      *
-     * @return array
+     * @return object
      */
-    public function groups(LinkedinAccount $account, $useLastSession = false)
+    public function groups(LinkedinAccount $account)
     {
-        $cookiesFile = storage_path("app/phantomjs/cookies/{$account->email}.json");
+        try {
+            $response = $this->http->post('localhost:3000/groups', [
+                'form_params' => [
+                    'email' => $account->email,
+                    'password' => $account->password
+                ]
+            ]);
+        } catch (RequestException $e) {
+            $response = $e->getResponse();
+        }
 
-        $output = shell_exec($cmd = implode(' ', [
-            'node',
-            '--harmony-async-await',
-            app_path("Modules/Linkedin/resources/js/phantomjs/groups.js"),
-            "--email", escapeshellarg($account->email),
-            "--password", escapeshellarg($account->password),
-            "--loadCookies " . $useLastSession ? 1 : 0,
-            "--cookiesFile", escapeshellarg($cookiesFile)
-        ]));
+        switch ($response->getStatusCode()) {
+            case \Symfony\Component\HttpFoundation\Response::HTTP_OK:
+                return (object)['status' => 'ok', 'groups' => json_decode((string)$response->getBody())];
 
-        return json_decode($output);
+            case \Symfony\Component\HttpFoundation\Response::HTTP_UNAUTHORIZED:
+                return (object)['status' => 'unauthorized'];
+        }
+        return (object)['status' => 'unknown'];
     }
 
     /**
@@ -89,25 +136,28 @@ class ApiService
      */
     public function actuallyPost($account, $groupId, $caption, $message)
     {
-        $cookiesFile = storage_path("app/phantomjs/cookies/{$account->email}.json");
+        try {
+            $response = $this->http->post('localhost:3000/post', [
+                'form_params' => [
+                    'email' => $account->email,
+                    'password' => $account->password,
+                    'groupid' => $groupId,
+                    'caption' => $caption,
+                    'message' => $message
+                ]
+            ]);
+        } catch (RequestException $e) {
+            $response = $e->getResponse();
+        }
 
-        $output = shell_exec($cmd = escapeshellcmd(implode(' ', [
-            'node',
-            '--harmony-async-await',
-            app_path("Modules/Linkedin/resources/js/phantomjs/post.js"),
-            "--email", escapeshellarg($account->email),
-            "--password", escapeshellarg($account->password),
-            "--loadCookies 1",
-            "--cookiesFile", escapeshellarg($cookiesFile),
-            "--groupid", escapeshellarg($groupId),
-            "--caption", escapeshellarg($caption),
-            "--message", escapeshellarg($message)
-        ])));
+        switch ($response->getStatusCode()) {
+            case \Symfony\Component\HttpFoundation\Response::HTTP_OK:
+                return (object)['status' => 'authorized', 'data' => json_decode((string)$response->getBody())];
 
-        \Log::debug($cmd);
-        \Log::debug($output);
-
-        return json_decode($output);
+            case \Symfony\Component\HttpFoundation\Response::HTTP_UNAUTHORIZED:
+                return (object)['status' => 'unauthorized'];
+        }
+        return (object)['status' => 'unknown'];
     }
 
     /**

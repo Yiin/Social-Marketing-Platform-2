@@ -11889,6 +11889,31 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     props: ['data'],
@@ -11898,7 +11923,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             accounts: [],
             account: {},
             errors: {},
-            checking: false
+            status: null,
+
+            CHECKING: 'checking',
+            LOCKED: 'locked',
+            VALIDATING_CODE: 'validating'
         };
     },
 
@@ -11908,15 +11937,37 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             var _this = this;
 
             this.errors = {};
-            this.checking = true;
+            this.status = this.CHECKING;
 
-            this.$http.post(Laravel.routes['linkedin_account.store'], this.account).then(function (response) {
-                _this.checking = false;
-                _this.account = {};
-                _this.$set(_this, 'accounts', response.body);
+            this.$http.post(Laravel.routes['linkedin-account.store'], this.account).then(function (response) {
+                switch (response.body.status) {
+                    case 'authenticated':
+                        _this.status = null;
+                        _this.account = {};
+                        _this.$set(_this, 'accounts', response.body.accounts);
+                        break;
+                    case 'locked':
+                        _this.$set(_this, 'status', _this.LOCKED);
+                        break;
+                }
             }).catch(function (response) {
-                _this.checking = false;
+                _this.status = null;
                 _this.$set(_this, 'errors', response.body);
+            });
+        },
+        unlock: function unlock() {
+            var _this2 = this;
+
+            this.errors = {};
+            this.status = this.VALIDATING_CODE;
+
+            this.$http.post(Laravel.routes['linkedin-account.unlock'], this.account).then(function (response) {
+                _this2.status = null;
+                _this2.account = {};
+                _this2.$set(_this2, 'accounts', response.body);
+            }).catch(function (response) {
+                _this2.status = _this2.LOCKED;
+                _this2.$set(_this2, 'errors', response.body);
             });
         },
         onDelete: function onDelete(id) {
@@ -30640,7 +30691,48 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
         "index": index
       }
     })
-  }), _vm._v(" "), _c('tr', [_c('td'), _vm._v(" "), _c('td', [_c('input', {
+  }), _vm._v(" "), (_vm.status === _vm.LOCKED) ? _c('tr', [_c('td', {
+    attrs: {
+      "colspan": "3"
+    }
+  }, [_c('i', {
+    staticClass: "fa fa-lock"
+  }), _vm._v(" "), (_vm.errors.code) ? [_vm._v("\n                Invalid code.\n            ")] : _vm._e(), _vm._v("\n            Please enter sign-in confirmation code which was sent to " + _vm._s(_vm.account.email) + ".\n        ")], 2), _vm._v(" "), _c('td', [_c('input', {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: (_vm.account.code),
+      expression: "account.code"
+    }],
+    staticClass: "form-control",
+    class: {
+      error: _vm.errors.code
+    },
+    attrs: {
+      "type": "text",
+      "placeholder": "Confirmation Code (check email)"
+    },
+    domProps: {
+      "value": (_vm.account.code)
+    },
+    on: {
+      "keydown": function($event) {
+        if (!('button' in $event) && _vm._k($event.keyCode, "enter", 13)) { return null; }
+        _vm.unlock($event)
+      },
+      "input": function($event) {
+        if ($event.target.composing) { return; }
+        _vm.account.code = $event.target.value
+      }
+    }
+  })]), _vm._v(" "), _c('td', [(_vm.status === _vm.VALIDATING_CODE) ? [_c('i', {
+    staticClass: "fa fa-circle-o-notch fa-spin fa-fw"
+  }), _vm._v("\n                Validating confirmation code...\n            ")] : [_c('button', {
+    staticClass: "btn btn-primary btn-simple-btn-xs",
+    on: {
+      "click": _vm.unlock
+    }
+  }, [_vm._v("\n                    Confirm\n                ")])]], 2)]) : _c('tr', [_c('td'), _vm._v(" "), _c('td', [_c('input', {
     directives: [{
       name: "model",
       rawName: "v-model",
@@ -30700,14 +30792,14 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     }
   })]), _vm._v(" "), _c('td'), _vm._v(" "), _c('td', {
     staticClass: "text-right"
-  }, [(_vm.checking) ? [_c('i', {
+  }, [(_vm.status === _vm.CHECKING) ? [_c('i', {
     staticClass: "fa fa-circle-o-notch fa-spin fa-fw"
-  }), _vm._v("\n                Authorizing...\n            ")] : _c('button', {
+  }), _vm._v("\n                Authorizing...\n            ")] : [_c('button', {
     staticClass: "btn btn-primary btn-simple-btn-xs",
     on: {
       "click": _vm.create
     }
-  }, [_vm._v("\n                Add account\n            ")])], 2)])], 2)])
+  }, [_vm._v("\n                    Add account\n                ")])]], 2)])], 2)])
 },staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('thead', [_c('tr', [_c('th', {
     staticClass: "text-center"
