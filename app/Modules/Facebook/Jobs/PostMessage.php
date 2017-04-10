@@ -65,7 +65,7 @@ class PostMessage implements ShouldQueue
          */
         $queue->decrement('jobs');
 
-        if ($queue->jobs <= 0) {
+        if ($queue->jobs === 0) {
             /*
              * If yes, send an email to client we posted to.
              */

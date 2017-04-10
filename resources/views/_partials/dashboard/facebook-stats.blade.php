@@ -33,7 +33,7 @@
                             <td class="text-center">{{ number_format($queue->backlinks) }}</td>
                             <td class="text-center">{{ $queue->client ? $queue->client->name : '' }}</td>
                             <td class="text-center">
-                                @if($queue->jobs)
+                                @if($queue->jobs > 0)
                                     {{ number_format($queue->jobs) }}
                                 @else
                                     <a href="{{ route('facebook.stats', ['queue' => $queue->id]) }}" target="_blank">
