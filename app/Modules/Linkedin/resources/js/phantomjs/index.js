@@ -177,6 +177,8 @@
 
         const {email, password} = req.body;
 
+        logger.log("info", `${email} is fetching groups.`);
+
         const cookiesFile = getCookiesFile(email);
 
         // get existing page
@@ -212,7 +214,7 @@
 
                 await instancesController.remove(instance);
 
-                logger.log("error", `${email} authentication failed.`);
+                logger.log("info", `${email} authentication failed.`);
                 return res.status(HttpStatus.UNAUTHORIZED).send();
 
             }
@@ -224,6 +226,8 @@
             await page.open('https://www.linkedin.com/groups/my-groups');
 
         }
+
+        logger.log("info", `${email} authenticated successfully.`);
 
         await sleep(3000);
 
@@ -238,6 +242,8 @@
             return arr;
         });
 
+	logger.log("info", `${email} groups: ` + JSON.stringify(groups));
+
         let promises = [];
 
         groups.forEach(group => {
@@ -245,16 +251,17 @@
 
                 let groupPage = await instance.createPage();
 
-                const groups = await getGroupInfo(groupPage, group);
+                const groupinfo = await getGroupInfo(groupPage, group);
 
                 await instance.closePage(groupPage);
 
-                return groups;
+                return groupinfo;
 
             })());
         });
 
         groups = await Promise.all(promises);
+	groups = groups.filter(group => !group.error);
 
         await instancesController.save(instance);
 
