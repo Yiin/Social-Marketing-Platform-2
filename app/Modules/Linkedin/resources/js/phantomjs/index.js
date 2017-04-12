@@ -242,7 +242,7 @@
             return arr;
         });
 
-	logger.log("info", `${email} groups: ` + JSON.stringify(groups));
+        logger.log("info", `${email} groups: ` + JSON.stringify(groups));
 
         let promises = [];
 
@@ -261,7 +261,7 @@
         });
 
         groups = await Promise.all(promises);
-	groups = groups.filter(group => !group.error);
+        groups = groups.filter(group => !group.error);
 
         await instancesController.save(instance);
 
@@ -331,6 +331,8 @@
         }
 
         const result = await postToGroup(page, {groupid, caption, message});
+
+        logger.log("info", `Posted successfully! ` + JSON.stringify(result));
 
         await instance.closePage(page);
         await instancesController.save(instance);

@@ -5,7 +5,6 @@ namespace App\Modules\Linkedin\Jobs;
 use App\Modules\Errors\Models\ErrorLog;
 use App\Modules\Linkedin\Mail\ReportStats;
 use App\Modules\Linkedin\Models\LinkedinAccount;
-use App\Modules\Linkedin\Models\LinkedinGroup;
 use App\Modules\Linkedin\Models\LinkedinPost;
 use App\Modules\Linkedin\Models\LinkedinQueue;
 use App\Modules\Linkedin\Services\ApiService;
@@ -82,19 +81,24 @@ class PostMessage implements ShouldQueue
 
         $group = $account->groups()->where('groupId', $this->group['id'])->first();
 
-        if (!$post || empty($post->link)) {
-            ErrorLog::report("Could't post to group {$group->name} with {$account->email} account.");
-            return;
+        switch ($post->status) {
+            case 'ok':
+                $queue->increment('post_count');
+                $queue->increment('backlinks', $group->members);
+
+                LinkedinPost::create([
+                    'linkedin_queue_id' => $queue->id,
+                    'url' => $post->data->link,
+                    'message' => $this->message,
+                    'group_name' => $group->name,
+                ]);
+                break;
+            case 'unauthorized':
+                ErrorLog::report("[LinkedIn] Couldn't authenticate {$account->email} account.");
+                break;
+            default:
+                ErrorLog::report("[LinkedIn] Could't post to group {$group->name} with {$account->email} account.");
+                break;
         }
-
-        $queue->increment('post_count');
-        $queue->increment('backlinks', $group->members);
-
-        LinkedinPost::create([
-            'linkedin_queue_id' => $queue->id,
-            'url' => $post->link,
-            'message' => $this->message,
-            'group_name' => $group->name
-        ]);
     }
 }

@@ -6,9 +6,9 @@ module.exports = async function (page, postData) {
 
         await page.open('https://www.linkedin.com/groups/' + postData.groupid);
 
-        await sleep(5000);
-
     }
+
+    await sleep(3000);
 
     await page.evaluate(function (postData) {
         document.getElementsByClassName('input-title')[0].focus();

@@ -152,7 +152,7 @@ class ApiService
 
         switch ($response->getStatusCode()) {
             case \Symfony\Component\HttpFoundation\Response::HTTP_OK:
-                return (object)['status' => 'authorized', 'data' => json_decode((string)$response->getBody())];
+                return (object)['status' => 'ok', 'data' => json_decode((string)$response->getBody())];
 
             case \Symfony\Component\HttpFoundation\Response::HTTP_UNAUTHORIZED:
                 return (object)['status' => 'unauthorized'];
