@@ -89,13 +89,13 @@ class AccountsController extends Controller
 
             $meta = $node->find('span.fcg')[0];
 
-            preg_match('/[0-9]+/', str_replace(',', '', $meta->text()), $matches);
+            if (preg_match('/[0-9]+/', str_replace(',', '', $meta->text()), $matches)) {
+                $members = $matches[0];
 
-            $members = $matches[0];
-
-            $groups[] = ['id' => $groupId, 'name' => $groupName, 'members' => $members];
+                $groups[] = ['id' => $groupId, 'name' => $groupName, 'members' => $members];
+            }
         }
-        
+
         $account->groups()->delete();
 
         foreach ($groups as $group) {
