@@ -33,7 +33,7 @@ class AccountsController extends Controller
 
     /**
      * @param CreateOrUpdateGoogleAccount $request
-     * @return bool|\Illuminate\Database\Eloquent\Collection|\Illuminate\Http\JsonResponse|static[]
+     * @return \Illuminate\Support\Collection
      */
     public function store(CreateOrUpdateGoogleAccount $request)
     {
@@ -43,7 +43,7 @@ class AccountsController extends Controller
             return response()->json(['username' => [$e->getMessage()]], 401);
         }
 
-        return GoogleAccount::all();
+        return $this->accountsRepository->accounts();
     }
 
     public function update(CreateOrUpdateGoogleAccount $request, GoogleAccount $google_account)
