@@ -32,6 +32,6 @@ class SendUserPassword extends Mailable
      */
     public function build()
     {
-        return $this->markdown('emails.password');
+        return $this->view('emails.password');
     }
 }
