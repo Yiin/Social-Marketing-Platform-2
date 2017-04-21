@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Constants\Role;
 use App\Modules\Facebook\Models\FacebookQueue;
 use App\Modules\GooglePlus\Models\GoogleQueue;
+use App\Modules\Linkedin\Models\LinkedinQueue;
 use App\Modules\Twitter\Models\TwitterQueue;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -95,6 +96,11 @@ class User extends Authenticatable
     public function twitterQueues()
     {
         return $this->hasManyThrough(TwitterQueue::class, User::class, 'reseller_id', 'client_id');
+    }
+
+    public function linkedinQueues()
+    {
+        return $this->hasManyThrough(LinkedinQueue::class, User::class, 'reseller_id', 'client_id');
     }
 
     public function privateTemplates()
