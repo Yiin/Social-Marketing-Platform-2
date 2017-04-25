@@ -105,7 +105,7 @@
                                 <div class="form-group {{ $errors->has('password') ? 'has-error has-feedback' : '' }}">
                                     <label>New password (optional)</label>
                                     <input type="password" class="form-control" placeholder="New Password" name="password"
-                                           value="{{ $reseller->password }}" autocomplete="off">
+                                           value="{{ $client->password }}" autocomplete="off">
                                     @if($errors->has('password'))
                                         @foreach($errors->get('password') as $error)
                                             <label class="error">{{ $error }}</label>
