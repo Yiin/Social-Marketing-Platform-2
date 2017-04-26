@@ -9,7 +9,7 @@ Login name: {{ $email }}
 Your password: {{ $password }}
 
 @component('mail::button', ['url' => URL::to(route('login'))])
-    Login!
+Login!
 @endcomponent
 
 {{ config('app.name') }}
