@@ -150,6 +150,11 @@ class ApiService
             $response = $e->getResponse();
         }
 
+        if ($response === null) {
+            // no clue why response may fail, need to debug later on
+            return (object)['status' => 'unauthorized'];
+        }
+
         switch ($response->getStatusCode()) {
             case \Symfony\Component\HttpFoundation\Response::HTTP_OK:
                 return (object)['status' => 'ok', 'data' => json_decode((string)$response->getBody())];
