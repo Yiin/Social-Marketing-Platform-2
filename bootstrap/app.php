@@ -26,6 +26,8 @@ foreach (glob(base_path('/app/Vendor/*.php')) as $filename) {
 }
 set_include_path($includePath);
 
+//require_once "../app/Vendor/inc-cl/gp.api.php";
+
 
 function stripslashes_deep($value)
 {

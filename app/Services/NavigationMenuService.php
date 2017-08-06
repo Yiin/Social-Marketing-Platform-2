@@ -15,15 +15,15 @@ class NavigationMenuService
         $this->addItem('Dashboard', 'pe-7s-graph', 'dashboard');
         $this->addItem('My Profile', 'pe-7s-user', 'profile');
 
-        $this->addItem('Resellers', 'pe-7s-users', 'reseller.index', Permission::MANAGE_RESELLERS);
-        $this->addItem('Clients', 'pe-7s-users', 'client.index', Permission::MANAGE_CLIENTS);
+        $this->addItem('Resellers', 'pe-7s-users', 'reseller.index', Permission::find(Permission::MANAGE_RESELLERS));
+        $this->addItem('Clients', 'pe-7s-users', 'client.index', Permission::find(Permission::MANAGE_CLIENTS));
 
         $this->addItem('Templates', 'pe-7s-note2', 'template.index');
     }
 
-    public function addItem($title, $icon, $route, $requires_permision = null)
+    public function addItem($title, $icon, $route, $guard = null)
     {
-        $item = new NavigationMenuItem($title, $icon, $route, $requires_permision);
+        $item = new NavigationMenuItem($title, $icon, $route, $guard);
 
         $this->items [] = $item;
 

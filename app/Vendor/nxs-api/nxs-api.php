@@ -1,5 +1,5 @@
-<?php //## NextScripts SNAP API 2.25.1
-//================================GOOGLE===========================================
+<?php //## NextScripts SNAP API 2.27.0
+//================================GOOGLE========================================
 if (!class_exists('nxsAPI_GP')) {
     class nxsAPI_GP
     {
@@ -7,7 +7,7 @@ if (!class_exists('nxsAPI_GP')) {
         var $debug = false;
         var $proxy = array();
         var $at = '';
-        var $pig = '';
+        var $pig = 'x';
 
         function headers($ref, $org = '', $type = 'GET', $aj = false)
         {
@@ -16,29 +16,13 @@ if (!class_exists('nxsAPI_GP')) {
             $hdrsArr['Connection'] = 'keep-alive';
             $hdrsArr['Referer'] = $ref;
             $hdrsArr['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.54 Safari/537.36';
-            if ($type == 'JSON') {
-                $hdrsArr['Content-Type'] = 'application/json;charset=UTF-8';
-            } elseif ($type == 'POST') {
-                $hdrsArr['Content-Type'] = 'application/x-www-form-urlencoded';
-            } elseif ($type == 'JS') {
-                $hdrsArr['Content-Type'] = 'application/javascript; charset=UTF-8';
-            } elseif ($type == 'PUT') {
-                $hdrsArr['Content-Type'] = 'application/octet-stream';
-            }
-            if ($aj === true) {
-                $hdrsArr['X-Requested-With'] = 'XMLHttpRequest';
-            }
-            if ($org != '') {
-                $hdrsArr['Origin'] = $org;
-            }
-            if ($type == 'GET') {
-                $hdrsArr['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8';
-            } else {
-                $hdrsArr['Accept'] = '*/*';
-            }
-            if (function_exists('gzdeflate')) {
-                $hdrsArr['Accept-Encoding'] = 'deflate,sdch';
-            }
+            if ($type == 'JSON') $hdrsArr['Content-Type'] = 'application/json;charset=UTF-8'; elseif ($type == 'POST') $hdrsArr['Content-Type'] = 'application/x-www-form-urlencoded';
+            elseif ($type == 'JS') $hdrsArr['Content-Type'] = 'application/javascript; charset=UTF-8';
+            elseif ($type == 'PUT') $hdrsArr['Content-Type'] = 'application/octet-stream';
+            if ($aj === true) $hdrsArr['X-Requested-With'] = 'XMLHttpRequest';
+            if ($org != '') $hdrsArr['Origin'] = $org;
+            if ($type == 'GET') $hdrsArr['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'; else $hdrsArr['Accept'] = '*/*';
+            if (function_exists('gzdeflate')) $hdrsArr['Accept-Encoding'] = 'deflate,sdch';
             $hdrsArr['Accept-Language'] = 'en-US,en;q=0.8';
             return $hdrsArr;
         }
@@ -46,6 +30,8 @@ if (!class_exists('nxsAPI_GP')) {
         function prcGSON($gson)
         {
             $json = substr($gson, 5);
+            $jsonx = json_decode($json, true);
+            if (!empty($jsonx)) return $json;
             $json = str_replace("\r", '', $json);
             $json = str_replace("\n", '', $json);
             $json = str_replace(',{', ',{"', $json);
@@ -62,9 +48,7 @@ if (!class_exists('nxsAPI_GP')) {
         {
             $ck = $this->ck;
             if (!empty($ck) && is_array($ck)) {
-                if ($this->debug) {
-                    echo "[G] Checking " . $srv . " ;<br/>\r\n";
-                }  // prr($ck); //die();
+                if ($this->debug) echo "[G] Checking " . $srv . " ;<br/>\r\n";  // prr($ck); //die();
                 if ($srv == 'GP') {
                     $hdrsArr = $this->headers('https://plus.google.com/');
                     $url = 'https://plus.google.com/';
@@ -79,20 +63,33 @@ if (!class_exists('nxsAPI_GP')) {
                 }
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
                 $rep = nxs_remote_get($url, $advSet); //prr($rep);
-                if (is_nxs_error($rep)) {
-                    return false;
-                }
-                if ($rep['response']['code'] == '302' && stripos($rep['headers']['location'],
-                        'accounts.google.com') !== false
-                ) {
-                    return false;
-                }
-                if (stripos($rep['body'], $u) === false) {
-                    return false;
-                }
+                if (is_nxs_error($rep)) return false;
+                if ($rep['response']['code'] == '302' && stripos($rep['headers']['location'], 'accounts.google.com') !== false) return false;
+                if (stripos($rep['body'], $u) === false) return false;
                 return true;
             }
             return false;
+        }
+
+        function get($uri)
+        {
+            $hdrsArr = $this->headers('https://plus.google.com/');
+            $url = 'https://plus.google.com/u/0/' . $uri;
+            $ck = $this->ck;
+
+            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+            $advSet['follow-location'] = true;
+            $rep = nxs_remote_get($url, $advSet);
+
+            if (is_nxs_error($rep)) {
+                return 1;
+            }
+            if ($rep['response']['code'] == '302' && stripos($rep['headers']['location'],
+                    'accounts.google.com') !== false
+            ) {
+                return 2;
+            }
+            return $rep;
         }
 
         function connect($u, $p, $srv = 'GP')
@@ -270,15 +267,13 @@ if (!class_exists('nxsAPI_GP')) {
             }
         }
 
-        function getAt()
+        function getAt($url = 'https://plus.google.com/', $ck = '')
         {
-            if (!empty($this->at)) {
-                return true;
-            }
-            $ck = $this->ck;
+            if (!empty($this->at)) return true;
+            if (empty($ck)) $ck = $this->ck;
             $hdrsArr = $this->headers('');
-            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy, 2);
-            $rep = nxs_remote_get('https://plus.google.com/', $advSet);
+            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy, 0);
+            $rep = nxs_remote_get($url, $advSet); // prr($url); prr($advSet); prr($rep);
             if (is_nxs_error($rep)) {
                 $badOut = print_r($rep, true) . " - ERROR CSI";
                 return $badOut;
@@ -290,19 +285,12 @@ if (!class_exists('nxsAPI_GP')) {
                 $pig = str_replace('\x2', '', $pig);
                 $pig = str_replace('\x3', '', $pig);
                 $pig = json_decode($pig, true);
-                for ($k = 31; $k < 45; $k++) {
-                    if (!empty($pig[$k]) && is_numeric($pig[$k]) && $pig[$k] > 1177680286367) {
-                        $this->pig = $pig[$k];
-                        break;
-                    }
+                for ($k = 31; $k < 45; $k++) if (!empty($pig[$k]) && is_numeric($pig[$k]) && $pig[$k] > 1177680286367) {
+                    $this->pig = $pig[$k];
+                    break;
                 }
             }
-
-            if (stripos($contents, '"SNlM0e":"') !== false) {
-                $at = CutFromTo($contents, '"SNlM0e":"', '",');
-            } else {
-                return "Error (NXS): Lost Login info. Please see FAQ #3.4 or contact support";
-            }
+            if (stripos($contents, '"SNlM0e":"') !== false) $at = CutFromTo($contents, '"SNlM0e":"', '",'); else return "Error (NXS): Lost Login info. Please see FAQ #3.4 or contact support";
             $this->at = $at;
             return true;
         }
@@ -315,11 +303,7 @@ if (!class_exists('nxsAPI_GP')) {
             $sslverify = false;
             $ck = $this->ck;
             $res = $this->getAt();
-            if ($res !== true) {
-                return $res;
-            } else {
-                $at = $this->at;
-            }
+            if ($res !== true) return $res; else $at = $this->at;
             $spar = 'f.req=%5B%5B%5B92371866%2C%5B%7B%2292371866%22%3A%5B%22' . $url . '%22%2C%5B%5B73046798%5D%2C%5B%5D%5D%2C1%5D%7D%5D%2Cnull%2Cnull%2C0%5D%5D%5D&at=' . urlencode($at) . "&";
             $gurl = 'https://plus.google.com/_/PlusAppUi/data?ds.extension=92371866&hl=en&soc-app=199&soc-platform=1&soc-device=1&_reqid=7372229&rt=c';
             $hdrsArr = $this->headers('https://plus.google.com/', 'https://plus.google.com', 'POST', true);
@@ -330,9 +314,7 @@ if (!class_exists('nxsAPI_GP')) {
                 return $badOut;
             }
             $contents = $rep['body'];
-            if (stripos($contents, ',[["') !== false) {
-                $out['img'] = CutFromTo($contents, ',[["', '",');
-            }
+            if (stripos($contents, ',[["') !== false) $out['img'] = CutFromTo($contents, ',[["', '",');
             return $out;
         }
 
@@ -341,34 +323,36 @@ if (!class_exists('nxsAPI_GP')) {
             $pgs = '';
             $sslverify = false;
             $ck = $this->ck;
+            $hdrsArr = $this->headers('https://accounts.google.com', 'https://accounts.google.com');
+            $gUrl = 'https://accounts.google.com/ServiceLogin?service=accountsettings&passive=1209600&osid=1&continue=https://myaccount.google.com/?authuser%3D0&followup=https://myaccount.google.com/?authuser%3D0&authuser=0';
+            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+            $repG = nxs_remote_get($gUrl, $advSet);
+            if ($repG['response']['code'] == '302' && !empty($repG['headers']['location'])) {
+                $hdrsArr = $this->headers($gUrl);
+                $gUrl = $repG['headers']['location'];
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+                $repG = nxs_remote_get($gUrl, $advSet);
+                $ck = nxs_MergeCookieArr($ck, $repG['cookies']);
+            }
             $hdrsArr = $this->headers('https://plus.google.com/');
-            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
-            $rep = nxs_remote_get('https://business.google.com/manage/u/0/?hl=en', $advSet); //prr($advSet);
-            if (is_nxs_error($rep)) {
-                return false;
-            }
-            if (!empty($rep['cookies'])) {
-                $ck = $rep['cookies'];
-            }
-            $contents = $rep['body'];
-            $xTok = CutFromTo($contents, 'xsrfToken: "', '"'); //prr($xTok);
-            $hdrsArr = $this->headers('https://business.google.com/manage/u/0/?hl=en', 'https://business.google.com/',
-                'GET', true);
-            $hdrsArr['X-XSRF-TOKEN'] = $xTok;
-            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
-            $rep = nxs_remote_get('https://business.google.com/manage/u/0/_/pages?rt=r&hl=en&f.req=%5Bnull%2Cnull%2C15%2C1%5D',
-                $advSet); // prr($rep); //prr($advSet);
-            if (is_nxs_error($rep)) {
-                return false;
-            }
-            if (!empty($rep['cookies'])) {
-                $ck = $rep['cookies'];
-            }
+            $this->at = '';
+            $ck = nxsDelCookie($ck, 'LSID');
+            $ck = nxsDelCookie($ck, 'GAPS');
+            $ck = nxsDelCookie($ck, 'ACCOUNT_CHOOSER');
+            $ck = nxsDelCookie($ck, 'CONSENT');
+            $this->getAt('https://myaccount.google.com/brandaccounts', $ck);
+            $at = $this->at;
+            $this->at = '';
+            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, 'f.req=%5B%5B%5B106277917%2C%5B%7B%22106277917%22%3A%5B%5B1000%5D%2C1%2Cfalse%2Cfalse%5D%7D%5D%2Cnull%2Cnull%2C0%5D%5D%5D&at=' . urlencode($at) . '&', $this->proxy, 1);
+            $rep = nxs_remote_post('https://myaccount.google.com/_/AccountSettingsUi/data?ds.extension=106277917', $advSet);
+            if (is_nxs_error($rep)) return false;
+            if (!empty($rep['cookies'])) $ck = $rep['cookies'];
             $contents = $rep['body'];
             $code = json_decode($this->prcGSON($contents), true);
-            if (!empty($code) && is_array($code) && !empty($code[0]) && is_array($code[0]) && !empty($code[0][1]) && is_array($code[0][1])) {
-                $code = $code[0][1];
-            }
+            if (!empty($code) && is_array($code) && !empty($code[0]) && is_array($code[0]) && !empty($code[0][2]) && is_array($code[0][2])) $code = $code[0][2];
+            $k = array_keys($code);
+            $code = $code[$k[0]];
+            if (!empty($code) && is_array($code) && !empty($code[0]) && is_array($code[0])) $code = $code[0];
             if (!empty($code)) {
                 $pgs .= '<option disabled>Pages</option>';
                 foreach ($code as $cd) {
@@ -384,12 +368,9 @@ if (!class_exists('nxsAPI_GP')) {
         {
             $items = '';
             $currPstAs = (!empty($currPstAs) && $currPstAs != 'p') ? '/b/' . $currPstAs : '';
-            $items .= $this->_getCollCmns($currPg, 'https://plus.google.com' . $currPstAs . '/collections/yours',
-                'Collections', 7, 0, 0);
-            $items .= $this->_getCollCmns($currPg, 'https://plus.google.com' . $currPstAs . '/communities/yours',
-                'Communities you moderate', 7, 0, 3, true, 'c');
-            $items .= $this->_getCollCmns($currPg, 'https://plus.google.com' . $currPstAs . '/communities/member',
-                'Communities you\'ve joined</option>', 4, 1, 3, true, 'c');
+            $items .= $this->_getCollCmns($currPg, 'https://plus.google.com' . $currPstAs . '/collections/yours', 'Collections', 'c', 0, 0);
+            $items .= $this->_getCollCmns($currPg, 'https://plus.google.com' . $currPstAs . '/communities/yours', 'Communities you moderate', 'm', 0, 1, true, 'c');
+            $items .= $this->_getCollCmns($currPg, 'https://plus.google.com' . $currPstAs . '/communities/member', 'Communities you\'ve joined</option>', 'm', 1, 3, true, 'c');
             return $items;
         }
 
@@ -399,72 +380,23 @@ if (!class_exists('nxsAPI_GP')) {
             $ck = $this->ck;
             $hdrsArr = $this->headers('https://plus.google.com/');
             $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
-            $rep = nxs_remote_get($url, $advSet); //prr($advSet);
-            if (is_nxs_error($rep)) {
-                return false;
-            }
-            if (!empty($rep['cookies'])) {
-                $ck = $rep['cookies'];
-            }
-            $contents = $rep['body'];
-            $code = CutFromTo($contents, "key: 'ds:" . $num . "', isError:  false , hash: '", '}});');
-            $code = CutFromTo($code . "=+=", "function(){return ", '=+=');
+            $rep = nxs_remote_get($url, $advSet); // prr($url); //prr($rep); prr($advSet); die();
+            if (is_nxs_error($rep)) return false;
+            if (!empty($rep['cookies'])) $ck = $rep['cookies'];
+            $contents = CutFromTo($rep['body'], 'AF_initDataCallback({', '</body>');// prr($contents);
+            if ($num == 'c') $code = '[[[[' . CutFromTo($contents, '[[[[', '}});'); elseif ($num == 'm') $code = '[[0,[[[' . CutFromTo($contents, ',[[[', '}});');
             $code = json_decode($code, true);
             if (!empty($code) && is_array($code) && !empty($code[$pthNm1]) && is_array($code[$pthNm1]) && !empty($code[$pthNm1][$pthNm2]) && is_array($code[$pthNm1][$pthNm2])) {
                 $code = $code[$pthNm1][$pthNm2];
                 $items .= '<option disabled>' . $label . '</option>';
                 foreach ($code as $cd) {
-                    if ($isZero) {
-                        $cd = $cd[0];
-                    } // prr($cd);
+                    if ($isZero) $cd = $cd[0]; // prr($cd);
                     $name = $cd[1];
                     $id = $cd[0];
                     $items .= '<option class="nxsGreen" ' . ($pgID == ($let . $id) ? 'selected="selected"' : '') . ' value="' . $let . $id . '">&nbsp;&nbsp;&nbsp;' . $name . '</option>';
                 }
             }
             return $items;
-        }
-
-        function grabGroups($currPg, $currPstAs)
-        {
-            $currPstAs = (!empty($currPstAs) && $currPstAs != 'p') ? '/b/' . $currPstAs : '';
-            $groups = $this->_grabGroups($currPg, 'https://plus.google.com' . $currPstAs . '/communities/member',
-                'Communities you\'ve joined</option>', 4, 1, 3, true, 'c');
-            return $groups;
-        }
-
-        function _grabGroups($pgID, $url, $label, $num, $pthNm1, $pthNm2, $isZero = false, $let = '')
-        {
-            $items = '';
-            $ck = $this->ck;
-            $hdrsArr = $this->headers('https://plus.google.com/');
-            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
-            $rep = nxs_remote_get($url, $advSet); //prr($advSet);
-            if (is_nxs_error($rep)) {
-                return false;
-            }
-            if (!empty($rep['cookies'])) {
-                $ck = $rep['cookies'];
-            }
-            $contents = $rep['body'];
-            $code = CutFromTo($contents, "key: 'ds:" . $num . "', isError:  false , hash: '", '}});');
-            $code = CutFromTo($code . "=+=", "function(){return ", '=+=');
-            $code = json_decode($code, true);
-
-            $groups = [];
-
-            if (!empty($code) && is_array($code) && !empty($code[$pthNm1]) && is_array($code[$pthNm1]) && !empty($code[$pthNm1][$pthNm2]) && is_array($code[$pthNm1][$pthNm2])) {
-                $code = $code[$pthNm1][$pthNm2];
-                foreach ($code as $cd) {
-                    if ($isZero) {
-                        $cd = $cd[0];
-                    } // prr($cd);
-                    $name = $cd[1];
-                    $id = $cd[0];
-                    array_push($groups, [$id, $name]);
-                }
-            }
-            return $groups;
         }
 
         function getCCatsGP($commPageID, $currCat = '')
@@ -475,33 +407,19 @@ if (!class_exists('nxsAPI_GP')) {
             $hdrsArr = $this->headers('https://plus.google.com/');
             $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
             $rep = nxs_remote_get('https://plus.google.com/communities/' . $commPageID, $advSet);
-            if (is_nxs_error($rep)) {
-                return false;
-            }
-            if (!empty($rep['cookies'])) {
-                $ck = $rep['cookies'];
-            }
+            if (is_nxs_error($rep)) return false;
+            if (!empty($rep['cookies'])) $ck = $rep['cookies'];
             $contents = $rep['body'];// prr($rep);
             $tmps = CutFromTo($contents, "key: 'ds:7'", '}});');
-            if (stripos($tmps, '",[["') === false) {
-                $tmps = CutFromTo($contents, "key: 'ds:8'", '}});');
-            }
+            if (stripos($tmps, '",[["') === false) $tmps = CutFromTo($contents, "key: 'ds:8'", '}});');
             $commPageID2 = '[' . stripslashes(str_replace('\n', '', CutFromTo($tmps, '",[', "]\n]\n]")));
-            if (substr($commPageID2, -1) == '"') {
-                $commPageID2 .= "]]";
-            } else {
-                $commPageID2 .= "]]]";
-            }
+            if (substr($commPageID2, -1) == '"') $commPageID2 .= "]]"; else $commPageID2 .= "]]]";
             $commPageID2 = str_replace('\u0026', '&', $commPageID2);
             $commPageID2 = json_decode($commPageID2);
-            if (is_array($commPageID2)) {
-                foreach ($commPageID2 as $cpiItem) {
-                    if (is_array($cpiItem)) {
-                        $val = $cpiItem[0];
-                        $name = $cpiItem[1];
-                        $items .= '<option ' . (!empty($currCat) && $currCat == $val ? 'selected="selected" ' : '') . 'value="' . $val . '">' . $name . '</option>';
-                    }
-                }
+            if (is_array($commPageID2)) foreach ($commPageID2 as $cpiItem) if (is_array($cpiItem)) {
+                $val = $cpiItem[0];
+                $name = $cpiItem[1];
+                $items .= '<option ' . (!empty($currCat) && $currCat == $val ? 'selected="selected" ' : '') . 'value="' . $val . '">' . $name . '</option>';
             }
             return $items;
         }
@@ -511,8 +429,7 @@ if (!class_exists('nxsAPI_GP')) {
             if (stripos($content, 'action="/das_captcha"') !== false) {
                 global $nxs_plurl;
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
-                $ca = nxs_remote_get('https://www.google.com/recaptcha/api/noscript?k=6LcV18ESAAAAAI1Z5NnSAUBz4pTj3hYJQ_6NLgFN',
-                    $advSet);
+                $ca = nxs_remote_get('https://www.google.com/recaptcha/api/noscript?k=6LcV18ESAAAAAI1Z5NnSAUBz4pTj3hYJQ_6NLgFN', $advSet);
                 if (is_nxs_error($ca)) {
                     $badOut = print_r($ca, true) . " - [captcha] ERROR";
                     return $badOut;
@@ -520,30 +437,29 @@ if (!class_exists('nxsAPI_GP')) {
                 $img = CutFromTo($ca['body'], 'src="image?c=', '"');
                 $formcode = '<form ' . CutFromTo($content, '<form method="post" action="/das_captcha"', '</form>');
                 $formcode = str_ireplace('</iframe>', '', $formcode);
-                $formcode = str_ireplace('<iframe src="//www.google.com/recaptcha/api/noscript?k=6LcV18ESAAAAAI1Z5NnSAUBz4pTj3hYJQ_6NLgFN" height="300" width="500" frameborder="0"',
-                    $ca['body'], $formcode);
+                $formcode = str_ireplace('<iframe src="//www.google.com/recaptcha/api/noscript?k=6LcV18ESAAAAAI1Z5NnSAUBz4pTj3hYJQ_6NLgFN" height="300" width="500" frameborder="0"', $ca['body'], $formcode);
                 $img = '<img style="display:block;" alt="reCAPTCHA challenge image" height="57" width="300" src="' . $nxs_snapSetPgURL . '?pg=nxs&ca=' . $img . '"/>';
                 echo "Google asked you to enter Captcha. Please type the two words separated by a space (not case sensitive) and click \"Continue\"";
                 echo $img;
                 echo '<br/><input value="" style="width: 30%;" id="nxs_cpt_val" name="nxs_cpt" /><input type="hidden" id="nxsLiNum" name="nxsLiNum" value="' . $iidb . '" /><input type="button" value="Continue" onclick="doCtpSave(); return false;" id="results_ok_button" name="nxs_go" class="button" />'; ?>
                 <script type="text/javascript">
-                    function doCtpSave() {
-                        var u = jQuery('#nxs_cpt_val').val();
-                        var ii = jQuery('#nxsLiNum').val(); //alert(ii);
-                        var style = "position: fixed; display: none; z-index: 1000; top: 50%; left: 50%; background-color: #E8E8E8; border: 1px solid #555; padding: 15px; width: 350px; min-height: 80px; margin-left: -175px; margin-top: -40px; text-align: center; vertical-align: middle;";
-                        jQuery('body').append("<div id='test_results' style='" + style + "'></div>");
-                        jQuery.post(ajaxurl, {
-                            c: u,
-                            i: ii,
-                            action: 'nxs_snap_aj',
-                            "nxsact": 'nxsCptCheckGP',
-                            id: 0,
-                            _wpnonce: jQuery('#nxsSsPageWPN_wpnonce').val()
-                        }, function (j) {
-                            jQuery('#test_results').html('<p> ' + j + '</p>' + '<input type="button" class="button" onclick="jQuery(\'#test_results\').hide();" name="results_ok_button" id="results_ok_button" value="OK" />');
-                            jQuery('#test_results').show();
-                        }, "html")
-                    }</script> <?php echo "||" . $formcode . "||";
+        function doCtpSave() {
+            var u = jQuery('#nxs_cpt_val').val();
+            var ii = jQuery('#nxsLiNum').val(); //alert(ii);
+            var style = "position: fixed; display: none; z-index: 1000; top: 50%; left: 50%; background-color: #E8E8E8; border: 1px solid #555; padding: 15px; width: 350px; min-height: 80px; margin-left: -175px; margin-top: -40px; text-align: center; vertical-align: middle;";
+            jQuery('body').append("<div id='test_results' style='" + style + "'></div>");
+            jQuery.post(ajaxurl, {
+                c: u,
+                i: ii,
+                action: 'nxs_snap_aj',
+                "nxsact": 'nxsCptCheckGP',
+                id: 0,
+                _wpnonce: jQuery('#nxsSsPageWPN_wpnonce').val()
+            }, function (j) {
+                jQuery('#test_results').html('<p> ' + j + '</p>' + '<input type="button" class="button" onclick="jQuery(\'#test_results\').hide();" name="results_ok_button" id="results_ok_button" value="OK" />');
+                jQuery('#test_results').show();
+            }, "html")
+        }</script> <?php echo "||" . $formcode . "||";
                 while (stripos($formcode, '"hidden"') !== false) {
                     $formcode = substr($formcode, stripos($formcode, '"hidden"') + 8);
                     $name = trim(CutFromTo($formcode, 'name="', '"'));
@@ -577,12 +493,8 @@ if (!class_exists('nxsAPI_GP')) {
             $bigCode = '';
             $isPostToPage = $pageID != '';
             $commCatIDorColName = 'mypage';
-            if (function_exists('nxs_decodeEntitiesFull')) {
-                $msg = nxs_decodeEntitiesFull($msg);
-            }
-            if (function_exists('nxs_html_to_utf8')) {
-                $msg = nxs_html_to_utf8($msg);
-            }
+            if (function_exists('nxs_decodeEntitiesFull')) $msg = nxs_decodeEntitiesFull($msg);
+            if (function_exists('nxs_html_to_utf8')) $msg = nxs_html_to_utf8($msg);
             $msg = str_replace('<br>', "_NXSZZNXS_5Cn", $msg);
             $msg = str_replace('<br/>', "_NXSZZNXS_5Cn", $msg);
             $msg = str_replace('<br />', "_NXSZZNXS_5Cn", $msg);
@@ -597,76 +509,48 @@ if (!class_exists('nxsAPI_GP')) {
             $msg = str_replace('%0A%0A', '%20', $msg);
             $msg = str_replace('%0A', '', $msg);
             $msg = str_replace('%0D', '%5C', $msg);
-            if (!empty($lnk) && !is_array($lnk)) {
-                $lnk = $this->urlInfo($lnk);
-            }
-            if ($lnk == '') {
-                $lnk = array('img' => '', 'link' => '', 'fav' => '', 'domain' => '', 'title' => '', 'txt' => '');
-            }
+            if (!empty($lnk) && !is_array($lnk)) $lnk = $this->urlInfo($lnk);
+            if ($lnk == '') $lnk = array('img' => '', 'link' => '', 'fav' => '', 'domain' => '', 'title' => '', 'txt' => '');
             if (!isset($lnk['link']) && !empty($lnk['img'])) {
                 $hdrsArr = $this->headers('');
                 unset($hdrsArr['Connection']);
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
                 $rep = nxs_remote_get($lnk['img'], $advSet);
-                if (is_nxs_error($rep)) {
-                    $lnk['img'] = '';
-                } elseif ($rep['response']['code'] == '200' && !empty($rep['headers']['content-type']) && stripos($rep['headers']['content-type'],
-                        'text/html') === false
-                ) {
-                    if (!empty($rep['headers']['content-length'])) {
-                        $imgdSize = $rep['headers']['content-length'];
-                    }
-                    if ((empty($imgdSize) || $imgdSize == '-1') && !empty($rep['headers']['size_download'])) {
-                        $imgdSize = $rep['headers']['size_download'];
-                    }
+                if (is_nxs_error($rep)) $lnk['img'] = ''; elseif ($rep['response']['code'] == '200' && !empty($rep['headers']['content-type']) && stripos($rep['headers']['content-type'], 'text/html') === false) {
+                    if (!empty($rep['headers']['content-length'])) $imgdSize = $rep['headers']['content-length'];
+                    if ((empty($imgdSize) || $imgdSize == '-1') && !empty($rep['headers']['size_download'])) $imgdSize = $rep['headers']['size_download'];
                     if ((empty($imgdSize) || $imgdSize == '-1')) {
                         $ch = curl_init($lnk['img']);
-                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                        curl_setopt($ch, CURLOPT_HEADER, true);
-                        curl_setopt($ch, CURLOPT_NOBODY, true);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+                        curl_setopt($ch, CURLOPT_HEADER, TRUE);
+                        curl_setopt($ch, CURLOPT_NOBODY, TRUE);
                         $data = curl_exec($ch);
                         $imgdSize = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
                         curl_close($ch);
                     }
-                    if ((empty($imgdSize) || $imgdSize == '-1')) {
-                        $imgdSize = strlen($rep['body']);
-                    }
+                    if ((empty($imgdSize) || $imgdSize == '-1')) $imgdSize = strlen($rep['body']);
                     $urlParced = pathinfo($lnk['img']);
                     $remImgURL = $lnk['img'];
                     $remImgURLFilename = nxs_mkImgNm(nxs_clFN($urlParced['basename']), $rep['headers']['content-type']);
                     $imgData = $rep['body'];
-                } else {
-                    $lnk['img'] = '';
-                }
+                } else $lnk['img'] = '';
             }
-            if (isset($lnk['img'])) {
-                $lnk['img'] = urlencode($lnk['img']);
-            }
-            if (isset($lnk['link'])) {
-                $lnk['link'] = urlencode($lnk['link']);
-            }
+            if (isset($lnk['img'])) $lnk['img'] = urlencode($lnk['img']);
+            if (isset($lnk['link'])) $lnk['link'] = urlencode($lnk['link']);
             $refPage = 'https://plus.google.com/b/' . $pageID . '/';
             $rndReqID = rand(1203718, 647379);
             $pgInf = (!empty($pageID)) ? 'b/' . $pageID . '/' : '';
             $gpp = 'https://plus.google.com/' . $pgInf . '_/PlusAppUi/mutate?ds.extension=79255737&hl=en&soc-app=199&soc-platform=1&soc-device=1&_reqid=' . $rndReqID . '&rt=c';
             $res = $this->getAt();
-            if ($res !== true) {
-                return $res;
-            } else {
-                $at = $this->at;
-            }
+            if ($res !== true) return $res; else $at = $this->at;
             $gNum = '94316911';
             $comOrPg = '1%5D%2C%22Public%22'; // $commCatIDorColName = 'My%20Things';
-            if (!empty($commOrColID) && strlen($commOrColID) > 10 && !empty($commPageCatID)) {
-                $comOrPg = 'null%2C%5B%22' . $commOrColID . '%22%2Cnull%2C%22' . $commPageCatID . '%22%5D%5D%2C%22!%22%2Cnull%2Cnull%2Cnull%2C%22!%22';
-            } elseif (!empty($commOrColID) && strlen($commOrColID) < 10) {
-                $comOrPg = 'null%2Cnull%2Cnull%2C%5B%22' . $commOrColID . '%22%2C%22collexions%22%5D%5D%2C%22' . $commCatIDorColName . '%22';
-            }  //    prr($comOrPg);
+            if (!empty($commOrColID) && strlen($commOrColID) > 10 && !empty($commPageCatID)) $comOrPg = 'null%2C%5B%22' . $commOrColID . '%22%2Cnull%2C%22' . $commPageCatID . '%22%5D%5D%2C%22!%22%2Cnull%2Cnull%2Cnull%2C%22!%22';
+            elseif (!empty($commOrColID) && strlen($commOrColID) < 10) $comOrPg = 'null%2Cnull%2Cnull%2C%5B%22' . $commOrColID . '%22%2C%22collexions%22%5D%5D%2C%22' . $commCatIDorColName . '%22';  //    prr($comOrPg);
             $spar = "f.req=%5B%22af.maf%22%2C%5B%5B%22af.add%22%2C79255737%2C%5B%7B%2279255737%22%3A%5B%5B%5B%5D%2C%5B%5D%2C%5B%5B%5Bnull%2Cnull%2C" . $comOrPg . "%5D%5D%5D%2C%5B%5B%5B0%2C%22" . $msg . "%22%2Cnull%5D%5D%5D%2Cnull%2Cfalse%2Cnull%2C";
             if (!empty($lnk['link'])) //## URL
-            {
                 $spar .= "%5B%7B%2294515327%22%3A%5B%22" . $lnk['link'] . "%22%2C%22" . $lnk['img'] . "%22%5D%7D%5D%2C%5B%5D%2Cnull%2C199%2Cfalse%2Cfalse%2C%22" . time() . $rnds . "%22%5D%7D%5D%5D%5D%5D&at=" . $at . "&";
-            } elseif (!empty($lnk['img']) && !empty($imgData)) { //## Image
+            elseif (!empty($lnk['img']) && !empty($imgData)) { //## Image
                 $pageIDX = !empty($pageID) ? $pageID : $this->pig; //$imgdSize =  strlen(urlencode($imgData));
                 $iflds = '{"protocolVersion":"0.8","createSessionRequest":{"fields":[{"external":{"name":"file","filename":"' . $remImgURLFilename . '","put":{},"size":' . $imgdSize . '}},{"inlined":{"name":"batchid","content":"' . time() . '97","contentType":"text/plain"}},{"inlined":{"name":"client","content":"google-plus","contentType":"text/plain"}},{"inlined":{"name":"disable_asbe_notification","content":"true","contentType":"text/plain"}},{"inlined":{"name":"effective_id","content":"' . $pageIDX . '","contentType":"text/plain"}},{"inlined":{"name":"owner_name","content":"' . $pageIDX . '","contentType":"text/plain"}},{"inlined":{"name":"album_mode","content":"temporary","contentType":"text/plain"}}]}}';
                 $hdrsArr = $this->headers('', 'https://plus.google.com', 'POST', true);
@@ -685,17 +569,12 @@ if (!class_exists('nxsAPI_GP')) {
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $imgData, $this->proxy);
                 $rep = nxs_remote_post($gUplURL, $advSet);
                 if (is_nxs_error($rep)) {
-                    $badOut = print_r($rep,
-                            true) . " - ERROR IMG Upl (Upl URL: " . $gUplURL . ", IMG URL: " . urldecode($lnk['img']) . ", FileName: " . $remImgURLFilename . ", FIlesize: " . $imgdSize . ")";
+                    $badOut = print_r($rep, true) . " - ERROR IMG Upl (Upl URL: " . $gUplURL . ", IMG URL: " . urldecode($lnk['img']) . ", FileName: " . $remImgURLFilename . ", FIlesize: " . $imgdSize . ")";
                     return $badOut;
                 }
                 $imgUplCnt = json_decode($rep['body'], true);
-                if (empty($imgUplCnt)) {
-                    return "Can't upload image: " . $remImgURL . "  |  " . print_r($rep, true);
-                } // prr($imgUplCnt);
-                if (is_array($imgUplCnt) && isset($imgUplCnt['errorMessage']) && is_array($imgUplCnt['errorMessage'])) {
-                    return "Error *NXS Upload* : " . print_r($imgUplCnt['errorMessage'], true);
-                }
+                if (empty($imgUplCnt)) return "Can't upload image: " . $remImgURL . "  |  " . print_r($rep, true); // prr($imgUplCnt);
+                if (is_array($imgUplCnt) && isset($imgUplCnt['errorMessage']) && is_array($imgUplCnt['errorMessage'])) return "Error *NXS Upload* : " . print_r($imgUplCnt['errorMessage'], true);
                 $infoArray = $imgUplCnt['sessionStatus']['additionalInfo']['uploader_service.GoogleRupioAdditionalInfo']['completionInfo']['customerSpecificInfo'];
                 $albumID = $infoArray['albumid'];
                 $photoid = $infoArray['photoid'];
@@ -715,9 +594,7 @@ if (!class_exists('nxsAPI_GP')) {
                 $tmm = time();
                 $spar .= "%5B%7B%22" . $gNum . "%22%3A%5B%5B%5B%22" . $mk . "%22%2C%22" . $imgUrl . "%22%2C" . $width . "%2C" . $height . "%5D%5D%5D%7D%5D%2C%5B%5D%2Cnull%2C199%2Cfalse%2Cfalse%2C%22" . $tmm . '666' . $rnds . "%22%5D%7D%5D%5D%5D%5D&at=" . $at . "&";
             } else //## Just text
-            {
                 $spar .= "null%2C%5B%5D%2Cnull%2C199%2Cfalse%2Cfalse%2C%22" . time() . $rnds . "%22%5D%7D%5D%5D%5D%5D&at=" . $at . "&";
-            }
             $spar = str_ireplace('+', '%20', $spar);
             $spar = str_ireplace(':', '%3A', $spar);
             $hdrsArr = $this->headers($refPage, 'https://plus.google.com', 'POST');
@@ -732,34 +609,16 @@ if (!class_exists('nxsAPI_GP')) {
             }
             $contents = $rep['body'];
             //prr($gpp); prr($spar); prr(urldecode($spar));  prr($advSet);    prr($rep);
-            if ($rep['response']['code'] == '403') {
-                return "Error: You are not authorized to publish to this page. Are you sure this is even a page? (" . $pageID . ")";
-            }
-            if ($rep['response']['code'] == '404') {
-                return "Error: Page you are posting is not found.<br/><br/> If you have entered your page ID as 117008619877691455570/117008619877691455570, please remove the second copy. It should be one number only - 117008619877691455570";
-            }
-            if ($rep['response']['code'] == '400') {
-                return "Error (400): Something is wrong, please contact support";
-            }
-            if ($rep['response']['code'] == '500' && stripos($rep['body'], 'RpcClientException') !== false) {
-                return "Error (500): Google Server is overloaded or temporary out of service. Message: " . CutFromTo($rep['body'],
-                        'RpcClientException', ']');
-            }
-            if ($rep['response']['code'] == '500') {
-                return "Error (500): Something is wrong, please contact support";
-            }
+            if ($rep['response']['code'] == '403') return "Error: You are not authorized to publish to this page. Are you sure this is even a page? (" . $pageID . ")";
+            if ($rep['response']['code'] == '404') return "Error: Page you are posting is not found.<br/><br/> If you have entered your page ID as 117008619877691455570/117008619877691455570, please remove the second copy. It should be one number only - 117008619877691455570";
+            if ($rep['response']['code'] == '400') return "Error (400): Something is wrong, please contact support";
+            if ($rep['response']['code'] == '500' && stripos($rep['body'], 'RpcClientException') !== false) return "Error (500): Google Server is overloaded or temporary out of service. Message: " . CutFromTo($rep['body'], 'RpcClientException', ']');
+            if ($rep['response']['code'] == '500') return "Error (500): Something is wrong, please contact support";
             if ($rep['response']['code'] == '200') {
                 $ret = $rep['body'];
-                if (stripos($ret, '"https://plus.google.com/') !== false) {
-                    $ret = CutFromTo($contents, '"https://plus.google.com/', '",');
-                }
+                if (stripos($ret, '"https://plus.google.com/') !== false) $ret = CutFromTo($contents, '"https://plus.google.com/', '",');
                 $this->ck = $ck;
-                return array(
-                    'isPosted' => '1',
-                    'postID' => $ret,
-                    'postURL' => 'https://plus.google.com/' . $ret,
-                    'pDate' => date('Y-m-d H:i:s')
-                );
+                return array('isPosted' => '1', 'postID' => $ret, 'postURL' => 'https://plus.google.com/' . $ret, 'pDate' => date('Y-m-d H:i:s'));
             }
             return print_r($contents, true);
         }
@@ -775,27 +634,20 @@ if (!class_exists('nxsAPI_GP')) {
             $hdrsArr = $this->headers($refPage);
             $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
             $rep = nxs_remote_get($gpp, $advSet); //prr($ck); prr($rep);// die();
-            if (is_nxs_error($rep)) {
-                return false;
-            } /*if (!empty($rep['cookies'])) $ck = $rep['cookies']; */
+            if (is_nxs_error($rep)) return false; /*if (!empty($rep['cookies'])) $ck = $rep['cookies']; */
             $contents = $rep['body'];
-            if (stripos($contents, 'Error 404') !== false) {
-                return "Error: Invalid Blog ID - Blog with ID " . $blogID . " Not Found";
-            }
+            if (stripos($contents, 'Error 404') !== false) return "Error: Invalid Blog ID - Blog with ID " . $blogID . " Not Found";
             $jjs = CutFromTo($contents, 'BloggerClientFlags=', '_layoutOnLoadHandler');
             $j69 = ''; // prr($jjs); //  prr($contents); echo "\r\n"; echo "\r\n";
             for ($i = 54; $i <= 169; $i++) {
                 if ($j69 == '' && strpos($jjs, $i . ':"') !== false) {
                     $j69 = CutFromTo($jjs, $i . ':"', '"');
-                    if (strpos($j69, ':') === false || (strpos($j69, '/') !== false) || (strpos($j69,
-                                ' ') !== false) || (strpos($j69, '\\') !== false)
-                    ) {
-                        $j69 = '';
-                    }
+                    if (strpos($j69, ':') === false || (strpos($j69, '/') !== false) || (strpos($j69, ' ') !== false) || (strpos($j69, '\\') !== false)) $j69 = '';
                 }
             }
             $gpp = "https://www.blogger.com/blogger_rpc?blogID=" . $blogID;
             $refPage = "https://www.blogger.com/blogger.g?blogID=" . $blogID;
+            if (empty($j69)) return "Error: Code J69. Please contact support";
             $spar = '{"method":"editPost","params":{"1":1,"2":"","3":"","5":0,"6":0,"7":1,"8":3,"9":0,"10":2,"11":1,"13":0,"14":{"6":""},"15":"en","16":0,"17":{"1":' . date("Y") . ',"2":' . date("n") . ',"3":' . date("j") . ',"4":' . date("G") . ',"5":' . date("i") . '},"20":0,"21":"","22":{"1":1,"2":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":"0"}},"23":1},"xsrf":"' . $j69 . '"}';
             $hdrsArr = $this->headers($refPage, 'https://www.blogger.com', 'JS', false);
             $hdrsArr['X-GWT-Module-Base'] = 'https://www.blogger.com/static/v1/gwt/';
@@ -808,11 +660,7 @@ if (!class_exists('nxsAPI_GP')) {
             }
             $contents = $rep['body']; //  prr($rep);
             $newpostID = CutFromTo($contents, '"result":[null,"', '"');
-            if ($tags != '') {
-                $pTags = '["' . $tags . '"]';
-            } else {
-                $pTags = '';
-            }
+            if ($tags != '') $pTags = '["' . $tags . '"]'; else $pTags = '';
             $pTags = str_replace('!', '', $pTags);
             $pTags = str_replace('.', '', $pTags);
             if (class_exists('DOMDocument')) {
@@ -820,9 +668,7 @@ if (!class_exists('nxsAPI_GP')) {
                 @$doc->loadXML("<QAZX>" . $msg . "</QAZX>");
                 $styles = $doc->getElementsByTagName('style');
                 if ($styles->length > 0) {
-                    foreach ($styles as $style) {
-                        $style->nodeValue = str_ireplace("<br/>", "", $style->nodeValue);
-                    }
+                    foreach ($styles as $style) $style->nodeValue = str_ireplace("<br/>", "", $style->nodeValue);
                     $msg = $doc->saveXML($doc->documentElement, LIBXML_NOEMPTYTAG);
                     $msg = str_ireplace("<QAZX>", "", str_ireplace("</QAZX>", "", $msg));
                 }
@@ -850,25 +696,11 @@ if (!class_exists('nxsAPI_GP')) {
             }
             $contents = $rep['body'];
             $retJ = json_decode($contents, true);
-            if (is_array($retJ) && !empty($retJ['result']) && is_array($retJ['result'])) {
-                $postID = $retJ['result'][6];
-            } else {
-                $postID = '';
-            }
+            if (is_array($retJ) && !empty($retJ['result']) && is_array($retJ['result'])) $postID = $retJ['result'][6]; else $postID = '';
             if (stripos($contents, '"error":') !== false) {
                 return "Error: " . print_r($contents, true);
             }
-            if ($rep['response']['code'] == '200') {
-                return array(
-                    'isPosted' => '1',
-                    'postID' => $postID,
-                    'postURL' => $postID,
-                    'pDate' => date('Y-m-d H:i:s'),
-                    'ck' => $ck
-                );
-            } else {
-                return print_r($contents, true);
-            }
+            if ($rep['response']['code'] == '200') return array('isPosted' => '1', 'postID' => $postID, 'postURL' => $postID, 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck); else return print_r($contents, true);
         }
 
         function postYT($msg, $ytUrl, $vURL = '', $ytGPPageID = '')
@@ -876,84 +708,50 @@ if (!class_exists('nxsAPI_GP')) {
             $ck = $this->ck;
             $sslverify = false;
             $ytUrl = str_ireplace('/feed', '', $ytUrl);
-            if (substr($ytUrl, -1) == '/') {
-                $ytUrl = substr($ytUrl, 0, -1);
-            }
+            if (substr($ytUrl, -1) == '/') $ytUrl = substr($ytUrl, 0, -1);
             $ytUrl .= '/feed';
             $hdrsArr = $this->headers('http://www.youtube.com/');
             if ($ytGPPageID != '') {
                 $pgURL = 'https://www.youtube.com/signin?authuser=0&action_handle_signin=true&pageid=' . $ytGPPageID;
-                if ($this->debug) {
-                    echo "[YT] G SW to page: " . $ytGPPageID . "<br/>\r\n";
-                }
+                if ($this->debug) echo "[YT] G SW to page: " . $ytGPPageID . "<br/>\r\n";
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
                 $rep = nxs_remote_get($pgURL, $advSet);
-                if (is_nxs_error($rep)) {
-                    return "ERROR: " . print_r($rep, true);
-                }
-                if (!empty($rep['cookies'])) {
-                    foreach ($rep['cookies'] as $ccN) {
-                        $fdn = false;
-                        foreach ($ck as $ci => $cc) {
-                            if ($ccN->name == $cc->name) {
-                                $fdn = true;
-                                $ck[$ci] = $ccN;
-                            }
-                        }
-                        if (!$fdn) {
-                            $ck[] = $ccN;
-                        }
+                if (is_nxs_error($rep)) return "ERROR: " . print_r($rep, true);
+                if (!empty($rep['cookies'])) foreach ($rep['cookies'] as $ccN) {
+                    $fdn = false;
+                    foreach ($ck as $ci => $cc) if ($ccN->name == $cc->name) {
+                        $fdn = true;
+                        $ck[$ci] = $ccN;
                     }
+                    if (!$fdn) $ck[] = $ccN;
                 }
             }
             $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
             $rep = nxs_remote_get($ytUrl, $advSet);
-            if (is_nxs_error($rep)) {
-                return "ERROR: " . print_r($rep, true);
-            }
+            if (is_nxs_error($rep)) return "ERROR: " . print_r($rep, true);
             //## Merge CK
-            if (!empty($rep['cookies'])) {
-                foreach ($rep['cookies'] as $ccN) {
-                    $fdn = false;
-                    foreach ($ck as $ci => $cc) {
-                        if ($ccN->name == $cc->name) {
-                            $fdn = true;
-                            $ck[$ci] = $ccN;
-                        }
-                    }
-                    if (!$fdn) {
-                        $ck[] = $ccN;
-                    }
+            if (!empty($rep['cookies'])) foreach ($rep['cookies'] as $ccN) {
+                $fdn = false;
+                foreach ($ck as $ci => $cc) if ($ccN->name == $cc->name) {
+                    $fdn = true;
+                    $ck[$ci] = $ccN;
                 }
+                if (!$fdn) $ck[] = $ccN;
             }
             $this->chckForCpt($rep['body'], $ck); // prr($rep);
             $contents = $rep['body'];
             $gpPageMsg = "Either BAD YouTube USER/PASS or you are trying to post from the wrong account/page. Make sure you have Google+ page ID if your YouTube account belongs to the page.";
             $actFormCode = 'channel_ajax';
-            if (stripos($contents, 'action="/channels_feed_ajax?') !== false) {
-                $actFormCode = 'channels_feed_ajax';
-            } elseif (stripos($contents, 'action="/c4_feed_ajax?') !== false) {
-                $actFormCode = 'c4_feed_ajax';
-            }
-            if (stripos($contents, 'action="/' . $actFormCode . '?')) {
-                $frmData = CutFromTo($contents, 'action="/' . $actFormCode . '?', '</form>');
-            } else {
+            if (stripos($contents, 'action="/channels_feed_ajax?') !== false) $actFormCode = 'channels_feed_ajax'; elseif (stripos($contents, 'action="/c4_feed_ajax?') !== false) $actFormCode = 'c4_feed_ajax';
+            if (stripos($contents, 'action="/' . $actFormCode . '?')) $frmData = CutFromTo($contents, 'action="/' . $actFormCode . '?', '</form>'); else {
                 if (stripos($contents, 'property="og:url"')) {
                     $ytUrl = CutFromTo($contents, 'property="og:url" content="', '"') . '/feed';
                     $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
                     $rep = nxs_remote_get($ytUrl, $advSet);
-                    if (is_nxs_error($rep)) {
-                        return "ERROR: " . print_r($rep, true);
-                    }
-                    if (!empty($rep['cookies'])) {
-                        $ck = $rep['cookies'];
-                    }
+                    if (is_nxs_error($rep)) return "ERROR: " . print_r($rep, true);
+                    if (!empty($rep['cookies'])) $ck = $rep['cookies'];
                     $contents = $rep['body'];
-                    if (stripos($contents, 'action="/' . $actFormCode . '?')) {
-                        $frmData = CutFromTo($contents, 'action="/' . $actFormCode . '?', '</form>');
-                    } else {
-                        return 'OG - Form not found. - ' . $gpPageMsg;
-                    }
+                    if (stripos($contents, 'action="/' . $actFormCode . '?')) $frmData = CutFromTo($contents, 'action="/' . $actFormCode . '?', '</form>'); else return 'OG - Form not found. - ' . $gpPageMsg;
                 } else {
                     $eMsg = "No Form/No OG - " . $gpPageMsg;
                     return $eMsg;
@@ -961,12 +759,8 @@ if (!class_exists('nxsAPI_GP')) {
             }
             $md = array();
             $flds = array();
-            if (!empty($vURL) && stripos($vURL, 'http') === false && strlen($vURL) != 11) {
-                $vURL = '';
-            }
-            if ($vURL != '' && stripos($vURL, 'http') === false) {
-                $vURL = 'https://www.youtube.com/watch?v=' . $vURL;
-            }
+            if (!empty($vURL) && stripos($vURL, 'http') === false && strlen($vURL) != 11) $vURL = '';
+            if ($vURL != '' && stripos($vURL, 'http') === false) $vURL = 'https://www.youtube.com/watch?v=' . $vURL;
             $msg = strip_tags($msg);
             $msg = nsTrnc($msg, 500);
             while (stripos($frmData, '"hidden"') !== false) {
@@ -987,33 +781,19 @@ if (!class_exists('nxsAPI_GP')) {
             $ytGPPageID = 'https://www.youtube.com/channel/' . $ytGPPageID;
             $hdrsArr = $this->headers($ytGPPageID, 'https://www.youtube.com/', 'POST', false);
             $hdrsArr['X-YouTube-Page-CL'] = '67741289';
-            $hdrsArr['X-YouTube-Page-Timestamp'] = date("D M j H:i:s Y",
-                    time() - 54000) . " (" . time() . ")"; //'Thu May 22 00:31:51 2014 (1400743911)';
+            $hdrsArr['X-YouTube-Page-Timestamp'] = date("D M j H:i:s Y", time() - 54000) . " (" . time() . ")"; //'Thu May 22 00:31:51 2014 (1400743911)';
             $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds, $this->proxy);
-            $rep = nxs_remote_post('https://www.youtube.com/' . $actFormCode . '?action_create_channel_post=1',
-                $advSet); //prr($rep); prr($advSet);
+            $rep = nxs_remote_post('https://www.youtube.com/' . $actFormCode . '?action_create_channel_post=1', $advSet); //prr($rep); prr($advSet);
             if (is_nxs_error($rep)) {
                 $badOut = print_r($rep, true) . " - ERROR YT";
                 return $badOut;
             }
             $contents = $rep['body']; //prr($contents);
-            if ($rep['response']['code'] == '200' && ($contents == '{"code": "SUCCESS"}' || stripos($contents,
-                        '"feed_entry_html":') !== false)
-            ) {
-                return array(
-                    "isPosted" => "1",
-                    "postID" => '',
-                    'postURL' => $ytUrl,
-                    'pDate' => date('Y-m-d H:i:s'),
-                    'ck' => $ck
-                );
-            } else {
-                return $rep['response']['code'] . "|" . $contents;
-            }
+            if ($rep['response']['code'] == '200' && ($contents == '{"code": "SUCCESS"}' || stripos($contents, '"feed_entry_html":') !== false)) return array("isPosted" => "1", "postID" => '', 'postURL' => $ytUrl, 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck); else return $rep['response']['code'] . "|" . $contents;
         }
     }
 }
-//================================Pinterest===========================================
+//================================Pinterest=====================================
 if (!class_exists('nxsAPI_PN')) {
     class nxsAPI_PN
     {
@@ -1034,25 +814,11 @@ if (!class_exists('nxsAPI_PN')) {
             $hdrsArr['Upgrade-Insecure-Requests'] = '1';
             $hdrsArr['Referer'] = $ref;
             $hdrsArr['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:49.0) Gecko/20100101 Firefox/49.0';
-            if ($type == 'JSON') {
-                $hdrsArr['Content-Type'] = 'application/json;charset=UTF-8';
-            } elseif ($type == 'POST') {
-                $hdrsArr['Content-Type'] = 'application/x-www-form-urlencoded';
-            }
-            if ($aj === true) {
-                $hdrsArr['X-Requested-With'] = 'XMLHttpRequest';
-            }
-            if ($org != '') {
-                $hdrsArr['Origin'] = $org;
-            }
-            if ($type == 'GET') {
-                $hdrsArr['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8';
-            } else {
-                $hdrsArr['Accept'] = '*/*';
-            }
-            if (function_exists('gzdeflate')) {
-                $hdrsArr['Accept-Encoding'] = 'gzip, deflate';
-            }
+            if ($type == 'JSON') $hdrsArr['Content-Type'] = 'application/json;charset=UTF-8'; elseif ($type == 'POST') $hdrsArr['Content-Type'] = 'application/x-www-form-urlencoded';
+            if ($aj === true) $hdrsArr['X-Requested-With'] = 'XMLHttpRequest';
+            if ($org != '') $hdrsArr['Origin'] = $org;
+            if ($type == 'GET') $hdrsArr['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'; else $hdrsArr['Accept'] = '*/*';
+            if (function_exists('gzdeflate')) $hdrsArr['Accept-Encoding'] = 'gzip, deflate';
             $hdrsArr['Accept-Language'] = 'en-US,en;q=0.8';
             return $hdrsArr;
         }
@@ -1061,36 +827,22 @@ if (!class_exists('nxsAPI_PN')) {
         {
             $ck = $this->ck;
             if (!empty($ck) && is_array($ck)) {
-                if (empty($this->loc)) {
-                    $this->getLoc();
-                }
+                if (empty($this->loc)) $this->getLoc();
                 $hdrsArr = $this->headers($this->loc . 'settings/');
-                if ($this->debug) {
-                    echo "[PN] Checking....;<br/>\r\n";
-                }
+                if ($this->debug) echo "[PN] Checking....;<br/>\r\n";
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
                 $rep = nxs_remote_get($this->loc . 'settings/', $advSet);
-                if (is_nxs_error($rep)) {
-                    return false;
-                }
+                if (is_nxs_error($rep)) return false;
                 $ck = $rep['cookies'];
                 $contents = $rep['body']; //if ($this->debug) prr($contents);
                 $ret = stripos($contents, 'href="#accountBasics"') !== false;
                 $usre = CutFromTo($contents, '"email": "', '"');
                 $usr = CutFromTo($contents, '"username": "', '"');
-                if ($ret & $this->debug) {
-                    echo "[PN] Logged as:" . $usr . " (" . $usre . ")<br/>\r\n";
-                }
+                if ($ret & $this->debug) echo "[PN] Logged as:" . $usr . " (" . $usre . ")<br/>\r\n";
                 $apVer = trim(CutFromTo($contents, '"app_version": "', '"'));
                 $this->apVer = $apVer;
-                if (empty($u) || $u == $usr || $u == $usre) {
-                    return $ret;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+                if (empty($u) || $u == $usr || $u == $usre) return $ret; else return false;
+            } else return false;
         }
 
         function connect($u, $p)
@@ -1098,12 +850,8 @@ if (!class_exists('nxsAPI_PN')) {
             $badOut = 'Error: ';
             //## Check if alrady IN
             if (!$this->check($u)) {
-                if ($this->debug) {
-                    echo "[PN] NO Saved Data; Logging in...<br/>\r\n";
-                }
-                if (empty($this->loc)) {
-                    $this->getLoc();
-                }
+                if ($this->debug) echo "[PN] NO Saved Data; Logging in...<br/>\r\n";
+                if (empty($this->loc)) $this->getLoc();
                 $hdrsArr = $this->headers($this->loc . 'login/');
                 $advSet = nxs_mkRemOptsArr($hdrsArr, '', '', $this->proxy);
                 $rep = nxs_remote_get($this->loc . 'login/', $advSet);
@@ -1114,14 +862,9 @@ if (!class_exists('nxsAPI_PN')) {
                 $ck = $rep['cookies'];
                 $contents = $rep['body'];
                 $apVer = trim(CutFromTo($contents, '"app_version": "', '"'));
-                $fldsTxt = 'data=%7B%22options%22%3A%7B%22username_or_email%22%3A%22' . urlencode($u) . '%22%2C%22password%22%3A%22' . str_replace('%5C',
-                        '%5C%5C', urlencode($p)) . '%22%7D%2C%22context%22%3A%7B%22app_version%22%3A%22' . $apVer .
+                $fldsTxt = 'data=%7B%22options%22%3A%7B%22username_or_email%22%3A%22' . urlencode($u) . '%22%2C%22password%22%3A%22' . str_replace('%5C', '%5C%5C', urlencode($p)) . '%22%7D%2C%22context%22%3A%7B%22app_version%22%3A%22' . $apVer .
                     '%22%7D%7D&source_url=%2Flogin%2F&module_path=App()%3ELoginPage()%3ELogin()%3EButton(class_name%3Dprimary%2C+text%3DLog+in%2C+type%3Dsubmit%2C+tagName%3Dbutton%2C+size%3Dlarge)';
-                foreach ($ck as $c) {
-                    if ($c->name == 'csrftoken') {
-                        $xftkn = $c->value;
-                    }
-                }
+                foreach ($ck as $c) if ($c->name == 'csrftoken') $xftkn = $c->value;
                 //## ACTUAL LOGIN
                 $hdrsArr = $this->headers($this->loc . 'login/', $this->loc, 'POST', true);
                 $hdrsArr['X-NEW-APP'] = '1';
@@ -1135,18 +878,14 @@ if (!class_exists('nxsAPI_PN')) {
                 }
                 if (!empty($rep['headers']['location'])) {
                     $loc = CutFromTo($rep['headers']['location'], 'https://', '.pinterest');
-                    $hdrsArr = $this->headers('https://' . $loc . '.pinterest.com/login/',
-                        'https://' . $loc . '.pinterest.com', 'POST', true);
+                    $hdrsArr = $this->headers('https://' . $loc . '.pinterest.com/login/', 'https://' . $loc . '.pinterest.com', 'POST', true);
                     $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $fldsTxt, $this->proxy);
-                    $rep = nxs_remote_post('https://' . $loc . '.pinterest.com/resource/UserSessionResource/create/',
-                        $advSet);
+                    $rep = nxs_remote_post('https://' . $loc . '.pinterest.com/resource/UserSessionResource/create/', $advSet);
                     if (is_nxs_error($rep)) {
                         $badOut = print_r($rep, true) . " - ERROR -02-";
                         return $badOut;
                     }
-                } else {
-                    $loc = 'www';
-                }
+                } else $loc = 'www';
                 if (!empty($rep['body'])) {
                     $contents = $rep['body'];
                     $resp = json_decode($contents, true);
@@ -1156,9 +895,7 @@ if (!class_exists('nxsAPI_PN')) {
                 }
                 if (is_array($resp) && empty($resp['resource_response']['error'])) {
                     $ck = $rep['cookies'];
-                    foreach ($ck as $ci => $cc) {
-                        $ck[$ci]->value = str_replace(' ', '+', $cc->value);
-                    }
+                    foreach ($ck as $ci => $cc) $ck[$ci]->value = str_replace(' ', '+', $cc->value);
                     $hdrsArr = $this->headers('https://' . $loc . '.pinterest.com/login');
                     $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
                     $rep = nxs_remote_get('https://' . $loc . '.pinterest.com/', $advSet);
@@ -1166,53 +903,33 @@ if (!class_exists('nxsAPI_PN')) {
                         $badOut = print_r($rep, true) . " - ERROR -02.1-";
                         return $badOut;
                     }
-                    if (!empty($rep['cookies'])) {
-                        foreach ($rep['cookies'] as $ccN) {
-                            $fdn = false;
-                            foreach ($ck as $ci => $cc) {
-                                if ($ccN->name == $cc->name) {
-                                    $fdn = true;
-                                    $ck[$ci] = $ccN;
-                                }
-                            }
-                            if (!$fdn) {
-                                $ck[] = $ccN;
-                            }
+                    if (!empty($rep['cookies'])) foreach ($rep['cookies'] as $ccN) {
+                        $fdn = false;
+                        foreach ($ck as $ci => $cc) if ($ccN->name == $cc->name) {
+                            $fdn = true;
+                            $ck[$ci] = $ccN;
                         }
+                        if (!$fdn) $ck[] = $ccN;
                     }
-                    foreach ($ck as $ci => $cc) {
-                        $ck[$ci]->value = str_replace(' ', '+', $cc->value);
-                    }
+                    foreach ($ck as $ci => $cc) $ck[$ci]->value = str_replace(' ', '+', $cc->value);
                     $this->tk = $xftkn;
                     $this->ck = $ck;
                     $this->apVer = $apVer;
                     $this->getLoc();
-                    if ($this->debug) {
-                        echo "[PN] You are IN;<br/>\r\n";
-                    }
+                    if ($this->debug) echo "[PN] You are IN;<br/>\r\n";
                     return false; // echo "You are IN";
-                } elseif (is_array($resp) && isset($resp['resource_response']['error'])) {
-                    return "ERROR -04-: " . $resp['resource_response']['error']['http_status'] . " | " . $resp['resource_response']['error']['message'];
-                } elseif (stripos($contents, 'CSRF verification failed') !== false) {
-                    $retText = trim(str_replace(array("\r\n", "\r", "\n"), " | ",
-                        strip_tags(CutFromTo($contents, '</head>', '</body>'))));
+                } elseif (is_array($resp) && isset($resp['resource_response']['error'])) return "ERROR -04-: " . $resp['resource_response']['error']['http_status'] . " | " . $resp['resource_response']['error']['message'];
+                elseif (stripos($contents, 'CSRF verification failed') !== false) {
+                    $retText = trim(str_replace(array("\r\n", "\r", "\n"), " | ", strip_tags(CutFromTo($contents, '</head>', '</body>'))));
                     return "CSRF verification failed - Please contact NextScripts Support | Pinterest Message:" . $retText;
-                } elseif (stripos($contents, 'IP because of suspicious activity') !== false) {
-                    return 'Pinterest blocked logins from this IP because of suspicious activity';
-                } elseif (stripos($contents, 've detected a bot!') !== false || stripos($contents,
-                        'bot running on your network') !== false
-                ) {
-                    $ip = stripos($contents, 'ess: <b>') !== false ? '(' . CutFromTo($contents, 'ess: <b>',
-                            '<') . ') ' : '';
+                } elseif (stripos($contents, 'IP because of suspicious activity') !== false) return 'Pinterest blocked logins from this IP because of suspicious activity';
+                elseif (stripos($contents, 've detected a bot!') !== false || stripos($contents, 'bot running on your network') !== false) {
+                    $ip = stripos($contents, 'ess: <b>') !== false ? '(' . CutFromTo($contents, 'ess: <b>', '<') . ') ' : '';
                     return '<br/>Pinterest has your Hosting IP ' . $ip . 'in the list of potentially suspicious networks and blocked it.<br/><a href="http://nxs.fyi/faq65" target="_blank">Please see FAQ #6.5</a>.';
-                } else {
-                    return 'Pinterest login failed. Unknown Error. Please contact support.';
-                }
+                } else return 'Pinterest login failed. Unknown Error. Please contact support.';
                 return 'Pinterest login failed. Unknown Error #2. Please contact support.';
             } else {
-                if ($this->debug) {
-                    echo "[PN] Saved Data is OK;<br/>\r\n";
-                }
+                if ($this->debug) echo "[PN] Saved Data is OK;<br/>\r\n";
                 return false;
             }
         }
@@ -1227,25 +944,17 @@ if (!class_exists('nxsAPI_PN')) {
                 $badOut = print_r($rep, true) . " - ERROR";
                 return $badOut;
             }
-            if ($rep['response']['code'] == '200' || $rep['response']['code'] == '403') {
-                $this->loc = 'https://www.pinterest.com/';
-            } elseif ($rep['response']['code'] == '302' && !empty($rep['headers']['location'])) {
-                $this->loc = CutFromTo("XX=XX" . $rep['headers']['location'], "XX=XX", '.com') . '.com/';
-            }
+            if ($rep['response']['code'] == '200' || $rep['response']['code'] == '403') $this->loc = 'https://www.pinterest.com/'; elseif ($rep['response']['code'] == '302' && !empty($rep['headers']['location'])) $this->loc = CutFromTo("XX=XX" . $rep['headers']['location'], "XX=XX", '.com') . '.com/';
         }
 
         function getBoards($curr = '')
         {
-            if ($this->debug) {
-                echo "[PN] Getting Boards ...<br/>\r\n";
-            }
+            if ($this->debug) echo "[PN] Getting Boards ...<br/>\r\n";
             $boards = '';
             $ck = $this->ck;
             $apVer = $this->apVer;
             $brdsArr = array();
-            if (empty($this->loc)) {
-                $this->getLoc();
-            }
+            if (empty($this->loc)) $this->getLoc();
             $noBoardsMsg = '<span style="color:red">No Boards Found. Please login to your pinterest.com account and create at least one</span>';
             $iu = 'http://memory.loc.gov/award/ndfa/ndfahult/c200/c240r.jpg';
             $su = '/pin/find/?url=' . urlencode($iu);
@@ -1266,28 +975,20 @@ if (!class_exists('nxsAPI_PN')) {
             $contents = $rep['body'];
             $k = json_decode($contents, true);      //  prr($k);
             if (!empty($k['resource_data_cache']) || !empty($k['resource_response'])) {
-                if (!empty($k['resource_data_cache'])) {
-                    $brdsA = $k['resource_data_cache'];
-                } else {
+                if (!empty($k['resource_data_cache'])) $brdsA = $k['resource_data_cache']; else {
                     $brdsA = array();
                     $brdsA[] = $k['resource_response'];
                 }
-                foreach ($brdsA as $ab) {
-                    if (!empty($ab) && !empty($ab['data']['all_boards'])) {
-                        $ba = $ab['data']['all_boards'];
-                        foreach ($ba as $kh) {
-                            $boards .= '<option ' . ($curr == $kh['id'] ? 'selected="selected"' : '') . ' value="' . $kh['id'] . '">' . $kh['name'] . '</option>';
-                            $brdsArr[] = array('id' => $kh['id'], 'n' => $kh['name']);
-                        }
-                        $this->boards = $brdsArr;
-                        return $boards;
-                    } else {
-                        return $noBoardsMsg;
+                foreach ($brdsA as $ab) if (!empty($ab) && !empty($ab['data']['all_boards'])) {
+                    $ba = $ab['data']['all_boards'];
+                    foreach ($ba as $kh) {
+                        $boards .= '<option ' . ($curr == $kh['id'] ? 'selected="selected"' : '') . ' value="' . $kh['id'] . '">' . $kh['name'] . '</option>';
+                        $brdsArr[] = array('id' => $kh['id'], 'n' => $kh['name']);
                     }
-                }
-            } else {
-                return 'Can\'t get data, please try again';
-            }
+                    $this->boards = $brdsArr;
+                    return $boards;
+                } else return $noBoardsMsg;
+            } else return 'Can\'t get data, please try again';
         }
 
         function post($msg, $imgURL, $lnk, $boardID, $title = '', $price = '', $via = '')
@@ -1295,41 +996,23 @@ if (!class_exists('nxsAPI_PN')) {
             $tk = $this->tk;
             $ck = $this->ck;
             $apVer = $this->apVer;
-            if (empty($this->loc)) {
-                $this->getLoc();
-            }
-            if ($this->debug) {
-                echo "[PN] Posting to ..." . $boardID . "<br/>\r\n";
-            }
-            foreach ($ck as $c) {
-                if (is_object($c) && $c->name == 'csrftoken') {
-                    $tk = $c->value;
-                }
-            }
+            if (empty($this->loc)) $this->getLoc();
+            if ($this->debug) echo "[PN] Posting to ..." . $boardID . "<br/>\r\n";
+            foreach ($ck as $c) if (is_object($c) && $c->name == 'csrftoken') $tk = $c->value;
             $msg = strip_tags($msg);
             $msg = substr($msg, 0, 480);
             $tgs = '';
             $this->tk = $tk;
-            if ($msg == '') {
-                $msg = '&nbsp;';
-            }
-            if (empty($boardID)) {
-                return "Board is not set, please retrieve and select a board.";
-            }
-            if (trim($imgURL) == '') {
-                return "Image is not Set";
-            }
+            if ($msg == '') $msg = '&nbsp;';
+            if (empty($boardID)) return "Board is not set, please retrieve and select a board.";
+            if (trim($imgURL) == '') return "Image is not Set";
             $msg = str_ireplace(array("\r\n", "\n", "\r"), " ", $msg);
             $msg = strip_tags($msg);
-            if (function_exists('nxs_decodeEntitiesFull')) {
-                $msg = nxs_decodeEntitiesFull($msg, ENT_QUOTES);
-            }
+            if (function_exists('nxs_decodeEntitiesFull')) $msg = nxs_decodeEntitiesFull($msg, ENT_QUOTES);
             $mgsOut = urlencode($msg);
-            $mgsOut = str_ireplace(array('%28', '%29', '%27', '%21', '%22', '%09'),
-                array("(", ")", "'", "!", "%5C%22", '%5Ct'), $mgsOut);
+            $mgsOut = str_ireplace(array('%28', '%29', '%27', '%21', '%22', '%09'), array("(", ")", "'", "!", "%5C%22", '%5Ct'), $mgsOut);
             $fldsTxt = 'source_url=%2Fpin%2Ffind%2F%3Furl%3D' . urlencode(urlencode($lnk)) . '&data=%7B%22options%22%3A%7B%22board_id%22%3A%22' . $boardID . '%22%2C%22description%22%3A%22' . $mgsOut . '%22%2C%22link%22%3A%22' . urlencode($lnk) . '%22%2C%22share_twitter%22%3Afalse%2C%22image_url%22%3A%22' . urlencode($imgURL) . '%22%2C%22method%22%3A%22scraped%22%7D%2C%22context%22%3A%7B%7D%7D';
-            $hdrsArr = $this->headers($brdURL = $this->loc . 'resource/PinResource/create/ ', $brdURL = $this->loc,
-                'POST', true);
+            $hdrsArr = $this->headers($brdURL = $this->loc . 'resource/PinResource/create/ ', $brdURL = $this->loc, 'POST', true);
             $hdrsArr['X-NEW-APP'] = '1';
             $hdrsArr['X-APP-VERSION'] = $apVer;
             $hdrsArr['X-CSRFToken'] = $tk;
@@ -1344,43 +1027,29 @@ if (!class_exists('nxsAPI_PN')) {
             $contents = $rep['body'];
             $resp = json_decode($contents, true); //  prr($advSet);  prr($resp);   prr($fldsTxt); // prr($contents);
             if (is_array($resp)) {
-                if (isset($resp['resource_response']) && isset($resp['resource_response']['error']) && $resp['resource_response']['error'] != '') {
-                    return print_r($resp['resource_response']['error'], true);
-                } elseif (isset($resp['resource_response']) && isset($resp['resource_response']['data']) && $resp['resource_response']['data']['id'] != '') { // gor JSON
-                    if (isset($resp['resource_response']) && isset($resp['resource_response']['error']) && $resp['resource_response']['error'] != '') {
-                        return print_r($resp['resource_response']['error'], true);
-                    } else {
+                if (isset($resp['resource_response']) && isset($resp['resource_response']['error']) && $resp['resource_response']['error'] != '') return print_r($resp['resource_response']['error'], true);
+                elseif (isset($resp['resource_response']) && isset($resp['resource_response']['data']) && $resp['resource_response']['data']['id'] != '') { // gor JSON
+                    if (isset($resp['resource_response']) && isset($resp['resource_response']['error']) && $resp['resource_response']['error'] != '') return print_r($resp['resource_response']['error'], true);
+                    else {
                         $this->ck = $ck;
-                        return array(
-                            "isPosted" => "1",
-                            "postID" => $resp['resource_response']['data']['id'],
-                            'pDate' => date('Y-m-d H:i:s'),
-                            "postURL" => $brdURL = $this->loc . 'pin/' . $resp['resource_response']['data']['id']
-                        );
+                        return array("isPosted" => "1", "postID" => $resp['resource_response']['data']['id'], 'pDate' => date('Y-m-d H:i:s'), "postURL" => $brdURL = $this->loc . 'pin/' . $resp['resource_response']['data']['id']);
                     }
                 }
             } elseif (stripos($contents, 'blocked this') !== false) {
-                $retText = trim(str_replace(array("\r\n", "\r", "\n"), " | ",
-                    strip_tags(CutFromTo($contents, '</head>', '</body>'))));
+                $retText = trim(str_replace(array("\r\n", "\r", "\n"), " | ", strip_tags(CutFromTo($contents, '</head>', '</body>'))));
                 return "Pinterest ERROR: 'The Source is blocked'. Please see https://support.pinterest.com/entries/21436306-why-is-my-pin-or-site-blocked-for-spam-or-inappropriate-content/ for more info | Pinterest Message:" . $retText;
             } elseif (stripos($contents, 'image you tried to pin is too small') !== false) {
-                $retText = trim(str_replace(array("\r\n", "\r", "\n"), " | ",
-                    strip_tags(CutFromTo($contents, '</head>', '</body>'))));
+                $retText = trim(str_replace(array("\r\n", "\r", "\n"), " | ", strip_tags(CutFromTo($contents, '</head>', '</body>'))));
                 return "Image you tried to pin is too small | Pinterest Message:" . $retText;
             } elseif (stripos($contents, 'CSRF verification failed') !== false) {
-                $retText = trim(str_replace(array("\r\n", "\r", "\n"), " | ",
-                    strip_tags(CutFromTo($contents, '</head>', '</body>'))));
+                $retText = trim(str_replace(array("\r\n", "\r", "\n"), " | ", strip_tags(CutFromTo($contents, '</head>', '</body>'))));
                 return "CSRF verification failed - Please contact NextScripts Support | Pinterest Message:" . $retText;
-            } elseif (stripos($contents, 'Oops') !== false && stripos($contents, '<body>') !== false) {
-                return 'Pinterest ERROR MESSAGE : ' . trim(str_replace(array("\r\n", "\r", "\n"), " | ",
-                        strip_tags(CutFromTo($contents, '</head>', '</body>'))));
-            } else {
-                return "Somethig is Wrong - Pinterest Returned Error 502";
-            }
+            } elseif (stripos($contents, 'Oops') !== false && stripos($contents, '<body>') !== false) return 'Pinterest ERROR MESSAGE : ' . trim(str_replace(array("\r\n", "\r", "\n"), " | ", strip_tags(CutFromTo($contents, '</head>', '</body>'))));
+            else return "Somethig is Wrong - Pinterest Returned Error 502";
         }
     }
 }
-//================================LinkedIn===========================================
+//================================LinkedIn======================================
 if (!class_exists('nxsAPI_LI')) {
     class nxsAPI_LI
     {
@@ -1395,25 +1064,11 @@ if (!class_exists('nxsAPI_LI')) {
             $hdrsArr['Connection'] = 'keep-alive';
             $hdrsArr['Referer'] = $ref;
             $hdrsArr['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.54 Safari/537.36';
-            if ($type == 'JSON') {
-                $hdrsArr['Content-Type'] = 'application/json;charset=UTF-8';
-            } elseif ($type == 'POST') {
-                $hdrsArr['Content-Type'] = 'application/x-www-form-urlencoded';
-            }
-            if ($aj === true) {
-                $hdrsArr['X-Requested-With'] = 'XMLHttpRequest';
-            }
-            if ($org != '') {
-                $hdrsArr['Origin'] = $org;
-            }
-            if ($type == 'GET') {
-                $hdrsArr['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8';
-            } else {
-                $hdrsArr['Accept'] = '*/*';
-            }
-            if (function_exists('gzdeflate')) {
-                $hdrsArr['Accept-Encoding'] = 'deflate,sdch';
-            }
+            if ($type == 'JSON') $hdrsArr['Content-Type'] = 'application/json;charset=UTF-8'; elseif ($type == 'POST') $hdrsArr['Content-Type'] = 'application/x-www-form-urlencoded';
+            if ($aj === true) $hdrsArr['X-Requested-With'] = 'XMLHttpRequest';
+            if ($org != '') $hdrsArr['Origin'] = $org;
+            if ($type == 'GET') $hdrsArr['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'; else $hdrsArr['Accept'] = '*/*';
+            if (function_exists('gzdeflate')) $hdrsArr['Accept-Encoding'] = 'deflate,sdch';
             $hdrsArr['Accept-Language'] = 'en-US,en;q=0.8';
             return $hdrsArr;
         }
@@ -1428,13 +1083,9 @@ if (!class_exists('nxsAPI_LI')) {
                 $badOut['Error'] = print_r($imgData, true) . " - ERROR";
                 return $badOut;
             }
-            if (isset($imgData['content-type'])) {
-                $cType = $imgData['content-type'];
-            }
+            if (isset($imgData['content-type'])) $cType = $imgData['content-type'];
             $imgData = $imgData['body'];
-            if (empty($cType)) {
-                $cType = 'image/png';
-            }
+            if (empty($cType)) $cType = 'image/png';
             $tmp = array_search('uri', @array_flip(stream_get_meta_data($GLOBALS[mt_rand()] = tmpfile())));
             if (!is_writable($tmp)) {
                 $badOut['Error'] = "Your temporary folder or file (file - " . $tmp . ") is not writable. Can't upload images to Flickr";
@@ -1464,20 +1115,14 @@ if (!class_exists('nxsAPI_LI')) {
             $ck = $this->ck;
             if (!empty($ck) && is_array($ck)) {
                 $hdrsArr = $this->headers('https://www.linkedin.com');
-                if ($this->debug) {
-                    echo "[LI] Checking....;<br/>\r\n";
-                }
+                if ($this->debug) echo "[LI] Checking....;<br/>\r\n";
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
                 $rep = nxs_remote_get('https://www.linkedin.com/profile/edit?trk=tab_pro', $advSet);// prr($rep);
-                if (is_nxs_error($rep)) {
-                    return false;
-                }
+                if (is_nxs_error($rep)) return false;
                 $ck = $rep['cookies'];
                 $contents = $rep['body']; //if ($this->debug) prr($contents);
                 return stripos($contents, 'href="/profile/edit?trk=nav_responsive_sub_nav_edit_profile"') !== false;
-            } else {
-                return false;
-            }
+            } else return false;
         }
 
         function connect($u, $p)
@@ -1485,13 +1130,10 @@ if (!class_exists('nxsAPI_LI')) {
             $badOut = 'Connect Error: ';
             //## Check if alrady IN
             if (!$this->check()) {
-                if ($this->debug) {
-                    echo "[LI] NO Saved Data;<br/>\r\n";
-                }
+                if ($this->debug) echo "[LI] NO Saved Data;<br/>\r\n";
                 $hdrsArr = $this->headers('https://www.linkedin.com');
                 $advSet = nxs_mkRemOptsArr($hdrsArr, '', '', $this->proxy);
-                $rep = nxs_remote_get('https://www.linkedin.com/uas/login?goback=&trk=hb_signin',
-                    $advSet); // prr($rep);
+                $rep = nxs_remote_get('https://www.linkedin.com/uas/login?goback=&trk=hb_signin', $advSet); // prr($rep);
                 if (is_nxs_error($rep)) {
                     $badOut = "AUTH ERROR #1" . print_r($rep, true);
                     return $badOut;
@@ -1520,8 +1162,7 @@ if (!class_exists('nxsAPI_LI')) {
                 $flds['session_password'] = $p;
                 $flds['signin'] = 'Sign%20In';
                 //## ACTUAL LOGIN
-                $hdrsArr = $this->headers('https://www.linkedin.com/uas/login?goback=&trk=hb_signin',
-                    'https://www.linkedin.com', 'POST', true);
+                $hdrsArr = $this->headers('https://www.linkedin.com/uas/login?goback=&trk=hb_signin', 'https://www.linkedin.com', 'POST', true);
                 $hdrsArr['X-IsAJAXForm'] = '1';
                 $hdrsArr['X-LinkedIn-traceDataContext'] = 'X-LI-ORIGIN-UUID=' . $treeID;
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds, $this->proxy);// prr($advSet);
@@ -1532,53 +1173,41 @@ if (!class_exists('nxsAPI_LI')) {
                 } // prr($rep);
                 if ($rep['response']['code'] == '200') {
                     $content = $rep['body'];
-                    if (!empty($rep['cookies'])) {
-                        foreach ($rep['cookies'] as $ccN) {
-                            $fdn = false;
-                            foreach ($ck as $ci => $cc) {
-                                if ($ccN->name == $cc->name) {
-                                    $fdn = true;
-                                    $ck[$ci] = $ccN;
-                                }
-                            }
-                            if (!$fdn) {
-                                $ck[] = $ccN;
-                            }
+                    if (stripos($content, 'session_password-login-error') !== false) {
+                        return "Hmm, that's not the right password. Please try again.";
+                    }
+                    if (!empty($rep['cookies'])) foreach ($rep['cookies'] as $ccN) {
+                        $fdn = false;
+                        foreach ($ck as $ci => $cc) if ($ccN->name == $cc->name) {
+                            $fdn = true;
+                            $ck[$ci] = $ccN;
                         }
+                        if (!$fdn) $ck[] = $ccN;
                     }
                     if (stripos($content, '"status":"ok"') !== false) {
                         if (stripos($content, 'redirectUrl') !== false) {
-                            if ($this->debug) {
-                                echo "[LI] Login REDIR;<br/>\r\n";
-                            }
+                            if ($this->debug) echo "[LI] Login REDIR;<br/>\r\n";
                             $content = str_ireplace('/uas/', 'https://www.linkedin.com/uas/', $content);
                             $rJson = json_decode($content, true);
-                            if (!empty($rep['cookies'])) {
-                                foreach ($rep['cookies'] as $ccN) {
-                                    $fdn = false;
-                                    foreach ($ck as $ci => $cc) {
-                                        if ($ccN->name == $cc->name) {
-                                            $fdn = true;
-                                            $ck[$ci] = $ccN;
-                                        }
-                                    }
-                                    if (!$fdn) {
-                                        $ck[] = $ccN;
-                                    }
+                            if (!empty($rep['cookies'])) foreach ($rep['cookies'] as $ccN) {
+                                $fdn = false;
+                                foreach ($ck as $ci => $cc) if ($ccN->name == $cc->name) {
+                                    $fdn = true;
+                                    $ck[$ci] = $ccN;
                                 }
+                                if (!$fdn) $ck[] = $ccN;
                             }
                             $hdrsArr = $this->headers('https://www.linkedin.com/uas/login-submit');
                             $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy, 1);
                             $rep = nxs_remote_get($rJson['redirectUrl'], $advSet);
                             $content = $rep['body'];
                         } else {
-                            if ($this->debug) {
-                                echo "[LI] Login was OK;<br/>\r\n";
-                            }
+                            if ($this->debug) echo "[LI] Login was OK;<br/>\r\n";
                             $this->ck = $ck;
                             return false;
                         }
                     }
+
                     if (stripos($content, 'ou have exceeded the maximum number of code requests') !== false) {
                         return "You have exceeded the maximum number of code requests. Please try again later.";
                     }
@@ -1594,23 +1223,14 @@ if (!class_exists('nxsAPI_LI')) {
                         }
                         $content = $rep['body'];
                     }
-                    if (stripos($content, 'name="PinVerificationForm_pinParam"') !== false) { //## Code
-                        if (stripos($content,
-                                '<div id="uas-consumer-two-step-verification" class="two-step-verification">') !== false
-                        ) {
-                            $text = CutFromTo($content,
-                                    '<div id="uas-consumer-two-step-verification" class="two-step-verification">',
-                                    '<script id="') . '</li></ul></form></div></div>';
-                            $formcode = '<form ' . CutFromTo($content,
-                                    '<div id="uas-consumer-two-step-verification" class="two-step-verification">',
-                                    '</form>');
+                    if (stripos($content, 'name="PinVerificationForm_pinParam"') !== false) {
+                        $fa = CutFromTo($content, 'action="', '"'); //## Code
+                        if (stripos($content, '<div id="uas-consumer-two-step-verification" class="two-step-verification">') !== false) {
+                            $text = CutFromTo($content, '<div id="uas-consumer-two-step-verification" class="two-step-verification">', '<script id="') . '</li></ul></form></div></div>';
+                            $formcode = '<form ' . CutFromTo($content, '<div id="uas-consumer-two-step-verification" class="two-step-verification">', '</form>');
                         } else {
-                            $text = CutFromTo($content,
-                                    '<div id="uas-consumer-ato-pin-challenge" class="two-step-verification">',
-                                    '<script id="') . '</li></ul></form></div></div>';
-                            $formcode = '<form ' . CutFromTo($content,
-                                    '<div id="uas-consumer-ato-pin-challenge" class="two-step-verification">',
-                                    '</form>');
+                            $text = CutFromTo($content, '<div id="uas-consumer-ato-pin-challenge" class="two-step-verification">', '<script id="') . '</li></ul></form></div></div>';
+                            $formcode = '<form ' . CutFromTo($content, '<div id="uas-consumer-ato-pin-challenge" class="two-step-verification">', '</form>');
                         }
                         while (stripos($formcode, '"hidden"') !== false) {
                             $formcode = substr($formcode, stripos($formcode, '"hidden"') + 8);
@@ -1623,10 +1243,11 @@ if (!class_exists('nxsAPI_LI')) {
                         }
                         $flds['session_key'] = $u;
                         $flds['session_password'] = $p;
-                        $flds['signin'] = 'Sign%20In'; // prr($flds); prr($nxs_gCookiesArr);
+                        $flds['signin'] = 'Sign%20In';
                         $ser = array();
                         $ser['c'] = $ck;
                         $ser['f'] = $flds;
+                        $ser['fa'] = $fa;
                         $seForDB = serialize($ser);
                         return array('out' => $text, 'ser' => $seForDB);
                     }
@@ -1637,11 +1258,9 @@ if (!class_exists('nxsAPI_LI')) {
                             return $badOut;
                         }
                         $img = CutFromTo($ca['body'], 'src="image?c=', '"');
-                        $formcode = '<form ' . CutFromTo($content,
-                                '<form action="https://www.linkedin.com/uas/captcha-submit" ', '</form>');
+                        $formcode = '<form ' . CutFromTo($content, '<form action="https://www.linkedin.com/uas/captcha-submit" ', '</form>');
                         $formcode = str_ireplace('</iframe>', '', $formcode);
-                        $formcode = str_ireplace('<iframe src="https://www.google.com/recaptcha/api/noscript?k=6LcnacMSAAAAADoIuYvLUHSNLXdgUcq-jjqjBo5n" height="300" width="500" frameborder="0">',
-                            $ca['body'], $formcode);
+                        $formcode = str_ireplace('<iframe src="https://www.google.com/recaptcha/api/noscript?k=6LcnacMSAAAAADoIuYvLUHSNLXdgUcq-jjqjBo5n" height="300" width="500" frameborder="0">', $ca['body'], $formcode);
                         return array('cimg' => $img, 'ck' => $ck, 'formcode' => $formcode);
                     }
                     if (stripos($content, '/uas/consumer-captcha-v2') !== false) {//## Captcha V2
@@ -1651,30 +1270,223 @@ if (!class_exists('nxsAPI_LI')) {
                         die();
                     }
                     if (stripos($content, '"status":"fail"') !== false) {
-                        if ($this->debug) {
-                            echo "[LI] Login failed;<br/>\r\n";
-                        }
+                        if ($this->debug) echo "[LI] Login failed;<br/>\r\n";
                         $content = str_ireplace('href="/uas/', 'href="https://www.linkedin.com/uas/', $content);
                         $rJson = json_decode($content, true);
                         $badOut = "LOGIN ERROR: " . print_r($rJson, true);
+                        if (stripos($content, 'There were one or more errors') !== false) $badOut .= "\r\n<br/>Error Message:  Hmm, that's not the right password. Please try again.";
                         return $badOut;
                     }
-                    if (stripos($content, 'textarea name="postText"') !== false || stripos($content,
-                            'id="sharebox-container"') !== false
-                    ) {
-                        if ($this->debug) {
-                            echo "[LI] Login OK; Got Form; <br/>\r\n";
-                        }
+                    if (stripos($content, 'textarea name="postText"') !== false || stripos($content, 'id="sharebox-container"') !== false || stripos($content, 'class="initial-load-animation"') !== false) {
+                        if ($this->debug) echo "[LI] Login OK; Got Form; <br/>\r\n";
                         $this->ck = $ck;
                         return false;
                     }
                 }
                 return $badOut . print_r($rep, true);
             } else {
-                if ($this->debug) {
-                    echo "[LI] Saved Data is OK;<br/>\r\n";
-                }
+                if ($this->debug) echo "[LI] Saved Data is OK;<br/>\r\n";
                 return false;
+            }
+        }
+
+        function getPgsList($pgID)
+        {
+            $ck = $this->ck;
+            $pgs = '';
+            if (!empty($ck) && is_array($ck)) {
+                $hdrsArr = $this->headers('https://www.linkedin.com');
+                if ($this->debug) echo "[LI] PG List....;<br/>\r\n";
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+                $rep = nxs_remote_get('https://www.linkedin.com/company/home?trk=nav_responsive_sub_nav_companies', $advSet);// prr($rep);
+                if (is_nxs_error($rep)) return false;
+                $ck = $rep['cookies'];
+                $contents = $rep['body'];
+                if (stripos($contents, 'id="biz_companies_you_manage-content"') !== false) {
+                    $ct = CutFromTo($contents, 'id="biz_companies_you_manage-content"', '</code>');
+                    $ct = CutFromTo($ct, '<!--', '-->');
+                    $ct = json_decode($ct, true); //prr($ct);
+                    if (!empty($ct) && is_array($ct) && !empty($ct['content']) && !empty($ct['content']) && !empty($ct['content']['biz_companies_you_manage']) && !empty($ct['content']['biz_companies_you_manage']['companies'])) $ct = $ct['content']['biz_companies_you_manage']['companies'];
+                    foreach ($ct as $c) {
+                        $pgs .= '<option class="nxsBlue" ' . (($pgID == $c['companyId'] || $pgID == $c['universalName']) ? 'selected="selected"' : '') . ' value="' . $c['companyId'] . '" data-val="' . $c['universalName'] . '">' . $c['companyName'] . ' (' . $c['companyId'] . ' - ' . $c['universalName'] . ')</option>';
+                    }
+                }
+            }
+            return $pgs;
+        }
+
+        function getGrpList($pgID)
+        {
+            $ck = $this->ck;
+            $pgs = '';
+            if (!empty($ck) && is_array($ck)) {
+                foreach ($ck as $ci => $cc) {
+                    if ($cc->name == 'JSESSIONID') $csrft = str_replace('"', '', $cc->value);
+                }
+                $hdrsArr = $this->headers('https://www.linkedin.com', 'https://www.linkedin.com');
+                $hdrsArr['Csrf-Token'] = $csrft;
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+                $rep = nxs_remote_get('https://www.linkedin.com/groups/my-groups', $advSet);
+                if (is_nxs_error($rep)) return false;
+                $contents = $rep['body'];
+                if (stripos($contents, '"id":"') !== false) {
+                    $uid = CutFromTo($contents, '"id":"', '"');
+                }
+                $hdrsArr = $this->headers('https://www.linkedin.com', 'https://www.linkedin.com', 'GET', true);
+                $hdrsArr['Csrf-Token'] = $csrft;
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+                $rep = nxs_remote_get('https://www.linkedin.com/communities-api/v1/communities/memberships/' . $uid . '?projection=FULL&sortBy=RECENTLY_JOINED&count=500', $advSet);
+                if (is_nxs_error($rep)) return false;
+                $contents = $rep['body'];
+                if (stripos($contents, '"miniMembership":') !== false) {
+                    $ct = json_decode($contents, true);
+                    if (!empty($ct) && is_array($ct) && !empty($ct['data'])) $ct = $ct['data'];
+                    foreach ($ct as $c) {
+                        $pgs .= '<option class="nxsGreen" ' . (($pgID == $c['group']['id'] || $pgID == $c['id']) ? 'selected="selected"' : '') . ' value="' . $c['group']['id'] . '" data-val="' . $c['id'] . '">' . $c['group']['mini']['name'] . ' (' . $c['group']['id'] . ')</option>';
+                    }
+                }
+            }
+            return $pgs;
+        }
+
+        function postToPulse($msg, $title, $html, $imgURL)
+        {
+            global $nxs_plurl;
+            $ck = $this->ck;
+            foreach ($ck as $ci => $cc) {
+                if ($cc->name == 'JSESSIONID') $csrft = str_replace('"', '', $cc->value);
+            }
+            $hdrsArr = $this->headers('https://www.linkedin.com', 'https://www.linkedin.com', 'JSON', true);
+            $hdrsArr['Csrf-Token'] = $csrft;
+            $hdrsArr['Accept'] = 'application/json, text/javascript, */*; q=0.01';
+            $flds = '{"customPublishMessage":{"text":""},"authors":["urn:li:member:333698448"],"state":"DRAFT","title":"Post me","contentHtml":""}';
+            $pURL = 'https://www.linkedin.com/voyager/api/publishing/normFirstPartyArticle';
+            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds, $this->proxy);
+            $rep = nxs_remote_post($pURL, $advSet); //prr($rep);
+            if (is_nxs_error($rep)) {
+                $badOut = print_r($rep, true) . " - ERROR";
+                return $badOut;
+            } elseif ($rep['response']['code'] == '201' && !empty($rep['headers']['location'])) $pID = substr(strrchr($rep['headers']['location'], "/"), 1);
+
+            $dvdr = 'WebKitFormBoundaryvdfQslA1ksAfZbR1';
+            $ctd = 'Content-Disposition: ';
+            $hdrsArr['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.54 Safari/537.36';
+            $gURL = 'https://www.linkedin.com/voyager/api/fileUploadToken?type=PUBLISHING_IMAGE';
+            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+            $rep = nxs_remote_get($gURL, $advSet);
+            $uplToken = json_decode($rep['body'], true);
+            $uplToken = $uplToken['uploadToken'];
+            $txt = '------' . $dvdr . "\r\n" . $ctd . 'form-data; name="sign_response"' . "\r\n\r\n" . 'true' . "\r\n" . '------' . $dvdr . "\r\n" . $ctd . 'form-data; name="persist"' . "\r\n\r\n" . 'true' . "\r\n" . '------' . $dvdr . "\r\n" . $ctd . 'form-data; name="callback"' . "\r\n\r\n" . 'uploadCallback1431645833521' . "\r\n" . '------' . $dvdr . "\r\n" . $ctd . 'form-data; name="csrfToken"' . "\r\n\r\n" . $csrft . "\r\n" . '------' . $dvdr . "\r\n" . $ctd . 'form-data; name="upload_info"' . "\r\n\r\n" . $uplToken . "\r\n";
+            $advSet = nxs_mkRemOptsArr($hdrsArr, '', '', $this->proxy);
+            list($width, $height) = getimagesize($imgURL);
+            $imgData = nxs_remote_get($imgURL, $advSet); //prr($lnkArr['img']);
+            if (is_nxs_error($imgData) || empty($imgData['body']) || (!empty($imgData['headers']['content-length']) && (int)$imgData['headers']['content-length'] < 200)) {
+                $options['attchImg'] = 0;
+                $badOut[] = 'Image Error: Could not get image (' . $lnkArr['img'] . '), will post without it - Error:' . print_r($imgData, true);
+            } else $imgData = $imgData['body'];
+            $params = $txt . "------" . $dvdr . "\r\n" . $ctd . "form-data; name=\"file\"; filename=\"image.jpg\"\r\nContent-Type: image/jpg\r\n\r\n" . $imgData . "\r\n------" . $dvdr . "--";
+            $hdrsArr = $this->headers('https://www.linkedin.com/post/new?trk=hp-share-poncho-pencil', 'http://www.linkedin.com', 'POST');
+            unset($hdrsArr['Content-Type']);
+            $hdrsArr['Content-Type'] = 'multipart/form-data; boundary=----' . $dvdr;
+            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $params, $this->proxy);
+            $rep = nxs_remote_post('https://www.linkedin.com/mupld/megaImageUpload', $advSet);
+            if (is_nxs_error($rep)) {
+                $badOut[] = 'Image Error: ' . print_r($rep, true);
+            } //prr($rep, 'IMG1');
+            $ImgCode1 = json_decode($rep['body'], true);
+            $ImgCode1 = $ImgCode1['value'];
+
+            $hdrsArr = $this->headers('https://www.linkedin.com/post/new?trk=hp-share-poncho-pencil', 'https://www.linkedin.com', 'POST', true);
+            $hdrsArr['Csrf-Token'] = $csrft;
+            $hdrsArr['Accept'] = '*/*';
+            $flds = 'mid=' . urlencode($ImgCode1) . '&filter=slateCoverImageFullFilter&filters_crop_x=0&filters_crop_y=0&filters_crop_w=' . $width . '&filters_crop_h=' . $height . '&csrfToken=' . urlencode($csrft) . '&returnType=json&filters_CUSTOM_MAX_HEIGHT=99999&filters_CUSTOM_MAX_WIDTH=99999&filters_rotate_t=0&persist=true';
+            $pURL = 'https://www.linkedin.com/mupld/process';
+            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds, $this->proxy);
+            $rep = nxs_remote_post($pURL, $advSet); // prr($rep, 'IMG2');  prr($advSet, 'IMG2A'); //prr($rep);
+            $ImgCode2 = json_decode($rep['body'], true);
+            $ImgCode2 = $ImgCode2['value'];
+            $pURL = 'https://www.linkedin.com/voyager/api/publishing/normFirstPartyArticle/' . $pID;
+            $flds = '{"patch":{"$set":{"createdAt":' . time() . ',"updatedAt":' . time() . ',"coverMedia":{"com.linkedin.voyager.publishing.CoverImage":{"croppedImage":{"com.linkedin.voyager.common.MediaProcessorImage":{"id":"' . $ImgCode2 . '"}},"originalImage":{"com.linkedin.voyager.common.MediaProcessorImage":{"id":"' . $ImgCode1 . '"}},"cropInfo":{"x":0,"y":0,"width":1600,"height":740},"caption":{"text":""}}},"urn":"urn:li:linkedInArticle:' . $pID . '","customPublishMessage":{"text":"X"},"authors":["urn:li:member:333698448"],"state":"PUBLISHED","title":"X","contentHtml":"X","version":0}}}';
+            $html = str_ireplace('</p>', '</p><br/>', str_ireplace('</div>', '</div><br/>', $html));
+            $html = strip_tags($html, '<i><b><strong><br><a>');
+            $ajj = json_decode($flds, true);
+            $ajj['patch']['$set']['contentHtml'] = '<p>' . $html . '</p>';
+            $ajj['patch']['$set']['title'] = nsTrnc(strip_tags(nl2br($title)), 150);
+            $ajj['patch']['$set']['customPublishMessage']['text'] = nsTrnc(strip_tags($msg), 700);
+            $flds = json_encode($ajj);
+            $ck = nxsMergeArraysOV($ck, $rep['cookies']);
+            $hdrsArr = $this->headers('https://www.linkedin.com/post/edit/' . $pID, 'https://www.linkedin.com', 'JSON', true);
+            $hdrsArr['Csrf-Token'] = $csrft;
+            $hdrsArr['Accept'] = '*/*';
+            $hdrsArr['X-RestLi-Protocol-Version'] = '2.0.0';
+            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds, $this->proxy);
+            $rep = nxs_remote_post($pURL, $advSet);// prr($pURL, 'pURL #2');   prr($rep); prr($advSet);
+
+            $hdrsArr = $this->headers('https://www.linkedin.com/post/edit/' . $pID, 'https://www.linkedin.com', 'GET', true);
+            $hdrsArr['Csrf-Token'] = $csrft;
+            $gURL = 'https://www.linkedin.com/voyager/api/publishing/editorFirstPartyArticles/' . $pID;
+            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+            $rep = nxs_remote_get($gURL, $advSet);
+            $res = json_decode($rep['body'], true); //prr($res, 'RES');
+
+            if (!empty($res) && !empty($res['firstPartyArticle']) && !empty($res['firstPartyArticle']['permalink'])) return array('isPosted' => '1', 'postID' => $pID, 'postURL' => 'https://www.linkedin.com/pulse/' . $res['firstPartyArticle']['permalink'], 'pDate' => date('Y-m-d H:i:s'));
+            else return "Post_ERROR: " . print_r($rep, true);
+        }
+
+        function getCsrf($ck)
+        {
+            foreach ($ck as $ci => $cc) {
+                if ($cc->name == 'JSESSIONID') return str_replace('"', '', $cc->value);
+            }
+        }
+
+        function adjText($txt)
+        {
+            return str_ireplace("\r", '', str_ireplace("\n", '\n', addslashes(nsTrnc(strip_tags($txt), 700))));
+        }
+
+        function urlInfo($url)
+        {
+            $ck = $this->ck;
+            $hdrsArrA = $this->headers('https://www.linkedin.com/');
+            $hdrsArrA['Accept'] = 'application/json, text/javascript, */*; q=0.01';
+            $advSet = nxs_mkRemOptsArr($hdrsArrA, $ck, '', $this->proxy);
+            $lUrl = 'https://www.linkedin.com/sharing/api/url-preview?url=' . urlencode($url);
+            $rep = nxs_remote_get($lUrl, $advSet);
+            if (is_nxs_error($rep)) {
+                $badOut = print_r($rep, true) . " - ERROR";
+            } else {
+                $contents = json_decode($rep['body'], true);
+                if (is_array($contents) && $contents['success'] == 'true') {
+                    while ($contents['status'] == 'KEEP_POLLING') {
+                        sleep(1);
+                        $rep = nxs_remote_get($lUrl, $advSet);
+                        $contents = json_decode($rep['body'], true);
+                    } //prr($contents);
+                    if ($contents['status'] == 'SUCCESS' && !empty($contents['data']['content'][0]) && is_array($contents['data']['content'][0])) {
+                        $cnt = $contents['data']['content'][0];
+                        return $cnt;
+                    } else return "Error: " . $badOut;
+                }
+            }
+        }
+
+        function urlInfoBI($url)
+        {
+            $ck = $this->ck;
+            $hdrsArrA = $this->headers('https://www.linkedin.com/');
+            $hdrsArrA['Csrf-Token'] = $this->getCsrf($ck);
+            $hdrsArrA['Accept'] = 'application/json, text/javascript, */*; q=0.01';
+            $hdrsArrA['Accept'] = 'application/vnd.linkedin.normalized+json';
+            $advSet = nxs_mkRemOptsArr($hdrsArrA, $ck, '', $this->proxy);
+            $lUrl = 'https://www.linkedin.com/voyager/api/feed/urlpreview/' . urlencode($url);
+            $rep = nxs_remote_get($lUrl, $advSet);
+            if (is_nxs_error($rep)) {
+                $badOut = print_r($rep, true) . " - ERROR";
+            } else {
+                $contents = json_decode($rep['body'], true);// prr($contents); // die();
+                if (is_array($contents) && !empty($contents['included'])) return $contents['included']; else return "Error: " . $badOut;
+                //$x = 'com.linkedin.voyager.feed.urlpreview.PreviewCreationSuccessful'; if (is_array($contents) && !empty($contents['value']) && !empty($contents['value'][$x]) ) return $contents['value'][$x]['data']; else return "Error: ".$badOut;
             }
         }
 
@@ -1685,43 +1497,31 @@ if (!class_exists('nxsAPI_LI')) {
             $isGrp = false;
             $ck = $this->ck;
             $to = utf8_encode($to);
-            $parts = parse_url($to);
-            $to = $parts['scheme'] . '://' . $parts['host'] . str_replace('%2F', '/',
-                    urlencode($parts['path'])) . ((isset($parts['query']) && $parts['query'] != '') ? '?' . $parts['query'] : '');
+            $parts = parse_url($to); //$this->postToPulse(); die();
+            $to = $parts['scheme'] . '://' . $parts['host'] . str_replace('%2F', '/', urlencode($parts['path'])) . ((isset($parts['query']) && $parts['query'] != '') ? '?' . $parts['query'] : '');
             $to = str_replace('%25', '%', $to);
             $hdrsArr = $this->headers('https://www.linkedin.com/company/home?trk=nav_responsive_sub_nav_companies');
             $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
             $rep = nxs_remote_get($to, $advSet);
-            if ($this->debug) {
-                echo "[LI] Posting to: " . $to . "<br/>\r\n";
-            } // prr($rep); die();
+            if ($this->debug) echo "[LI] Posting to: " . $to . "<br/>\r\n"; // prr($rep); die();
             if (is_nxs_error($rep)) {
                 $badOut = print_r($rep, true) . " - ERROR";
                 return $badOut;
             }
-            if (!empty($rep['cookies'])) {
-                foreach ($rep['cookies'] as $ccN) {
-                    $fdn = false;
-                    foreach ($ck as $ci => $cc) {
-                        if ($ccN->name == $cc->name) {
-                            $fdn = true;
-                            $ck[$ci] = $ccN;
-                        }
-                    }
-                    if (!$fdn) {
-                        $ck[] = $ccN;
-                    }
+            if (!empty($rep['cookies'])) foreach ($rep['cookies'] as $ccN) {
+                $fdn = false;
+                foreach ($ck as $ci => $cc) if ($ccN->name == $cc->name) {
+                    $fdn = true;
+                    $ck[$ci] = $ccN;
                 }
+                if (!$fdn) $ck[] = $ccN;
             }
             $contents = $rep['body'];
-            $contents = str_ireplace('https://www.linkedin.com', '',
-                str_ireplace('http://www.linkedin.com', '', $contents));
-            $prfx = stripos($contents, 'X-Progress-ID=') !== false ? CutFromTo($contents, 'X-Progress-ID=',
-                '"') : 'ss333698448';
+            $contents = str_ireplace('https://www.linkedin.com', '', str_ireplace('http://www.linkedin.com', '', $contents));
+            $prfx = stripos($contents, 'X-Progress-ID=') !== false ? CutFromTo($contents, 'X-Progress-ID=', '"') : 'ss333698448';
             $ck = nxsClnCookies($ck);
-            if (stripos($contents, '<form action="/share?submitPost="') !== false) {
-                $contents = CutFromTo($contents, '<form action="/share?submitPost="', '</form>');
-            } elseif (stripos($contents, 'name="pageKey" content="d_grp_community_feed_bootstrap"') !== false) {
+            if (stripos($contents, '<form action="/share?submitPost="') !== false) $contents = CutFromTo($contents, '<form action="/share?submitPost="', '</form>');
+            elseif (stripos($contents, 'name="pageKey" content="d_grp_community_feed_bootstrap"') !== false) {
                 $postFormType = 5;
             } elseif (stripos($contents, '<form action="/nhome/submit-post"') !== false) {
                 $contents = CutFromTo($contents, '<form action="/nhome/submit-post"', '</form>');
@@ -1729,10 +1529,10 @@ if (!class_exists('nxsAPI_LI')) {
             } elseif (stripos($contents, '<form action="/nhome/submit&#45;post"') !== false) {
                 $contents = CutFromTo($contents, '<form action="/nhome/submit&#45;post"', '</form>');
                 $postFormType = 1;
-            } elseif (($to == 'http://www.linkedin.com/home' || $to == 'https://www.linkedin.com/home') && stripos($contents,
-                    '/uas/logout') !== false
-            ) {
+            } elseif (($to == 'http://www.linkedin.com/home' || $to == 'https://www.linkedin.com/home') && stripos($contents, '/uas/logout') !== false) {
                 $postFormType = 4;
+            } elseif (($to == 'http://www.linkedin.com/home' || $to == 'https://www.linkedin.com/home') && stripos($contents, '"/mynetwork/"') !== false) {
+                $postFormType = 6;
             } elseif (stripos($contents, '<form action="/groups"') !== false) {
                 $contents = CutFromTo($contents, '<form action="/groups"', '</form>');
                 $postFormType = 2;
@@ -1743,32 +1543,28 @@ if (!class_exists('nxsAPI_LI')) {
                 $isGrp = true;
             } else {
                 $msg = '';
-                if (stripos($contents, '<div role="alert" class="alert error">') !== false) {
-                    $msg = strip_tags(CutFromTo($contents, '<div role="alert" class="alert error">', '</div>'));
-                }
+                if (stripos($contents, '<div role="alert" class="alert error">') !== false) $msg = strip_tags(CutFromTo($contents, '<div role="alert" class="alert error">', '</div>'));
                 return "Error: No posting form found on " . $to . ". " . (!empty($msg) ? $msg : 'You are either not logged in or have no posting privileges on this page.');
             }
             //## GET HIDDEN FIELDS
             $md = array();
             $flds = array();
             $imgCid = '';
-            if ($postFormType != 5) {
+            if ($postFormType != 5 && $postFormType != 6) {
                 if ($postFormType == 4) {
                     $flds['csrfToken'] = CutFromTo($contents, 'csrfToken":"', '"');
-                } else {
-                    while (stripos($contents, '<input') !== false) {
-                        $inpField = trim(CutFromTo($contents, '<input', '>'));
-                        $name = trim(CutFromTo($inpField, 'name="', '"'));
-                        if (stripos($inpField, '"hidden"') !== false && $name != '' && !in_array($name, $md)) {
-                            $md[] = $name;
-                            $val = trim(CutFromTo($inpField, 'value="', '"'));
-                            $flds[$name] = $val;
-                        }
-                        $contents = substr($contents, stripos($contents, '<input') + 8);
+                } else while (stripos($contents, '<input') !== false) {
+                    $inpField = trim(CutFromTo($contents, '<input', '>'));
+                    $name = trim(CutFromTo($inpField, 'name="', '"'));
+                    if (stripos($inpField, '"hidden"') !== false && $name != '' && !in_array($name, $md)) {
+                        $md[] = $name;
+                        $val = trim(CutFromTo($inpField, 'value="', '"'));
+                        $flds[$name] = $val;
                     }
+                    $contents = substr($contents, stripos($contents, '<input') + 8);
                 }
                 if (!empty($lnkArr) && $lnkArr['postType'] != 'T') {
-                    $flds['contentImageCount'] = '2';
+                    $flds['contentImageCount'] = '1';
                     $flds['contentImageIndex'] = '0';
                     $flds['contentEntityID'] = ($postFormType > 0 ? 'ARTC_' : '') . '5681815750';
                     if (isset($lnkArr['img']) && $lnkArr['img'] != '') {
@@ -1791,9 +1587,7 @@ if (!class_exists('nxsAPI_LI')) {
                 } else {
                     if ($postFormType == 1 && $lnkArr['postType'] == 'T') {
                         foreach ($ck as $ci => $cc) {
-                            if ($cc->name == 'JSESSIONID') {
-                                $kkk = str_replace('"', '', $cc->value);
-                            }
+                            if ($cc->name == 'JSESSIONID') $kkk = str_replace('"', '', $cc->value);
                         }
                         $fldsT = array('ajax' => 'true');
                         $fldsT['postText'] = $flds['postText'];
@@ -1806,35 +1600,40 @@ if (!class_exists('nxsAPI_LI')) {
                     $flds['mentions'] = '[]';
                     $flds['dist.networks[0]'] = 'PUBLIC';
                     if (!empty($lnkArr) && $lnkArr['postType'] != 'T') {
-                        $flds['content.id'] = $flds['contentEntityID'];
+                        $flds['content.id'] = '8265766228294041682';
                         $flds['content.url'] = $flds['contentUrl'];
                         $flds['content.resolvedUrl'] = $flds['contentUrl'];
                         $flds['content.title'] = $flds['contentTitle'];
-                        $flds['content.description'] = $flds['contentSummary'];
+                        $flds['content.description'] = trim(nsTrnc($flds['contentSummary'], 399));
                         $flds['content.image.url'] = $lnkArr['img'];
                         $flds['content.image.width'] = '';
                         $flds['content.image.height'] = '';
                         $flds['content.image.size'] = '';
-                    }
-                }
-                if ($flds['csrfToken'] == 'delete me') {
-                    foreach ($ck as $c) {
-                        if ($c->name == 'JSESSIONID') {
-                            $flds['csrfToken'] = substr($c->value, 1, -1);
+                        if ($lnkArr['postType'] == 'A') {
+                            $cnt = $this->urlInfo($lnkArr['url']);
+                            if (is_array($cnt)) {
+                                $flds['content.id'] = $cnt['id'];
+                                $flds['content.url'] = $cnt['url'];
+                                $flds['content.resolvedUrl'] = $cnt['resolvedUrl'];
+                                $flds['content.title'] = $cnt['title'];
+                                $flds['content.description'] = $cnt['description'];
+                                $flds['content.authorData'] = $cnt['authorData'];
+                                $flds['content.contentType'] = $cnt['contentType'];
+                                if (!empty($cnt['previewImages'][0]) && !empty($cnt['previewImages'][0]['url'])) {
+                                    $flds['content.image.url'] = $cnt['previewImages'][0]['url'];
+                                    $flds['content.image.width'] = $cnt['previewImages'][0]['width'];
+                                    $flds['content.image.height'] = ($cnt['previewImages'][0]['height']);
+                                    $flds['content.image.size'] = ($cnt['previewImages'][0]['size']);
+                                }
+                            }
                         }
                     }
                 }
-                if ($postFormType == 0) {
-                    $pURL = 'http://www.linkedin.com/share?submitPost=';
-                } elseif ($postFormType == 1) {
-                    $pURL = 'https://www.linkedin.com/nhome/submit-post';
-                } elseif ($postFormType == 3) {
-                    $pURL = 'https://www.linkedin.com/grp/postForm/submit';
-                } elseif ($postFormType == 4) {
-                    $pURL = 'https://www.linkedin.com/sharing/share?trk=ONSITE_OZ_SHAREBOX';
-                } else {
-                    $pURL = 'http://www.linkedin.com/groups';
-                }
+                if ($flds['csrfToken'] == 'delete me') $flds['csrfToken'] = $this->getCsrf($ck);
+                if ($postFormType == 0) $pURL = 'http://www.linkedin.com/share?submitPost='; elseif ($postFormType == 1) $pURL = 'https://www.linkedin.com/nhome/submit-post';
+                elseif ($postFormType == 3) $pURL = 'https://www.linkedin.com/grp/postForm/submit';
+                elseif ($postFormType == 4) $pURL = 'https://www.linkedin.com/sharing/share?trk=ONSITE_OZ_SHAREBOX';
+                else $pURL = 'http://www.linkedin.com/groups';
             }
             //## IMG
             if ((!$isGrp) && !empty($lnkArr['postType']) && $lnkArr['postType'] == 'I' && !empty($lnkArr['img'])) {
@@ -1843,11 +1642,8 @@ if (!class_exists('nxsAPI_LI')) {
                 $imgData = nxs_remote_get($lnkArr['img'], $advSet); //prr($lnkArr['img']);
                 if (is_nxs_error($imgData) || empty($imgData['body']) || (!empty($imgData['headers']['content-length']) && (int)$imgData['headers']['content-length'] < 200)) {
                     $options['attchImg'] = 0;
-                    $badOut[] = 'Image Error: Could not get image (' . $lnkArr['img'] . '), will post without it - Error:' . print_r($imgData,
-                            true);
-                } else {
-                    $imgData = $imgData['body'];
-                }
+                    $badOut[] = 'Image Error: Could not get image (' . $lnkArr['img'] . '), will post without it - Error:' . print_r($imgData, true);
+                } else $imgData = $imgData['body'];
                 $params = "------WebKitFormFQc7dbZE\r\nContent-Disposition: form-data; name=\"file_name\"; filename=\"image.jpg\"\r\nContent-Type: image/jpg\r\n\r\n" . $imgData . "\r\n------WebKitFormFQc7dbZE--";
                 $iurl = 'https://slideshare.www.linkedin.com/upload?X-Progress-ID=' . $prfx . '14302495287920.01809079945087433&iframe_jsonp=true&window_post=true&post_window=parent&jsonp_callback=LI.JSONP.LI62297f57_9c63_6792_97c2_5dda196c8e3a';
                 $hdrsArr = $this->headers($to, 'http://www.linkedin.com', 'POST');
@@ -1858,7 +1654,7 @@ if (!class_exists('nxsAPI_LI')) {
                 if (is_nxs_error($rep)) {
                     $badOut[] = 'Image Error: ' . print_r($rep, true);
                 }
-                $imgID = ''; // prr($rep); die();
+                $imgID = ''; // prr($rep);// die();
                 if (stripos($rep['body'], '"file_key":"') === false) {
                     $badOut[] = 'Image Error: ' . print_r($rep, true);
                 } else {
@@ -1892,15 +1688,38 @@ if (!class_exists('nxsAPI_LI')) {
             }
             $hdrsArr = $this->headers($to, 'https://www.linkedin.com', 'POST', true);
 
+            if ($postFormType == 6) {
+                $hdrsArr['Csrf-Token'] = $this->getCsrf($ck);
+                $pURL = 'https://www.linkedin.com/voyager/api/feed/shares?action=create';
+                $imgKey = '';
+                $mid = CutFromTo($contents, 'urn:li:fs_miniProfile:', '&quot');
+                $uid = CutFromTo($contents, ',&quot;objectUrn&quot;:&quot;urn:li:member:', '&quot');
+                $pid = CutFromTo($contents, 'publicIdentifier&quot;:&quot;', '&quot');
+                $fn = CutFromTo($contents, 'firstName&quot;:&quot;', '&quot');
+                $ln = CutFromTo($contents, 'lastName&quot;:&quot;', '&quot');
+                $shText = 'ShareText":{';
+                if (!empty($lnkArr['postType']) && $lnkArr['postType'] == 'I' && !empty($lnkArr['img']) && !empty($imgID)) {
+                    $imgKey = ',"image":{"string":"http://image-store.slidesharecdn.com/' . $imgID . '"}';
+                    $shText = 'ShareImage":{"contentType":"image/jpeg","fileId":"' . $imgID . '",';
+                }
+                if (!empty($lnkArr['postType']) && $lnkArr['postType'] == 'A' && !empty($lnkArr['url'])) {
+                    $cx = $this->urlInfoBI($lnkArr['url']);
+                    if (!empty($cx[3]) && !empty($cx[3]['id'])) $cnt = $cx[3]; elseif (!empty($cx[1]) && !empty($cx[1]['id'])) $cnt = $cx[1]; // prr($cntX); //die();
+                    if (is_array($cnt)) {
+                        $shText = 'ShareArticle":{"urn":"' . $cnt['urn'] . '","title":"' . $this->adjText($cnt['title']) . '","description":"' . $this->adjText($cnt['description']) . '","url":"' . $cnt['url'] . '","articleType":"REGULAR",';
+                        $imgKey = ',"id":"' . $cnt['id'] . '"';
+                        if (!empty($cx[0]) && !empty($cx[0]['url'])) $shText .= '"image":{"com.linkedin.voyager.common.MediaProxyImage":{"id":"' . $cnt['previewImages'][0] . '","url":"' . $cx[0]['url'] . '","originalWidth":' . ($cx[0]['originalWidth']) . ',"originalWidth":' . ($cx[0]['originalHeight']) . '}},';
+                    }
+                }
+                $flds = '{"update":{"isHidden":false,"updatePosition":1,"isSponsored":false,"value":{"com.linkedin.voyager.feed.ShareUpdate":{"shareAudience":"PUBLIC","edited":false,"content":{"com.linkedin.voyager.feed.' . $shText . '"text":{"values":[{"value":"' . $this->adjText($msg) . '"}]}' . $imgKey . '}},"actions":[],"actor":{"com.linkedin.voyager.feed.MemberActor":{"id":"' . $mid . '","showFollowAction":false,"miniProfile":{"id":"' . $mid . '","trackingId":"nfAwBkLoQOmNz7q5MJxgcA==","objectUrn":"urn:li:member:' . $uid . '","entityUrn":"urn:li:fs_miniProfile:' . $mid . '","firstName":"' . $fn . '","lastName":"' . $ln . '","occupation":"","publicIdentifier":"' . $pid . '"}}}}},"highlightedLikes":[],"highlightedComments":[]}}';
+            }
             if ($postFormType == 5) {
                 $cID = preg_replace("/[^0-9]/", "", $to);
                 $pURL = 'https://www.linkedin.com/communities-api/v1/discussion?groupId=' . $cID;
                 $msg = str_replace("\n", '\\n', str_replace("\r", '', str_replace("\r\n", "\n", $msg)));
                 $hdrsArr = $this->headers('https://www.linkedin.com', 'https://www.linkedin.com', 'JSON', true);
                 foreach ($ck as $ci => $cc) {
-                    if ($cc->name == 'JSESSIONID') {
-                        $hdrsArr['Csrf-Token'] = str_replace('"', '', $cc->value);
-                    }
+                    if ($cc->name == 'JSESSIONID') $hdrsArr['Csrf-Token'] = str_replace('"', '', $cc->value);
                 }
                 $hdrsArr['Accept'] = 'application/json, text/javascript, */*; q=0.01';
                 if ($lnkArr['postType'] == 'A') {
@@ -1928,9 +1747,7 @@ if (!class_exists('nxsAPI_LI')) {
                         $flds = '{"communityId":"' . $cID . '","contentType":"LINK_SHARE","comments":[],"mentions":[],"activityType":"DISCUSSION","title":"' . addslashes($lnkArr['postTitle']) . '","body":"' . addslashes(strip_tags($msg)) . '","contentId":"urn:li:ingestedContent:' . $lid . '","contentTitle":"' . addslashes($cttl) . '","contentBody":"' . addslashes($cdesc) . '"}';
                         $flds = str_replace('ZZZ!==X==!ZZZ', '\"', $flds);
                     }
-                } else {
-                    $flds = '{"communityId":"' . $cID . '","contentType":"' . (empty($imgCid) ? 'TEXT' : 'RICH_MEDIA_SHARE') . '","comments":[],"mentions":[],"activityType":"DISCUSSION","title":"' . addslashes($lnkArr['postTitle']) . '","body":"' . addslashes(strip_tags($msg)) . '"' . $imgCid . '}';
-                }
+                } else $flds = '{"communityId":"' . $cID . '","contentType":"' . (empty($imgCid) ? 'TEXT' : 'RICH_MEDIA_SHARE') . '","comments":[],"mentions":[],"activityType":"DISCUSSION","title":"' . addslashes($lnkArr['postTitle']) . '","body":"' . addslashes(strip_tags($msg)) . '"' . $imgCid . '}';
             }
             //## POST
             $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds, $this->proxy);
@@ -1939,33 +1756,21 @@ if (!class_exists('nxsAPI_LI')) {
                 $badOut = print_r($rep, true) . " - ERROR";
                 return $badOut;
             }
-            $contents = $rep['body']; // prr($pURL); prr($advSet);  prr($rep);  die();
+            $contents = $rep['body']; // prr($pURL); prr($advSet);  prr($rep, 'POST RESULT'); die();
             if (stripos($contents, '"responseStatus":"CREATED"') !== false) {
                 $pid = CutFromTo($contents, '"activityId":"', '"');
                 $to = 'https://www.linkedin.com/groups/' . $cID . '/' . $pid;
-                return array(
-                    'isPosted' => '1',
-                    'postID' => $pid,
-                    'postURL' => $to,
-                    'pDate' => date('Y-m-d H:i:s'),
-                    'ck' => $ck
-                );;
+                return array('isPosted' => '1', 'postID' => $pid, 'postURL' => $to, 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck);;
             }
+
+            if (stripos($contents, '"permalink":"') !== false) return array('isPosted' => '1', 'postID' => CutFromTo($contents, '"id":"activity:', '"'), 'postURL' => CutFromTo($contents, '"permalink":"', '"'), 'pDate' => date('Y-m-d H:i:s'));
+
+
             if (stripos($contents, '"errorType"') !== false) {
                 return "Group Post Failure: " . $contents;
             }
-            if ((!empty($rep['headers']['location']) && stripos($rep['headers']['location'], 'success=') !== false)) {
-                return array(
-                    'isPosted' => '1',
-                    'postID' => '',
-                    'postURL' => $to,
-                    'pDate' => date('Y-m-d H:i:s'),
-                    'ck' => $ck
-                );
-            }
-            if ((!empty($rep['headers']['location']) && stripos($rep['headers']['location'],
-                        'failure=') !== false) || stripos($contents, 'formErrors') !== false
-            ) {
+            if ((!empty($rep['headers']['location']) && stripos($rep['headers']['location'], 'success=') !== false)) return array('isPosted' => '1', 'postID' => '', 'postURL' => $to, 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck);
+            if ((!empty($rep['headers']['location']) && stripos($rep['headers']['location'], 'failure=') !== false) || stripos($contents, 'formErrors') !== false) {
                 return "Post Failure: " . CutFromTo($contents, '<formErrors>', '</formErrors>');
             }
             if ($rep['response']['code'] == '302' && !empty($rep['headers']['location'])) {
@@ -1977,79 +1782,36 @@ if (!class_exists('nxsAPI_LI')) {
                     return $badOut;
                 } /* $ck = $rep['cookies']; */
                 $contents = $rep['body'];
-                sleep(1);//  prr($rep);
+                sleep(1); // prr($rep);
             }
-            if ($this->debug) {
-                prr($rep);
+            if ($this->debug) prr($rep);
+            if (stripos($contents, '"success":false,') !== false) {
+                return "Post Failure: " . $contents;
             }
             if (stripos($contents, '"status":"SUCCESS"') !== false) {
-                if (stripos($contents, '"url":"') !== false) {
-                    return array(
-                        'isPosted' => '1',
-                        'postID' => CutFromTo($contents, '&item=', '"'),
-                        'postURL' => 'https://www.linkedin.com' . CutFromTo($contents, '"url":"', '"'),
-                        'pDate' => date('Y-m-d H:i:s'),
-                        'ck' => $ck
-                    );
-                }
-                if (stripos($contents, '"activityId":"') !== false) {
-                    return array(
-                        'isPosted' => '1',
-                        'postID' => CutFromTo($contents, '"activityId":"', '"'),
-                        'postURL' => 'http://www.linkedin.com/nhome/updates?activity=' . CutFromTo($contents,
-                                '"activityId":"', '"'),
-                        'pDate' => date('Y-m-d H:i:s'),
-                        'ck' => $ck
-                    );
-                }
+                if (stripos($contents, '"url":"') !== false) return array('isPosted' => '1', 'postID' => CutFromTo($contents, '&item=', '"'), 'postURL' => 'https://www.linkedin.com' . CutFromTo($contents, '"url":"', '"'), 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck);
+                if (stripos($contents, '"activityId":"') !== false) return array('isPosted' => '1', 'postID' => CutFromTo($contents, '"activityId":"', '"'), 'postURL' => 'http://www.linkedin.com/nhome/updates?activity=' . CutFromTo($contents, '"activityId":"', '"'), 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck);
             }
-            if (stripos($contents, '"status":"PENDING_APPROVAL"') !== false) {
-                return array(
-                    'isPosted' => '1',
-                    'postID' => 'PENDING_APPROVAL',
-                    'postURL' => $to,
-                    'pDate' => date('Y-m-d H:i:s'),
-                    'ck' => $ck
-                );
-            }
-            if (stripos($contents, '"status":"NON_DISCUSSION"') !== false) {
-                return array(
-                    'isPosted' => '1',
-                    'postID' => 'LINKEDIN MOVED POST TO PROMOTIONS',
-                    'postURL' => $to,
-                    'pDate' => date('Y-m-d H:i:s'),
-                    'ck' => $ck
-                );
-            }
+            if (stripos($contents, '"status":"PENDING_APPROVAL"') !== false) return array('isPosted' => '1', 'postID' => 'PENDING_APPROVAL', 'postURL' => $to, 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck);
+            if (stripos($contents, '"status":"NON_DISCUSSION"') !== false) return array('isPosted' => '1', 'postID' => 'LINKEDIN MOVED POST TO PROMOTIONS', 'postURL' => $to, 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck);
             if (stripos($contents, '<responseInfo>SUCCESS</responseInfo>') !== false) {
-                $outURL = json_decode(str_replace('&quot;', '"',
-                    CutFromTo($contents, '<jsonPayLoad>', '</jsonPayLoad>')), true);
-                if (!empty($outURL['isPremoderated']) && $outURL['isPremoderated'] == 'true') {
-                    return array(
-                        'isPosted' => '1',
-                        'postID' => 'closedGroupNoID',
-                        'postURL' => 'closedGroupNoURL',
-                        'pDate' => date('Y-m-d H:i:s'),
-                        'ck' => $ck
-                    );
-                }
+                $outURL = json_decode(str_replace('&quot;', '"', CutFromTo($contents, '<jsonPayLoad>', '</jsonPayLoad>')), true);
+                if (!empty($outURL['isPremoderated']) && $outURL['isPremoderated'] == 'true') return array('isPosted' => '1', 'postID' => 'closedGroupNoID', 'postURL' => 'closedGroupNoURL', 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck);
                 $outURL = $outURL['sharingUpdateUrl'];
-                if (stripos($outURL, '_internal/mappers/shareUscpActivity') !== false && stripos($outURL,
-                        'companyId') !== false && stripos($outURL, 'updateId') !== false
-                ) {
-                    $pid = CutFromTo($outURL, 'updateId=', '&');
-                    $outURL = 'https://www.linkedin.com/hp/update/' . $pid;
+                if (stripos($outURL, '_internal/mappers/shareUscpActivity') !== false && stripos($outURL, 'companyId') !== false && stripos($outURL, 'updateId') !== false) {
+                    $pid = CutFromTo($outURL, 'updateId=', '&'); //prr($pid, 'PID');
+                    if (stripos($outURL, 'companyId=') !== false) {
+                        $cid = CutFromTo($outURL, 'companyId=', '&');
+                        $cURL = 'https://www.linkedin.com/company/' . $cid;
+                        sleep(1);
+                        $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+                        $rep = nxs_remote_get($cURL, $advSet);
+                        if (stripos($rep['body'], '"updatePermalinkUrl":"') !== false) $outURL = CutFromTo($rep['body'], '"updatePermalinkUrl":"', '"');
+                        if (empty($outURL) || stripos($outURL, $pid) === false) $outURL = $cURL;
+                    } else $outURL = 'https://www.linkedin.com/hp/update/' . $pid;
                 }
-                if ($outURL != '') {
-                    return array(
-                        'isPosted' => '1',
-                        'postID' => $pid,
-                        'postURL' => $outURL,
-                        'pDate' => date('Y-m-d H:i:s'),
-                        'ck' => $ck
-                    );
-                }
-            }
+                if ($outURL != '') return array('isPosted' => '1', 'postID' => $pid, 'postURL' => $outURL, 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck);
+            } //var_dump($outURL);
             if (stripos($contents, 'Request Error') !== false) {
                 return "Post Failure: Request Error";
             }
@@ -2061,10 +1823,9 @@ if (!class_exists('nxsAPI_LI')) {
             }
             return false;
         }
-
     }
 }
-//================================Flipboard===========================================
+//================================Flipboard=====================================
 if (!class_exists('nxsAPI_FP')) {
     class nxsAPI_FP
     {
@@ -2081,21 +1842,11 @@ if (!class_exists('nxsAPI_FP')) {
             $hdrsArr['Connection'] = 'keep-alive';
             $hdrsArr['Referer'] = $ref;
             $hdrsArr['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.22 Safari/537.36';
-            if ($post === 'j') {
-                $hdrsArr['Content-Type'] = 'application/json;charset=UTF-8';
-            } elseif ($post === true) {
-                $hdrsArr['Content-Type'] = 'application/x-www-form-urlencoded';
-            }
-            if ($aj === true) {
-                $hdrsArr['X-Requested-With'] = 'XMLHttpRequest';
-            }
-            if ($org != '') {
-                $hdrsArr['Origin'] = $org;
-            }
+            if ($post === 'j') $hdrsArr['Content-Type'] = 'application/json;charset=UTF-8'; elseif ($post === true) $hdrsArr['Content-Type'] = 'application/x-www-form-urlencoded';
+            if ($aj === true) $hdrsArr['X-Requested-With'] = 'XMLHttpRequest';
+            if ($org != '') $hdrsArr['Origin'] = $org;
             $hdrsArr['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8';// $hdrsArr['DNT']='1';
-            if (function_exists('gzdeflate')) {
-                $hdrsArr['Accept-Encoding'] = 'gzip,deflate,sdch';
-            }
+            if (function_exists('gzdeflate')) $hdrsArr['Accept-Encoding'] = 'gzip,deflate,sdch';
             $hdrsArr['Accept-Language'] = 'en-US,en;q=0.8';
             return $hdrsArr;
         }
@@ -2105,28 +1856,16 @@ if (!class_exists('nxsAPI_FP')) {
             $ck = $this->ck;
             if (!empty($ck) && is_array($ck)) {
                 $usr = 'hre';
-                if ($this->debug) {
-                    echo "[FP] Checking user " . $u . "...<br/>\r\n";
-                }
+                if ($this->debug) echo "[FP] Checking user " . $u . "...<br/>\r\n";
                 $hdrsArr = $this->headers('https://flipboard.com/profile');
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck);
                 $rep = nxs_remote_get('https://flipboard.com/profile', $advSet);
-                if (is_nxs_error($rep)) {
-                    return false;
-                }
+                if (is_nxs_error($rep)) return false;
                 if (stripos($rep['body'], '"authorUsername":"') !== false) {
                     $usr = trim(strip_tags(CutFromTo($rep['body'], '"authorUsername":"', '"')));
-                } else {
-                    return false;
-                }
-                if (empty($u) || $u == $usr) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+                } else return false;
+                if (empty($u) || $u == $usr) return true; else return false;
+            } else return false;
         }
 
         function connect($u, $p)
@@ -2134,9 +1873,7 @@ if (!class_exists('nxsAPI_FP')) {
             $badOut = 'Error: '; // $this->debug = true;
             //## Check if alrady IN
             if (!$this->check($u)) {
-                if ($this->debug) {
-                    echo "[FP] NO Saved Data; Logging in...<br/>\r\n";
-                }
+                if ($this->debug) echo "[FP] NO Saved Data; Logging in...<br/>\r\n";
                 $url = "";
                 $hdrsArr = $this->headers('');
                 $advSet = nxs_mkRemOptsArr($hdrsArr);
@@ -2146,14 +1883,12 @@ if (!class_exists('nxsAPI_FP')) {
                     return $badOut;
                 }
                 $ck = $rep['cookies'];
-                $rTok = CutFromTo($rep['body'], 'id="_csrf" type="hidden" value="',
-                    '"');// $rTok = str_replace('&#x2f;','/',$rTok);
+                $rTok = CutFromTo($rep['body'], 'id="_csrf" type="hidden" value="', '"');// $rTok = str_replace('&#x2f;','/',$rTok);
                 $hdrsArr = $this->headers('https://flipboard.com/', 'https://flipboard.com', true, true);
                 $flds = array('username' => $u, 'password' => $p, '_csrf' => $rTok);
                 $flds = http_build_query($flds);
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds);
-                $response = nxs_remote_post('https://flipboard.com/api/flipboard/login',
-                    $advSet); //prr($advSet);  prr($response); die();
+                $response = nxs_remote_post('https://flipboard.com/api/flipboard/login', $advSet); //prr($advSet);  prr($response); die();
                 if (is_nxs_error($response)) {
                     $badOut = print_r($response, true) . " - ERROR";
                     return $badOut;
@@ -2179,9 +1914,7 @@ if (!class_exists('nxsAPI_FP')) {
                     $mh = trim(strip_tags(CutFromTo($rep['body'], '<a href="/account">', '</a>')));
                     $this->ck = $ck;
                     return false;
-                } else {
-                    $badOut = print_r($response, true) . " - ERROR";
-                }
+                } else  $badOut = print_r($response, true) . " - ERROR";
                 return $badOut;
             }
         }
@@ -2192,39 +1925,28 @@ if (!class_exists('nxsAPI_FP')) {
             $hdrsArr = $this->headers('https://editor.flipboard.com/');
             $badOut = array();
             $advSet = nxs_mkRemOptsArr($hdrsArr, $ck);
-            $rep = nxs_remote_get('https://share.flipboard.com/bookmarklet/popout?v=2&title=&url=' . urlencode($post['url']) . '&t=',
-                $advSet);  //prr($rep);
+            $rep = nxs_remote_get('https://share.flipboard.com/bookmarklet/popout?v=2&title=&url=' . urlencode($post['url']) . '&t=', $advSet);  //prr($rep);
             if (is_nxs_error($rep)) {
                 $badOut = print_r($rep, true) . " - ERROR 1";
                 return $badOut;
             }
             $rTok = CutFromTo($rep['body'], 'id="fl-csrf">&quot;', '&quot;');
             $rTok = str_replace('&#x2f;', '/', $rTok);
-            if (empty($rTok)) {
-                return "Error: " . strip_tags($rep['body']);
-            }// $ck =   $rep['cookies'];
-            if (!empty($rep['cookies'])) {
-                foreach ($rep['cookies'] as $ccN) {
-                    $fdn = false;
-                    foreach ($ck as $ci => $cc) {
-                        if ($ccN->name == $cc->name) {
-                            $fdn = true;
-                            $ck[$ci] = $ccN;
-                        }
-                    }
-                    if (!$fdn) {
-                        $ck[] = $ccN;
-                    }
+            if (empty($rTok)) return "Error: " . strip_tags($rep['body']);// $ck =   $rep['cookies'];
+            if (!empty($rep['cookies'])) foreach ($rep['cookies'] as $ccN) {
+                $fdn = false;
+                foreach ($ck as $ci => $cc) if ($ccN->name == $cc->name) {
+                    $fdn = true;
+                    $ck[$ci] = $ccN;
                 }
+                if (!$fdn) $ck[] = $ccN;
             }
             $flds = array("url" => $post['url'], "_csrf" => $rTok);
-            $flds = json_encode($flds, JSON_UNESCAPED_SLASHES);
-            $hdrsArr = $this->headers('https://share.flipboard.com/bookmarklet/popout', 'https://share.flipboard.com',
-                'j');
+            if (version_compare(phpversion(), '5.4.0', '<')) $flds = str_replace('\\/', '/', json_encode($flds)); else $flds = json_encode($flds, JSON_UNESCAPED_SLASHES);
+            $hdrsArr = $this->headers('https://share.flipboard.com/bookmarklet/popout', 'https://share.flipboard.com', 'j');
             $hdrsArr['Accept'] = 'application/json, text/plain, */*';
             $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds);
-            $response = nxs_remote_post('https://share.flipboard.com/bookmarklet/flip',
-                $advSet);  //prr($advSet); prr($response);
+            $response = nxs_remote_post('https://share.flipboard.com/bookmarklet/flip', $advSet);  //prr($advSet); prr($response);
             if (is_nxs_error($rep)) {
                 $badOut = print_r($response, true) . " - ERROR 2";
                 return $badOut;
@@ -2232,7 +1954,7 @@ if (!class_exists('nxsAPI_FP')) {
             if (stripos($response['body'], '"success":true') !== false) {
                 $txtArr = json_decode($response['body'], true);
                 if (stripos($post['mgzURL'], '@') !== false) {
-                    $advSet = nxs_mkRemOptsArr($hdrsArr, $ck);
+                    $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', '', 1);
                     $rep = nxs_remote_get($post['mgzURL'], $advSet);
                     if (is_nxs_error($rep)) {
                         $badOut = print_r($rep, true) . " - ERROR 01";
@@ -2242,65 +1964,36 @@ if (!class_exists('nxsAPI_FP')) {
                     $sccID = 'auth/' . CutFromTo($rep['body'], '"remoteidToShare":"', '"');
                 } elseif (stripos($post['mgzURL'], 'auth/flipboard/curator') !== false) {
                     $mgzURL = $post['mgzURL'];
-                    $mgzURL = 'flipboard/mag-' . str_replace('-', '%252D',
-                            urldecode(CutFromTo($mgzURL . "|||", 'magazine%252F', '|||')));
+                    $mgzURL = 'flipboard/mag-' . str_replace('-', '%252D', urldecode(CutFromTo($mgzURL . "|||", 'magazine%252F', '|||')));
                     $sccID = $post['mgzURL'];
                     $sccID = urldecode(CutFromTo($sccID . "|||", 'section?sections=', '|||'));
-                } else {
-                    return "Incorrect Flipboard URL";
-                }
-                $flds = array(
-                    "url" => $post['url'],
-                    "sig" => $txtArr['sig'],
-                    "image" => $post['imgURL'],
-                    "price" => null,
-                    "currency" => '$',
-                    "title" => '',
-                    "text" => $post['text'],
-                    "target" => $mgzURL,
-                    "services" => "",
-                    "_csrf" => $rTok
-                ); // prr($flds);
+                } else return "Incorrect Flipboard URL";
+                $flds = array("url" => $post['url'], "sig" => $txtArr['sig'], "image" => $post['imgURL'], "price" => null, "currency" => '$', "title" => '', "text" => $post['text'], "target" => $mgzURL, "services" => "", "_csrf" => $rTok); // prr($flds);
                 $flds = json_encode($flds);
                 $flds = str_replace('\/', '/', $flds);
-                $hdrsArr = $this->headers('https://share.flipboard.com/bookmarklet/popout',
-                    'https://share.flipboard.com', 'j');
+                $hdrsArr = $this->headers('https://share.flipboard.com/bookmarklet/popout', 'https://share.flipboard.com', 'j');
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds);
                 $response = nxs_remote_post('https://share.flipboard.com/bookmarklet/save', $advSet);
                 if (stripos($response['body'], '"success":true') !== false) {
                     sleep(2);
-                    $flds = array(
-                        "sectionid" => $sccID,
-                        "title" => '',
-                        "imageURL" => $post['imgURL'],
-                        "_csrf" => $rTok
-                    );
+                    $flds = array("sectionid" => $sccID, "title" => '', "imageURL" => $post['imgURL'], "_csrf" => $rTok);
                     $flds = json_encode($flds);
                     $flds = str_replace('\/', '/', $flds); //prr($flds);
                     $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds);
-                    $resp2 = nxs_remote_post('https://share.flipboard.com/v1/social/shortenSection',
-                        $advSet);// prr($resp2);
+                    $resp2 = nxs_remote_post('https://share.flipboard.com/v1/social/shortenSection', $advSet);// prr($resp2);
                     $respLink = json_decode($resp2['body'], true);
                     $respLink = $respLink['result'];
                     $respID = str_replace('http://flip.it/', '', $respLink);
-                    return array(
-                        'postID' => $respID,
-                        'isPosted' => 1,
-                        'postURL' => $respLink,
-                        'pDate' => date('Y-m-d H:i:s'),
-                        'ck' => $ck
-                    );
+                    return array('postID' => $respID, 'isPosted' => 1, 'postURL' => $respLink, 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck);
                 } else {
                     $badOut['Error'] .= print_r($response, true);
                     return $badOut;
                 }
-            } else {
-                return "Error: " . strip_tags($response['body']);
-            }
+            } else return "Error: " . strip_tags($response['body']);
         }
     }
 }
-//================================Reddit===========================================
+//================================Reddit========================================
 if (!class_exists('nxsAPI_RD')) {
     class nxsAPI_RD
     {
@@ -2315,29 +2008,17 @@ if (!class_exists('nxsAPI_RD')) {
         {
             $ck = $this->ck;
             if (!empty($ck) && is_array($ck)) {
-                if ($this->debug) {
-                    echo "[RD] Checking user " . $u . "...<br/>\r\n";
-                }
+                if ($this->debug) echo "[RD] Checking user " . $u . "...<br/>\r\n";
                 $hdrsArr = nxs_getNXSHeaders('https://www.reddit.com/prefs/update/');
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
                 $rep = nxs_remote_get('https://www.reddit.com/prefs/update/', $advSet);
-                if (is_nxs_error($rep)) {
-                    return false;
-                }
+                if (is_nxs_error($rep)) return false;
                 if (stripos($rep['body'], '"logged": "') !== false) {
                     $usr = trim(strip_tags(CutFromTo($rep['body'], '"logged": "', '"')));
                     $this->mh = trim(strip_tags(CutFromTo($rep['body'], '"modhash": "', '"')));
-                } else {
-                    return false;
-                }
-                if (empty($u) || $u == $usr) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+                } else return false;
+                if (empty($u) || $u == $usr) return true; else return false;
+            } else return false;
         }
 
         function connect($u, $p)
@@ -2345,9 +2026,7 @@ if (!class_exists('nxsAPI_RD')) {
             $badOut = 'Error: '; // $this->debug = true;
             //## Check if alrady IN
             if (!$this->check($u)) {
-                if ($this->debug) {
-                    echo "[RD] NO Saved Data; Logging in...<br/>\r\n";
-                }
+                if ($this->debug) echo "[RD] NO Saved Data; Logging in...<br/>\r\n";
                 $url = "https://www.reddit.com/api/login/" . $u;
                 $hdrsArr = nxs_getNXSHeaders('https://www.reddit.com');
                 $flds = array('api_type' => 'json', 'user' => $u, 'passwd' => $p, 'op' => 'login-main', 'rem' => 'on');
@@ -2359,9 +2038,7 @@ if (!class_exists('nxsAPI_RD')) {
                 }
                 $this->ck = $response['cookies'];
                 $respb = json_decode($response['body'], true);
-                if (!is_array($respb) && stripos($response['body'], '</style>') !== false) {
-                    return strip_tags(CutFromTo($response['body'] . '==-|-==', '</style>', '==-|-=='));
-                }
+                if (!is_array($respb) && stripos($response['body'], '</style>') !== false) return strip_tags(CutFromTo($response['body'] . '==-|-==', '</style>', '==-|-=='));
                 if (is_array($respb['json']['errors']) && count($respb['json']['errors']) > 0) {
                     $badOut = "|ERROR [LOGIN 02]:" . print_r($respb, true);
                     return $badOut;
@@ -2370,9 +2047,7 @@ if (!class_exists('nxsAPI_RD')) {
                 $this->mh = $data['modhash'];
                 return false;
             } else {
-                if ($this->debug) {
-                    echo "[RD] Saved Data is OK;<br/>\r\n";
-                }
+                if ($this->debug) echo "[RD] Saved Data is OK;<br/>\r\n";
                 return false;
             }
         }
@@ -2386,23 +2061,17 @@ if (!class_exists('nxsAPI_RD')) {
             $cnt = CutFromTo($cnt, '<div id="siteTable"', '<div class="footer-parent">');
             $srds = '';
             $cntArr = explode('<p class="titlerow">', $cnt);
-            foreach ($cntArr as $txt) {
-                if (stripos($txt, 'class="title"') !== false) {
-                    $bid = CutFromTo($txt, '://www.reddit.com/r/', '/"');
-                    $bname = trim(CutFromTo($txt, 'class="title" >', '</a>'));
-                    if (isset($bid)) {
-                        $srds .= '<option ' . ($curr == $bid ? 'selected="selected"' : '') . ' value="' . $bid . '">' . trim($bname) . '</option>';
-                    }
-                }
+            foreach ($cntArr as $txt) if (stripos($txt, 'class="title"') !== false) {
+                $bid = CutFromTo($txt, '://www.reddit.com/r/', '/"');
+                $bname = trim(CutFromTo($txt, 'class="title" >', '</a>'));
+                if (isset($bid)) $srds .= '<option ' . ($curr == $bid ? 'selected="selected"' : '') . ' value="' . $bid . '">' . trim($bname) . '</option>';
             }
             $this->srList = $srds;
         }
 
         function post($msg, $title, $sr, $url)
         {
-            if ($this->debug) {
-                echo "[RD] Posting...<br/>\r\n";
-            }
+            if ($this->debug) echo "[RD] Posting...<br/>\r\n";
             $hdrsArr = nxs_getNXSHeaders('https://www.reddit.com');
             $post = array('uh' => $this->mh, 'sr' => $sr, 'title' => $title, 'save' => true);
             if (!empty($url)) {
@@ -2430,12 +2099,9 @@ if (!class_exists('nxsAPI_RD')) {
             }
             $r = $rJSN['jquery'];
             $chK = isset($r[$retNum]) && is_array($r[$retNum][3]) && count($r[$retNum][3]) > 0;
-            if ($chK && stripos($r[$retNum][3][0], 'https://') !== false) {
-                $rdNewPostID = $r[$retNum][3][0];
-            }
-            if ($chK && stripos($r[$retNum][3][0], 'already_submitted') !== false) {
-                $rdNewPostID .= str_ireplace('?already_submitted=true', '', $r[$retNum][3][0]);
-            } elseif ($chK && stripos($r[$retNum][3][0], 'error.BAD_CAPTCHA') !== false) {
+            if ($chK && stripos($r[$retNum][3][0], 'https://') !== false) $rdNewPostID = $r[$retNum][3][0];
+            if ($chK && stripos($r[$retNum][3][0], 'already_submitted') !== false) $rdNewPostID .= str_ireplace('?already_submitted=true', '', $r[$retNum][3][0]);
+            elseif ($chK && stripos($r[$retNum][3][0], 'error.BAD_CAPTCHA') !== false) {
                 $badOut['Error'] = 'ERROR: Post Rejected. Reddit thinks that you don\'t have rights to post here.<br/><a href="http://nxs.fyi/faq72" target="_blank">Please see FAQ #7.2</a>';
                 return $badOut;
             } elseif ($chK && stripos($r[$retNum][3][0], 'error') !== false) {
@@ -2447,12 +2113,7 @@ if (!class_exists('nxsAPI_RD')) {
             }
             if ($rdNewPostID != 'https://www.reddit.com') {
                 $this->ck = nxs_MergeCookieArr($this->ck, $response['cookies']);
-                return array(
-                    'postID' => $rdNewPostID,
-                    'isPosted' => 1,
-                    'postURL' => $rdNewPostID,
-                    'pDate' => date('Y-m-d H:i:s')
-                );
+                return array('postID' => $rdNewPostID, 'isPosted' => 1, 'postURL' => $rdNewPostID, 'pDate' => date('Y-m-d H:i:s'));
             } else {
                 $badOut['Error'] = '|ERROR [POST 05]: ' . print_r($response, true);
                 return $badOut;
@@ -2461,7 +2122,7 @@ if (!class_exists('nxsAPI_RD')) {
         }
     }
 }
-//================================Instagram===========================================
+//================================Instagram=====================================
 if (!class_exists('nxsAPI_IG')) {
     class nxsAPI_IG
     {
@@ -2477,12 +2138,8 @@ if (!class_exists('nxsAPI_IG')) {
         function __construct()
         {
             $this->agent = 'Instagram 8.0.0 Android (16/4.1.2; 480dpi; 1080x1920; LGE/lge; LG-E980; geefhd; geefhd; en_US)';
-            $this->guid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 65535), mt_rand(0, 65535),
-                mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535),
-                mt_rand(0, 65535));
-            $this->phid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 65535), mt_rand(0, 65535),
-                mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535),
-                mt_rand(0, 65535));
+            $this->guid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
+            $this->phid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
             $this->dId = "android-" . $this->guid;
         }
 
@@ -2517,16 +2174,10 @@ if (!class_exists('nxsAPI_IG')) {
                     break;
             }
             list($w, $h) = getimagesize($imgSrc);
-            if ($w > $h) {
-                $bgSide = $w;
-            } else {
+            if ($w > $h) $bgSide = $w; else {
                 $bgSide = $h;
             }
-            if ($thumbSize < $bgSide) {
-                $sqSize = $thumbSize;
-            } else {
-                $sqSize = $bgSide;
-            } //$width = imagesx( $src ); $height = imagesy( $src );
+            if ($thumbSize < $bgSide) $sqSize = $thumbSize; else $sqSize = $bgSide; //$width = imagesx( $src ); $height = imagesy( $src );
             if ($w > $h) {
                 $width_t = $sqSize;
                 $height_t = round($h / $w * $sqSize);
@@ -2587,31 +2238,19 @@ if (!class_exists('nxsAPI_IG')) {
             $ck = $this->ck;
             if (!empty($ck) && is_array($ck)) {
                 $hdrsArr = $this->headers('');
-                if ($this->debug) {
-                    echo "[IG] Checking....;<br/>\r\n";
-                }
+                if ($this->debug) echo "[IG] Checking....;<br/>\r\n";
                 $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
                 $rep = nxs_remote_get('https://i.instagram.com/api/v1/accounts/me/', $advSet);
-                if (is_nxs_error($rep)) {
-                    return false;
-                }
+                if (is_nxs_error($rep)) return false;
                 $ck = $rep['cookies'];
                 $contents = $rep['body']; //if ($this->debug) prr($contents);
                 $ret = stripos($contents, 'href="#accountBasics"') !== false;
                 $usr = CutFromTo($contents, '"email": "', '"');
-                if ($ret & $this->debug) {
-                    echo "[PN] Logged as:" . $usr . "<br/>\r\n";
-                }
+                if ($ret & $this->debug) echo "[PN] Logged as:" . $usr . "<br/>\r\n";
                 $apVer = trim(CutFromTo($contents, '"app_version": "', '"'));
                 $this->apVer = $apVer;
-                if (empty($u) || $u == $usr) {
-                    return $ret;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+                if (empty($u) || $u == $usr) return $ret; else return false;
+            } else return false;
         }
 
         function altCurlIG($ch, $r)
@@ -2620,19 +2259,13 @@ if (!class_exists('nxsAPI_IG')) {
             if (function_exists('curl_file_create')) {
                 $file = curl_file_create($tmp);
                 $flds = array('device_timestamp' => time(), 'photo' => $file);
-            } else {
-                $flds = array('device_timestamp' => time(), 'photo' => '@' . $tmp);
-            }
+            } else $flds = array('device_timestamp' => time(), 'photo' => '@' . $tmp);
             if (!empty($r['headers'])) {
                 $headers = array();
-                foreach ($r['headers'] as $name => $value) {
-                    if ($name !== 'Content-Length') {
-                        $headers[] = "{$name}: $value";
-                    }
-                }
+                foreach ($r['headers'] as $name => $value) if ($name !== 'Content-Length') $headers[] = "{$name}: $value";
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             }
-            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POST, TRUE);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $flds);
         }
 
@@ -2641,14 +2274,10 @@ if (!class_exists('nxsAPI_IG')) {
             $flds = $r['body']; //prr($flds);
             if (!empty($r['headers'])) {
                 $headers = array();
-                foreach ($r['headers'] as $name => $value) {
-                    if ($name !== 'Content-Length') {
-                        $headers[] = "{$name}: $value";
-                    }
-                } //else  $headers[] = "Content-Length: ".strlen($flds); prr($headers);
+                foreach ($r['headers'] as $name => $value) if ($name !== 'Content-Length') $headers[] = "{$name}: $value"; //else  $headers[] = "Content-Length: ".strlen($flds); prr($headers);
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             }
-            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POST, TRUE);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $flds);
         }
 
@@ -2662,11 +2291,7 @@ if (!class_exists('nxsAPI_IG')) {
                     $ext = pathinfo($b["filename"], PATHINFO_EXTENSION);
                     $body .= "; filename=\"" . substr(bin2hex($b["filename"]), 0, 48) . "." . $ext . "\"";
                 }
-                if (isset($b["headers"]) && is_array($b["headers"])) {
-                    foreach ($b["headers"] as $header) {
-                        $body .= "\r\n" . $header;
-                    }
-                }
+                if (isset($b["headers"]) && is_array($b["headers"])) foreach ($b["headers"] as $header) $body .= "\r\n" . $header;
                 $body .= "\r\n\r\n" . $b["data"] . "\r\n";
             }
             $body .= "--" . $this->guid . "--";
@@ -2678,9 +2303,7 @@ if (!class_exists('nxsAPI_IG')) {
             $badOut = 'Error: '; // $this->debug = true;
             //## Check if alrady IN
             if (!$this->check($u)) {
-                if ($this->debug) {
-                    echo "[IG] NO Saved Data; Logging in...<br/>\r\n";
-                }
+                if ($this->debug) echo "[IG] NO Saved Data; Logging in...<br/>\r\n";
                 $flds = '{"device_id":"' . $this->dId . '","guid":"' . $this->guid . '","username":"' . $u . '","password":"' . $p . '","Content-Type":"application/x-www-form-urlencoded; charset=UTF-8"}';
                 $flds = 'signed_body=' . $this->doSig($flds) . '.' . urlencode($flds) . '&ig_sig_key_version=4';
                 //## ACTUAL LOGIN
@@ -2710,18 +2333,12 @@ if (!class_exists('nxsAPI_IG')) {
                 }
                 if ($obj['status'] == 'ok') {
                     $ck = $rep['cookies'];
-                    foreach ($ck as $ci => $cc) {
-                        $ck[$ci]->value = urlencode($cc->value);
-                    }
+                    foreach ($ck as $ci => $cc) $ck[$ci]->value = urlencode($cc->value);
                     $this->ck = $ck;
                     return false;
-                } else {
-                    return "|ERROR -LOGIN 2- " . print_r($obj, true);
-                }
+                } else return "|ERROR -LOGIN 2- " . print_r($obj, true);
             } else {
-                if ($this->debug) {
-                    echo "[IG] Saved Data is OK;<br/>\r\n";
-                }
+                if ($this->debug) echo "[IG] Saved Data is OK;<br/>\r\n";
                 return false;
             }
         }
@@ -2729,16 +2346,15 @@ if (!class_exists('nxsAPI_IG')) {
         function post($msg, $imgURL, $style = 'E')
         {
             $ck = $this->ck;
-            if ($this->debug) {
-                echo "[IG] Posting to ..." . $imgURL . "<br/>\r\n";
-            }
+            if ($this->debug) echo "[IG] Posting to ..." . $imgURL . "<br/>\r\n";
             $badOut = '';
-            $msg = str_replace('"', '\"', str_replace("\n", '\n', str_replace("\r", '', strip_tags($msg))));
+            $msg = nsTrnc(str_replace('"', '\"', str_replace("\n", '\n', str_replace("\r", '', strip_tags($msg)))), 2200);
             //## Get image
             $remImgURL = urldecode($imgURL);
             $urlParced = pathinfo($remImgURL);
             $remImgURLFilename = $urlParced['basename'];
             $imgType = substr($remImgURL, strrpos($remImgURL, '.') + 1);
+            if (stripos($imgType, '?') !== false) $imgType = @reset((explode('?', $imgType)));
             $hdrsArr = $this->headers($remImgURL);
             $hdrsArr['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.54 Safari/537.36';
             $advSet = nxs_mkRemOptsArr($hdrsArr, '', '', $this->proxy);
@@ -2747,60 +2363,35 @@ if (!class_exists('nxsAPI_IG')) {
                 $imgData['headers']['content-type'] == 'text/html' || $imgData['response']['code'] == '403'
             ) {
                 $options['attchImg'] = 0;
-                nxs_addToLogN('E', 'Error', 'IG', 'Could not get image ( ' . $remImgURL . ' ), will post without it - ',
-                    print_r($imgData, true));
+                if (function_exists('nxs_addToLogN')) nxs_addToLogN('E', 'Error', 'IG', 'Could not get image ( ' . $remImgURL . ' ), will post without it - ', print_r($imgData, true));
                 return 'Image Upload Error, please see log';
             }
             $imgData = $imgData['body'];
             $tmpX = array_search('uri', @array_flip(stream_get_meta_data($GLOBALS[mt_rand()] = tmpfile())));
-            if (!is_writable($tmpX)) {
-                return "Your temporary folder or file (file - " . $tmpX . ") is not writable. Can't upload image to IG";
-            }
+            if (!is_writable($tmpX)) return "Your temporary folder or file (file - " . $tmpX . ") is not writable. Can't upload image to IG";
             rename($tmpX, $tmpX .= '.' . $imgType);
             register_shutdown_function(create_function('', "@unlink('{$tmpX}');"));
             file_put_contents($tmpX, $imgData);
             $tmp = array_search('uri', @array_flip(stream_get_meta_data($GLOBALS[mt_rand()] = tmpfile())));
-            if (!is_writable($tmp)) {
-                return "Your temporary folder or file (file - " . $tmp . ") is not writable. Can't upload image to IG";
-            }
+            if (!is_writable($tmp)) return "Your temporary folder or file (file - " . $tmp . ") is not writable. Can't upload image to IG";
             rename($tmp, $tmp .= '.' . $imgType);
             register_shutdown_function(create_function('', "@unlink('{$tmp}');"));
             if (($style == 'E' || $style == 'C') && !function_exists('imagecreatefromjpeg')) {
                 $badOut .= "GD is not available; Can't resize;\r\n<br/>";
                 $style = 'D';
             }
-            if ($style == 'E') {
-                $this->makeSQExtend($tmpX, $tmp, 1080);
-            } elseif ($style == 'C') {
-                $this->makeSQCrop($tmpX, $tmp, 1080);
-            } else {
-                $tmp = $tmpX;
+            if (!empty($tmpX)) {
+                if ($style == 'E') $this->makeSQExtend($tmpX, $tmp, 1080); elseif ($style == 'C') $this->makeSQCrop($tmpX, $tmp, 1080);
+                else $tmp = $tmpX;
             }
             foreach ($ck as $c) {
-                if ($c->name == 'csrftoken') {
-                    $xftkn = $c->value;
-                }
-                if ($c->name == 'ds_user_id') {
-                    $uid = $c->value;
-                }
+                if ($c->name == 'csrftoken') $xftkn = $c->value;
+                if ($c->name == 'ds_user_id') $uid = $c->value;
             }
             $ddt = date("Y:m:d H:i:s");
-            $octStreamArr = array(
-                array('type' => 'form-data', 'name' => 'upload_id', 'data' => (time() + 100)),
-                array('type' => 'form-data', 'name' => '_uuid', 'data' => $this->guid),
-                array('type' => 'form-data', 'name' => '_csrftoken', 'data' => $xftkn),
-                array(
-                    "type" => "form-data",
-                    "name" => "image_compression",
-                    "data" => '{"lib_name":"jt","lib_version":"1.3.0","quality":"85"}'
-                ),
-                array(
-                    'type' => 'form-data',
-                    'name' => 'photo',
-                    'data' => file_get_contents($tmp),
-                    'filename' => basename($tmp),
-                    'headers' => array("Content-type: application/octet-stream\nContent-Transfer-Encoding: binary")
-                )
+            $octStreamArr = array(array('type' => 'form-data', 'name' => 'upload_id', 'data' => (time() + 100)), array('type' => 'form-data', 'name' => '_uuid', 'data' => $this->guid), array('type' => 'form-data', 'name' => '_csrftoken', 'data' => $xftkn),
+                array("type" => "form-data", "name" => "image_compression", "data" => '{"lib_name":"jt","lib_version":"1.3.0","quality":"85"}'),
+                array('type' => 'form-data', 'name' => 'photo', 'data' => file_get_contents($tmp), 'filename' => basename($tmp), 'headers' => array("Content-type: application/octet-stream\nContent-Transfer-Encoding: binary"))
             );
             $data = $this->bldBody($octStreamArr); //prr($data);
 
@@ -2808,15 +2399,9 @@ if (!class_exists('nxsAPI_IG')) {
             $hdrsArr['User-Agent'] = $this->agent;
             $hdrsArr['Content-Type'] = 'multipart/form-data; boundary=' . $this->guid;
             $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $data, $this->proxy);   //  prr($advSet);
-            if (function_exists('add_action')) {
-                add_action('http_api_curl', array($this, 'altCurlIGX'), 10, 2);
-            } else {
-                $advSet['usearray'] = '1';
-            }
+            if (function_exists('add_action')) add_action('http_api_curl', array($this, 'altCurlIGX'), 10, 2); else $advSet['usearray'] = '1';
             $rep = nxs_remote_post('https://i.instagram.com/api/v1/upload/photo/', $advSet);
-            if (function_exists('add_action')) {
-                remove_action('http_api_curl', array($this, 'altCurlIGX'));
-            }
+            if (function_exists('add_action')) remove_action('http_api_curl', array($this, 'altCurlIGX'));
 
             if (is_nxs_error($rep)) {
                 $badOut .= "|ERROR -02I- " . print_r($rep, true);
@@ -2828,7 +2413,7 @@ if (!class_exists('nxsAPI_IG')) {
             }
             $obj = @json_decode($rep['body'], true);
             if (empty($obj) || !is_array($obj) || empty($obj['status']) || $obj['status'] != 'ok') {
-                $badOut .= "|ERROR -04I- " . print_r($rep, true);
+                $badOut .= "|ERROR -04IG- " . print_r($rep, true);
                 return $badOut;
             }
             //$geturl = 'https://i.instagram.com/api/v1/friendships/'.$uid.'/following/'; $hdrsArr = $this->headers('', '', 'GET'); $hdrsArr['User-Agent']=$this->agent;  $advSet = nxs_mkRemOptsArr($hdrsArr, $ck); $rep = nxs_remote_get($geturl, $advSet); prr($rep);  sleep(1);
@@ -2840,8 +2425,7 @@ if (!class_exists('nxsAPI_IG')) {
             $hdrsArr['X-IG-Connection-Type'] = 'WIFI';
             $hdrsArr['X-IG-Capabilities'] = '3Q==';
             $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $data, $this->proxy);
-            $rep = nxs_remote_post('https://i.instagram.com/api/v1/media/configure/',
-                $advSet); //prr($hdrsArr); prr($rep);
+            $rep = nxs_remote_post('https://i.instagram.com/api/v1/media/configure/', $advSet); //prr($hdrsArr); prr($rep);
             if (is_nxs_error($rep)) {
                 $badOut .= "|ERROR -07I-" . print_r($rep, true);
                 return $badOut;
@@ -2863,14 +2447,7 @@ if (!class_exists('nxsAPI_IG')) {
                 return $badOut;
             }
             if ($obj['status'] == 'ok') {
-                return array(
-                    "isPosted" => "1",
-                    "postID" => $obj['media']['code'],
-                    'pDate' => date('Y-m-d H:i:s'),
-                    "postURL" => 'https://www.instagram.com/p/' . $obj['media']['code'],
-                    'msg' => $badOut,
-                    'ck' => $ck
-                );
+                return array("isPosted" => "1", "postID" => $obj['media']['code'], 'pDate' => date('Y-m-d H:i:s'), "postURL" => 'https://www.instagram.com/p/' . $obj['media']['code'], 'msg' => $badOut, 'ck' => $ck);
             } else {
                 $badOut .= print_r($rep, true) . "|ERROR -XI- ";
                 return $badOut;
@@ -2878,33 +2455,373 @@ if (!class_exists('nxsAPI_IG')) {
         }
     }
 }
+//================================XING==========================================
+if (!class_exists('nxsAPI_XI')) {
+    class nxsAPI_XI
+    {
+        var $ck = array();
+        var $debug = false;
+        var $proxy = array();
 
-//================================vKontakte===========================================
+        function createFile($imgURL)
+        {
+            $remImgURL = urldecode($imgURL);
+            $urlParced = pathinfo($remImgURL);
+            $remImgURLFilename = $urlParced['basename'];
+            $imgData = wp_remote_get($remImgURL, array('timeout' => 45));
+            if (is_nxs_error($imgData)) {
+                $badOut['Error'] = print_r($imgData, true) . " - ERROR";
+                return $badOut;
+            }
+            if (isset($imgData['content-type'])) $cType = $imgData['content-type'];
+            $imgData = $imgData['body'];
+            if (empty($cType)) $cType = 'image/png';
+            $tmp = array_search('uri', @array_flip(stream_get_meta_data($GLOBALS[mt_rand()] = tmpfile())));
+            if (!is_writable($tmp)) {
+                $badOut['Error'] = "Your temporary folder or file (file - " . $tmp . ") is not writable. Can't upload images to Flickr";
+                return $badOut;
+            }
+            rename($tmp, $tmp .= '.png');
+            register_shutdown_function(create_function('', "unlink('{$tmp}');"));
+            file_put_contents($tmp, $imgData);
+            if (!$tmp) {
+                $badOut['Error'] = 'You must specify a path to a file';
+                return $badOut;
+            }
+            if (!file_exists($tmp)) {
+                $badOut['Error'] = 'File path specified does not exist';
+                return $badOut;
+            }
+            if (!is_readable($tmp)) {
+                $badOut['Error'] = 'File path specified is not readable';
+                return $badOut;
+            }
+            $cfile = curl_file_create($tmp, $cType, 'nxstmp.png');
+            return $cfile;
+        }
+
+        function check($u = '')
+        {
+            $ck = $this->ck;
+            if (!empty($ck) && is_array($ck)) {
+                $hdrsArr = nxs_makeHeaders('https://www.xing.com');
+                if ($this->debug) echo "[XI] Checking....;<br/>\r\n";
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+                $rep = nxs_remote_get('https://www.xing.com/app/settings?op=notifications', $advSet);// prr($rep);
+                if (is_nxs_error($rep)) return false;
+                $ck = $rep['cookies'];
+                $contents = $rep['body']; //if ($this->debug) prr($contents);
+                $ret = stripos($contents, '"/login/logout"') !== false;
+                $usr = CutFromTo($contents, ' <strong>', '</strong>');
+                if ($ret & $this->debug) echo "[XI] Logged as:" . $usr . "<br/>\r\n";
+                if (empty($u) || $u == $usr) return $ret; else return false;
+            } else return false;
+        }
+
+        function connect($u, $p)
+        {
+            $badOut = 'Connect Error: ';
+            //## Check if alrady IN
+            if (!$this->check()) {
+                if ($this->debug) echo "[XI] NO Saved Data;<br/>\r\n";
+                $hdrsArr = nxs_makeHeaders('https://www.xing.com');
+                $advSet = nxs_mkRemOptsArr($hdrsArr, '', '', $this->proxy);
+                $rep = nxs_remote_get('https://www.xing.com', $advSet); // prr($rep);
+                if (is_nxs_error($rep)) {
+                    $badOut = "AUTH ERROR #1" . print_r($rep, true);
+                    return $badOut;
+                }
+                $ck = $rep['cookies'];
+                $contents = $rep['body'];
+                if (!empty($this->proxy)) {
+                    $prx = explode(':', $this->proxy['proxy']);
+                    $this->proxy = $prx;
+                }
+                //## GET HIDDEN FIELDS
+                $md = array();
+                $flds = array();
+                $contents = trim(CutFromTo($contents, 'action="https://login.xing.com/login" ', '</form'));
+                while (stripos($contents, '<input') !== false) {
+                    $inpField = trim(CutFromTo($contents, '<input', '>'));
+                    $name = trim(CutFromTo($inpField, 'name="', '"'));
+                    if (stripos($inpField, '"hidden"') !== false && $name != '' && !in_array($name, $md)) {
+                        $md[] = $name;
+                        $val = trim(CutFromTo($inpField, 'value="', '"'));
+                        $flds[$name] = $val;
+                    }
+                    $contents = substr($contents, stripos($contents, '<input') + 8);
+                }
+                $flds['login_form[username]'] = $u;
+                $flds['login_form[password]'] = $p;
+                $flds['login_form[perm]'] = '1';
+                //## ACTUAL LOGIN
+                $hdrsArr = nxs_makeHeaders('https://www.xing.com/', 'https://www.xing.com', 'POST');
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds, $this->proxy); //prr($advSet);
+                $rep = nxs_remote_post('https://login.xing.com/login', $advSet);
+                if (is_nxs_error($rep)) {
+                    $badOut = "AUTH ERROR #2" . print_r($rep, true);
+                    return $badOut;
+                } // prr($rep);
+                if ($rep['response']['code'] == '200') {
+                    if (stripos($rep['body'], 'action="https://login.xing.com/login') !== false) {
+                        $contents = trim(CutFromTo($contents, 'action="https://login.xing.com/login" ', '</form'));
+                        if (stripos($rep['body'], 'app-message app-message-error') !== false) return CutFromTo($contents, 'app-message app-message-error">', '</div');
+                    } else return "Error (Login): " . print_r($rep, true);
+                } elseif ($rep['response']['code'] == '302' && stripos($rep['body'], 'auth_token=') !== false) {
+                    $ck = nxs_MergeCookieArr($ck, $rep['cookies']);
+                    $ck = nxsDelCookie($ck, 'login_session');
+                    $rURL = CutFromTo($rep['body'], 'href="', '"');
+                    $hdrsArr = nxs_makeHeaders('https://www.xing.com/', 'https://www.xing.com');
+                    $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+                    $rep = nxs_remote_get($rURL, $advSet); // prr($rep,$rURL);
+                    if ($rep['response']['code'] == '302' && stripos($rep['body'], 'app/user') !== false) {
+                        $ckx = $rep['cookies'];
+                        $ckx[0]->value = urlencode($ckx[0]->value);
+                        $ck = nxs_MergeCookieArr($ckx, $ck); // $ck = nxsDelCookie($ck, 'login_session');
+                        if ($this->debug) echo "[XI] Login was OK;<br/>\r\n";
+                        $this->ck = $ck;
+                        return false;
+                    } else return "Error (Login #2): " . print_r($rep, true);
+                }
+            } else {
+                if ($this->debug) echo "[XI] Saved Data is OK;<br/>\r\n";
+                return false;
+            }
+        }
+
+        function getPgsList($pgID)
+        {
+            $ck = $this->ck;
+            $pgs = '';
+            if (!empty($ck) && is_array($ck)) {
+                $hdrsArr = nxs_makeHeaders('https://www.xing.com');
+                if ($this->debug) echo "[XI] PG List....;<br/>\r\n";
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+                $rep = nxs_remote_get('https://www.xing.com/companies/my_companies', $advSet);// prr($advSet); prr($rep);
+                if (is_nxs_error($rep)) return false;
+                $ck = $rep['cookies'];
+                $contents = $rep['body'];
+                if (stripos($contents, 'data-sub-tab-content="companies"') !== false) {
+                    $ct = CutFromTo($contents, 'data-sub-tab-content="companies"', '</section>');
+                    $cts = explode('<article', $ct);
+                    foreach ($cts as $c) if (stripos($c, 'company-link') !== false) {
+                        $n = trim(CutFromTo($c, '<h1>', '</h1>'));
+                        $id = CutFromTo($c, 'href="/companies/', '"');
+                        $n = strip_tags($n);
+                        $pgs .= '<option class="nxsBlue" ' . (($pgID == $n) ? 'selected="selected"' : '') . ' value="' . $id . '">' . $n . ' (' . $id . ')</option>';
+                    }
+                }
+            }
+            return $pgs;
+        }
+
+        function getGrpList($pgID)
+        {
+            $ck = $this->ck;
+            $pgs = '';
+            if (!empty($ck) && is_array($ck)) {
+                $hdrsArr = nxs_makeHeaders('https://www.xing.com');
+                if ($this->debug) echo "[XI] GRP List....;<br/>\r\n"; //https://www.xing.com/communities
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+                $rep = nxs_remote_get('https://www.xing.com/communities', $advSet);// prr($advSet); prr($rep);
+                if (is_nxs_error($rep)) return false;
+                $ck = $rep['cookies'];
+                $contents = $rep['body'];
+                if (stripos($contents, 'class="my-groups-list"') !== false) {
+                    $ct = CutFromTo($contents, 'class="my-groups-list"', '</section>');
+                    $cts = explode('<li class="my-groups-list__item"', $ct);
+                    foreach ($cts as $c) if (stripos($c, 'href="/communities/groups/') !== false) {
+                        $n = trim(strip_tags('<h4' . CutFromTo($c, '<h4', '</h4>')));
+                        $id = CutFromTo($c, 'href="/communities/groups/', '"');
+                        $n = strip_tags($n);
+                        $pgs .= '<option class="nxsGreen" ' . (($pgID == $n) ? 'selected="selected"' : '') . ' value="' . $id . '">' . $n . ' (' . $id . ')</option>';
+                    }
+                }
+            }
+            return $pgs;
+        }
+
+        function getGrpForums($url, $pgID)
+        {
+            $ck = $this->ck;
+            $pgs = '';
+            if (!empty($ck) && is_array($ck)) {
+                $hdrsArr = nxs_makeHeaders('https://www.xing.com');
+                if ($this->debug) echo "[XI] Getting Forums List from " . $url . "<br/>\r\n"; //https://www.xing.com/communities
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy, 1);
+                $rep = nxs_remote_get($url, $advSet); // prr($advSet); prr($rep);
+                if (is_nxs_error($rep)) return false;
+                $ck = $rep['cookies'];
+                $contents = $rep['body'];
+                if (stripos($contents, '<ul class="comm-navigation-dropdown') !== false) {
+                    $ct = CutFromTo($contents, '<ul class="comm-navigation-dropdown', '</ul>');
+                    $cts = explode('<li class="comm-navigation-item', $ct);
+                    foreach ($cts as $c) if (stripos($c, 'href="/communities/forums/') !== false) {
+                        $n = trim(urldecode(CutFromTo($c, 'data-forum-name="', '"')));
+                        $id = CutFromTo($c, 'href="/communities/forums/', '"');
+                        $n = strip_tags($n);
+                        $pgs .= '<option class="nxsGreen" ' . (($pgID == $n) ? 'selected="selected"' : '') . ' value="' . $id . '">' . $n . ' (' . $id . ')</option>';
+                    }
+                }
+            }
+            return $pgs;
+        }
+
+        function post($msg, $lnk)
+        {
+            global $nxs_plurl;
+            $ck = $this->ck;
+            $pgs = '';
+            if (!empty($ck) && is_array($ck)) {
+                $hdrsArr = nxs_makeHeaders('https://www.xing.com');
+                if ($this->debug) echo "[XI] Posting to PR<br/>\r\n"; //https://www.xing.com/communities
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy, 1);
+                $rep = nxs_remote_get('https://www.xing.com/app/startpage', $advSet);
+                if (is_nxs_error($rep)) return 'Bad connection #1';
+                $contents = $rep['body'];
+                if (stripos($contents, 'csrfToken: "') !== false) $ct = CutFromTo($contents, 'csrfToken: "', '"'); else return 'Bad connection #2: No Token';
+                $flds = array('op' => 'share_message.save', 'sid' => $ct, 'url' => '', 'status' => $msg, 'tab' => 'status');
+                $hdrsArr = nxs_makeHeaders('https://www.xing.com', '', 'POST', true);
+                if (!empty($lnk)) {
+                    $hdrsArr = nxs_makeHeaders('https://www.xing.com', '', 'GET', true);
+                    $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy, 1);
+                    $rep = nxs_remote_get('https://www.xing.com/app/share?op=get_preview&url=' . urlencode($lnk) . '&_=' . time() . '138', $advSet);
+                    if (!is_nxs_error($rep)) {
+                        $c = $rep['body'];
+                        if (stripos($c, '=\"link_id\" value=\"') !== false) $n = trim(CutFromTo($c, '=\"link_id\" value=\"', '\"'));
+                        $flds['tab'] = 'link';
+                        $flds['url'] = $lnk;
+                        $flds['link_id'] = $n;
+                    }
+                }
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds, $this->proxy);
+                $rep = nxs_remote_post('https://www.xing.com/app/share', $advSet);
+                if (is_nxs_error($rep)) {
+                    $badOut = print_r($rep, true) . " - ERROR";
+                    return $badOut;
+                }
+                $contents = $rep['body']; // prr($pURL); prr($advSet);  prr($rep, 'POST RESULT'); // die();
+                if ($this->debug) echo "[XI] ACT Posting to PR<br/>\r\n";
+                if (stripos($contents, '{"success":1') !== false) {
+                    $hdrsArr = nxs_makeHeaders('https://www.xing.com/app/startpage', '', 'GET', true);
+                    $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+                    $rURL = 'https://www.xing.com/feedy/network_feed?_=' . time() . '526';
+                    $rep = nxs_remote_get($rURL, $advSet);
+                    $contents = $rep['body'];
+                    $pid = CutFromTo($contents, ' data-path="/feedy/stories/', '"');
+                    $to = 'https://www.xing.com/feedy/stories/' . $pid;
+                    return array('isPosted' => '1', 'postID' => $pid, 'postURL' => $to, 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck);
+                }
+            }
+        }
+
+        function postG($msg, $msgT, $grpID, $forumID, $imgURL)
+        {
+            global $nxs_plurl;
+            $ck = $this->ck;
+            $pgs = '';
+            if (!empty($ck) && is_array($ck)) {
+                $curl = 'https://www.xing.com/communities/groups/' . $grpID;
+                $hdrsArr = nxs_makeHeaders($curl, 'https://www.xing.com');
+                if ($this->debug) echo "[XI] Posting to G<br/>\r\n";
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy, 1);
+                $rep = nxs_remote_get($curl, $advSet);
+                if (is_nxs_error($rep)) return 'Bad connection #1';
+                $contents = $rep['body'];
+                if (stripos($contents, 'csrf-token" content="') !== false) $ct = CutFromTo($contents, 'csrf-token" content="', '"'); else return 'Bad connection #2: No Token';
+                $contents = $rep['body'];
+                if (stripos($contents, 'authenticity_token" value="') !== false) $cta = CutFromTo($contents, 'authenticity_token" value="', '"'); else return 'Bad connection #4: No AU Token';
+                $flds = array('utf8' => urldecode('%E2%9C%93'), 'authenticity_token' => $cta, 'post[title]' => $msgT, 'post[content]' => $msg, 'post[image_attributes][slug]' => '', 'post[forum_id]' => $forumID, 'post[media_preview_id]' => '', 'delete_image' => '', 'X-represents-preview-image' => '', 'stream' => 'true');
+                if (!empty($imgURL)) {
+                    $pstArray = array('X-Requested-With' => 'IFrame', 'authenticity_token' => $cta);// prr($imgURL);
+                    $imRes = nxs_uploadImgCD($imgURL, 'https://www.xing.com/communities/upload/content_images.json', $pstArray, 'image', $ck);// prr($imRes);
+                    if (is_array($imRes) && !empty($imRes['body'])) {
+                        $cc = json_decode($imRes['body'], true);
+                        if (!empty($cc['image'])) {
+                            $hdrsArr = nxs_makeHeaders($curl, 'https://www.xing.com', 'GET', true);
+                            $hdrsArr['X-CSRF-Token'] = $ct;
+                            $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+                            while ($cc['image']['processing'] == true) {
+                                sleep(2);
+                                $rep = nxs_remote_get('https://www.xing.com' . $cc['image']['url'], $advSet);
+                                $cc = json_decode($rep['body'], true); // prr($rep); prr($cc, 'CCCC');
+                                if ($cc['image']['processing'] == false && !empty($cc['image']['main_url'])) {
+                                    $flds['post[image_attributes][slug]'] = $cc['image']['slug'];
+                                    $flds['X-represents-preview-image'] = $cc['image']['main_url'];
+                                } else $badOut = 'ImgError';
+                            }
+                        }
+                    }
+                }
+                $hdrsArr = nxs_makeHeaders($curl, 'https://www.xing.com', 'POST', true);
+                $hdrsArr['X-CSRF-Token'] = $ct;
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds, $this->proxy); //prr($advSet);// die();
+                $rep = nxs_remote_post('https://www.xing.com/communities/forums/' . $forumID . '/posts.json', $advSet);
+                if (is_nxs_error($rep)) {
+                    $badOut = print_r($rep, true) . " - ERROR";
+                    return $badOut;
+                }
+                $contents = $rep['body']; // prr($advSet);  prr($rep, 'POST RESULT'); // die();
+                if ($this->debug) echo "[XI] ACT Posting to G<br/>\r\n";
+                if (stripos($contents, '{"success":true') !== false) return array('isPosted' => '1', 'postID' => CutFromTo($contents, 'id=\"', '\"'), 'postURL' => 'https://www.xing.com' . CutFromTo($contents, 'data-comments-path=\"', '\"'), 'pDate' => date('Y-m-d H:i:s'), 'ck' => $ck);
+            }
+        }
+
+        function postC($msg, $msgT, $pgID)
+        {
+            global $nxs_plurl;
+            $ck = $this->ck;
+            $pgs = '';
+            $curl = 'https://www.xing.com/companies/' . $pgID . '/updates';
+            if (!empty($ck) && is_array($ck)) {
+                $hdrsArr = nxs_makeHeaders($curl, 'https://www.xing.com');
+                if ($this->debug) echo "[XI] Posting to CP<br/>\r\n";
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy, 1);
+                $rep = nxs_remote_get($curl, $advSet);
+                if (is_nxs_error($rep)) return 'Bad connection #1';
+                $contents = $rep['body'];
+                if (stripos($contents, 'csrf-token" content="') !== false) $ct = CutFromTo($contents, 'csrf-token" content="', '"'); else return 'Bad connection #2: No Token';
+                $hdrsArr = nxs_makeHeaders($curl, 'https://www.xing.com', 'GET', true);
+                $hdrsArr['X-CSRF-Token'] = $ct;
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, '', $this->proxy);
+                $rep = nxs_remote_get($curl . '/new?_=' . time() . '516', $advSet);
+                if (is_nxs_error($rep)) return 'Bad connection #3';
+                $contents = $rep['body'];
+                if (stripos($contents, 'authenticity_token" value="') !== false) $cta = CutFromTo($contents, 'authenticity_token" value="', '"'); else return 'Bad connection #4: No AU Token';
+                $flds = array('utf8' => urldecode('%E2%9C%93'), 'authenticity_token' => $cta, 'update[headline]' => $msgT, 'update[body_clean]' => $msg, 'update[publish_to_twitter]' => '0');
+                $hdrsArr = nxs_makeHeaders($curl, 'https://www.xing.com', 'POST', true);
+                $hdrsArr['X-CSRF-Token'] = $ct;
+                $flds = http_build_query($flds); //prr($flds);
+                //## Post
+                $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $flds, $this->proxy);
+                $rep = nxs_remote_post($curl, $advSet);
+                if (is_nxs_error($rep)) {
+                    $badOut = print_r($rep, true) . " - ERROR";
+                    return $badOut;
+                }
+                $contents = $rep['body']; // prr($pURL); prr($advSet);  prr($rep, 'POST RESULT'); // die();
+                if ($this->debug) echo "[XI] ACT Posting to C<br/>\r\n";
+                if (stripos($contents, 'data-status="success"') !== false) {
+                    return array('isPosted' => '1', 'postID' => '0', 'postURL' => $curl, 'pDate' => date('Y-m-d H:i:s'));
+                } else return 'Error: ' . print_r($rep, true);
+            }
+        }
+    }
+}
+//================================vKontakte=====================================
 if (!function_exists("nxs_doCheckVK")) {
     function nxs_doCheckVK()
     {
         global $nxs_vkCkArray;
         $hdrsArr = nxs_getVKHeaders('https://vk.com/login.php');
         $ckArr = nxsClnCookies($nxs_vkCkArray);
-        $response = wp_remote_get('https://vk.com/settings', array(
-            'method' => 'GET',
-            'timeout' => 45,
-            'redirection' => 0,
-            'headers' => $hdrsArr,
-            'cookies' => $ckArr
-        ));  //  prr($response);
-        if (isset($response['headers']['location']) && stripos($response['headers']['location'],
-                'login.php') !== false
-        ) {
-            return 'Bad Saved Login';
-        }
+        $response = wp_remote_get('https://vk.com/settings', array('method' => 'GET', 'timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr));  //  prr($response);
+        if (isset($response['headers']['location']) && stripos($response['headers']['location'], 'login.php') !== false) return 'Bad Saved Login';
         if ($response['response']['code'] == '200' && stripos($response['body'], 'settings_new_pwd') !== false) {
             $nxs_vkCkArray = nxs_MergeCookieArr($ckArr, $response['cookies']);
             /*echo "You are IN"; */
             return false;
-        } else {
-            return 'No Saved Login';
-        }
+        } else return 'No Saved Login';
         return false;
     }
 }
@@ -2914,8 +2831,7 @@ if (!function_exists("nxs_doConnectToVK")) {
         global $nxs_vkCkArray;
         $hdrsArr = nxs_getVKHeaders('http://vk.com/login.php');
         $mids = ''; //echo "LOG=";
-        $response = wp_remote_get('http://vk.com/login.php',
-            array('method' => 'POST', 'timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArr));
+        $response = wp_remote_get('http://vk.com/login.php', array('method' => 'POST', 'timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArr));
         if (is_nxs_error($response)) {
             $badOut = "Connection Error 1: " . print_r($response, true);
             return $badOut;
@@ -2939,30 +2855,18 @@ if (!function_exists("nxs_doConnectToVK")) {
         }
         $flds['email'] = $u;
         $flds['pass'] = $p;
-        $r2 = wp_remote_post('https://login.vk.com/', array(
-            'method' => 'POST',
-            'timeout' => 45,
-            'redirection' => 0,
-            'headers' => $hdrsArr,
-            'body' => $flds,
-            'cookies' => $ckArr
-        ));
+        $r2 = wp_remote_post('https://login.vk.com/', array('method' => 'POST', 'timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArr, 'body' => $flds, 'cookies' => $ckArr));
         if (is_nxs_error($r2)) {
             $badOut = "Connection Error 2: " . print_r($r2, true);
             return $badOut;
         }
         $ckArr = nxsMergeArraysOV($ckArr, $r2['cookies']);
-        if ($r2['response']['code'] == '302' && $r2['headers']['location'] != '') {
-            $response = wp_remote_get($r2['headers']['location'],
-                array('timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr));
-        }
+        if ($r2['response']['code'] == '302' && $r2['headers']['location'] != '') $response = wp_remote_get($r2['headers']['location'], array('timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr));
         if (is_nxs_error($response)) {
             $badOut = "Connection Error 3: " . print_r($response, true);
             return $badOut;
         }
-        if ($response['response']['code'] == '200' && $response['body'] != '' && stripos($response['body'],
-                'message_text"') !== false
-        ) {
+        if ($response['response']['code'] == '200' && $response['body'] != '' && stripos($response['body'], 'message_text"') !== false) {
             $txt = CutFromTo($response['body'], 'message_text"', '<ul');
             return trim(strip_tags($txt));
         }
@@ -2970,16 +2874,14 @@ if (!function_exists("nxs_doConnectToVK")) {
             $ckArr = nxsMergeArraysOV($ckArr, $response['cookies']);
             $nxs_vkCkArray = $ckArr;
             $hdrsArr = nxs_getVKHeaders('http://vk.com/');
-            $response = wp_remote_get('http://vk.com/',
-                array('redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr));
+            $response = wp_remote_get('http://vk.com/', array('redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr));
             if (is_nxs_error($response)) {
                 $badOut = "Connection Error 4: " . print_r($response, true);
                 return $badOut;
             }
             if ($response['response']['code'] == '302' && $response['headers']['location'] == '/login.php?act=security_check&to=&al_page=3') { //## PH Ver
                 $hdrsArr = nxs_getVKHeaders('http://vk.com/');
-                $response = wp_remote_get('http://vk.com/login.php?act=security_check&to=&al_page=3',
-                    array('redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr));
+                $response = wp_remote_get('http://vk.com/login.php?act=security_check&to=&al_page=3', array('redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr));
                 if (is_nxs_error($response)) {
                     $badOut = "Connection Error 5: " . print_r($response, true);
                     return $badOut;
@@ -2992,54 +2894,31 @@ if (!function_exists("nxs_doConnectToVK")) {
                     return "Phone verification required: " . $ph1 . " ... " . $ph2;
                 } else {
                     $hash = CutFromTo($txt, "al_page: '3', hash: '", "'");
-                    $flds = array(
-                        'act' => 'security_check',
-                        'code' => $ph,
-                        'to' => '',
-                        'al' => '1',
-                        'al_page' => '3',
-                        'hash' => $hash
-                    );
+                    $flds = array('act' => 'security_check', 'code' => $ph, 'to' => '', 'al' => '1', 'al_page' => '3', 'hash' => $hash);
                     $hdrsArr = nxs_getVKHeaders('http://vk.com/login.php?act=security_check&to=&al_page=3', true, true);
-                    $response = wp_remote_post('http://vk.com/login.php',
-                        array('redirection' => 0, 'body' => $flds, 'headers' => $hdrsArr, 'cookies' => $ckArr));
+                    $response = wp_remote_post('http://vk.com/login.php', array('redirection' => 0, 'body' => $flds, 'headers' => $hdrsArr, 'cookies' => $ckArr));
                     if (is_nxs_error($response)) {
                         $badOut = "Connection Error 6: " . print_r($response, true);
                         return $badOut;
                     }
-                    if ($response['response']['code'] == '200' && $response['body'] != '' && stripos($response['body'],
-                            '4 hours') !== false
-                    ) {
-                        return "Invalid Phone verification number. You can try again in 4 hours";
-                    }
-                    if ($response['response']['code'] == '200' && $response['body'] != '' && stripos($response['body'],
-                            'incorrect') !== false
-                    ) {
-                        return "Invalid Phone verification number.";
-                    }
+                    if ($response['response']['code'] == '200' && $response['body'] != '' && stripos($response['body'], '4 hours') !== false) return "Invalid Phone verification number. You can try again in 4 hours";
+                    if ($response['response']['code'] == '200' && $response['body'] != '' && stripos($response['body'], 'incorrect') !== false) return "Invalid Phone verification number.";
                     $hdrsArr = nxs_getVKHeaders('http://vk.com/');
-                    $response = wp_remote_get('http://vk.com/',
-                        array('redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr));
+                    $response = wp_remote_get('http://vk.com/', array('redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr));
                     if (is_nxs_error($response)) {
                         $badOut = "Connection Error 7: " . print_r($response, true);
                         return $badOut;
                     }
-                    if ($response['response']['code'] == '302' && $response['headers']['location'] == '/login.php?act=security_check&to=&al_page=3') {
-                        return "Invalid verification number";
-                    } else {
+                    if ($response['response']['code'] == '302' && $response['headers']['location'] == '/login.php?act=security_check&to=&al_page=3') return "Invalid verification number"; else {
                         $ckArr = nxsMergeArraysOV($ckArr, $response['cookies']);
                         $nxs_vkCkArray = $ckArr;
                         return false;
                     }
                 }
-            } else {
-                return false;
-            }
+            } else return false;
         } elseif (isset($response['_reason'])) {
             return $response['_reason'];
-        } else {
-            return "UNKNOWN ERROR. Please contact support." . print_r($response, true);
-        }
+        } else return "UNKNOWN ERROR. Please contact support." . print_r($response, true);
     }
 }
 if (!function_exists("nxs_doPostToVK")) {
@@ -3048,19 +2927,12 @@ if (!function_exists("nxs_doPostToVK")) {
         global $nxs_vkCkArray;
         $hdrsArr = nxs_getVKHeaders($where);
         $ckArr = nxsClnCookies($nxs_vkCkArray);
-        $response = wp_remote_get($where,
-            array('method' => 'GET', 'timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr));
+        $response = wp_remote_get($where, array('method' => 'GET', 'timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr));
         $ckArr2 = nxs_MergeCookieArr($ckArr, $response['cookies']);
         $contents = $response['body'];
-        if (stripos($contents, '"post_hash":"') !== false) {
-            $hash = CutFromTo($contents, '"post_hash":"', '"');
-        }
-        if (stripos($contents, '"timehash":"') !== false) {
-            $timeHash = CutFromTo($contents, '"timehash":"', '"');
-        }
-        if (stripos($contents, '"rhash":"') !== false) {
-            $rHash = CutFromTo($contents, '"rhash":"', '"');
-        }
+        if (stripos($contents, '"post_hash":"') !== false) $hash = CutFromTo($contents, '"post_hash":"', '"');
+        if (stripos($contents, '"timehash":"') !== false) $timeHash = CutFromTo($contents, '"timehash":"', '"');
+        if (stripos($contents, '"rhash":"') !== false) $rHash = CutFromTo($contents, '"rhash":"', '"');
         if (stripos($contents, '"public_id":') !== false) {
             $postTo = '-' . CutFromTo($contents, '"public_id":', ',');
             $type = 'all';
@@ -3073,24 +2945,8 @@ if (!function_exists("nxs_doPostToVK")) {
             $postTo = '-' . CutFromTo($contents, '"group_id":', ',');
             $type = 'all';
         }
-        if (stripos($contents, '"id":') !== false) {
-            $uid = CutFromTo($contents, '"id":', ',');
-        }
-        $flds = array(
-            'Message' => strip_tags($msg),
-            'act' => 'post',
-            'al' => 1,
-            'facebook_export' => '',
-            'fixed' => '',
-            'friends_only' => '',
-            'from' => '',
-            'hash' => $hash,
-            'official' => '',
-            'signed' => '',
-            'status_export' => '',
-            'to_id' => $postTo,
-            'type' => $type
-        );
+        if (stripos($contents, '"id":') !== false) $uid = CutFromTo($contents, '"id":', ',');
+        $flds = array('Message' => strip_tags($msg), 'act' => 'post', 'al' => 1, 'facebook_export' => '', 'fixed' => '', 'friends_only' => '', 'from' => '', 'hash' => $hash, 'official' => '', 'signed' => '', 'status_export' => '', 'to_id' => $postTo, 'type' => $type);
         if ($msgOpts['type'] == 'A' && $msgOpts['url'] != '') {
             $flds2 = array();
             $flds2['url'] = $msgOpts['url'];
@@ -3114,20 +2970,12 @@ if (!function_exists("nxs_doPostToVK")) {
             $flds3['index'] = '3';
             $flds3['to_mail'] = '';
             $flds3['hash'] = '1445888975_a85b04a18ebbc5c76f';
-            $postArr = array(
-                'method' => 'POST',
-                'timeout' => 45,
-                'redirection' => 0,
-                'headers' => $hdrsArrP,
-                'body' => $flds3,
-                'cookies' => $ckArr
-            ); //prr($postArr);
+            $postArr = array('method' => 'POST', 'timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArrP, 'body' => $flds3, 'cookies' => $ckArr); //prr($postArr);
 
             $r3 = wp_remote_post('https://vk.com/share.php?act=url_attachment', $postArr);
             $errMsg = utf8_encode(strip_tags($r3['body'])); // prr($r3); //die();
             if ((stripos($r3['body'], 'photo_id:') !== false)) {
-                $attchID = trim(CutFromTo($r3['body'], 'user_id:', ',')) . "_" . trim(CutFromTo($r3['body'],
-                        'photo_id:', '}'));
+                $attchID = trim(CutFromTo($r3['body'], 'user_id:', ',')) . "_" . trim(CutFromTo($r3['body'], 'photo_id:', '}'));
             } else {
                 if ((stripos($r3['body'], '<div class="title">Error</div>') !== false)) {
                     $errr = strip_tags(CutFromTo($r3['body'], '<div class="body">', '</div>'));
@@ -3136,24 +2984,17 @@ if (!function_exists("nxs_doPostToVK")) {
                 }
                 if (($r3['response']['code'] == '302' || $r3['response']['code'] == '303') && $r3['headers']['location'] != '') {
                     sleep(3);
-                    $r4 = wp_remote_get($r3['headers']['location'],
-                        array('timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr2));
+                    $r4 = wp_remote_get($r3['headers']['location'], array('timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArr, 'cookies' => $ckArr2));
                     $hdrsArr2 = nxs_getVKHeaders($r3['headers']['location']);
                     $ckArr2 = nxs_MergeCookieArr($ckArr, $r4['cookies']);
                     if (($r4['response']['code'] == '302' | $r4['response']['code'] == '303') && $r4['headers']['location'] != '') {
                         sleep(3);
-                        $r5 = wp_remote_get($r4['headers']['location'],
-                            array('timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArr2, 'cookies' => $ckArr2));
+                        $r5 = wp_remote_get($r4['headers']['location'], array('timeout' => 45, 'redirection' => 0, 'headers' => $hdrsArr2, 'cookies' => $ckArr2));
                         if (stripos($r5['body'], '"photo_id"') !== false) {
-                            $attchID = trim(CutFromTo($r5['body'], '"user_id":',
-                                    ',')) . "_" . trim(CutFromTo($r5['body'], '"photo_id":', '}'));
+                            $attchID = trim(CutFromTo($r5['body'], '"user_id":', ',')) . "_" . trim(CutFromTo($r5['body'], '"photo_id":', '}'));
                         }
-                    } else {
-                        return "ERROR: R4: " . print_r($r3, true);
-                    }
-                } else {
-                    return "ERROR: R3: " . print_r($r3, true);
-                }
+                    } else return "ERROR: R4: " . print_r($r3, true);
+                } else return "ERROR: R3: " . print_r($r3, true);
             }   // prr($r5);
             $flds['attach1'] = $attchID;
             $flds['attach1_type'] = 'share';
@@ -3164,15 +3005,7 @@ if (!function_exists("nxs_doPostToVK")) {
             $flds['official'] = 1;
         }
         $hdrsArr = nxs_getVKHeaders($where, true, true); // prr($hdrsArr);    prr($flds);
-        $r2 = wp_remote_post('http://vk.com/al_wall.php', array(
-            'method' => 'POST',
-            'timeout' => 45,
-            'httpversion' => '1.1',
-            'redirection' => 0,
-            'headers' => $hdrsArr,
-            'body' => $flds,
-            'cookies' => $ckArr
-        ));
+        $r2 = wp_remote_post('http://vk.com/al_wall.php', array('method' => 'POST', 'timeout' => 45, 'httpversion' => '1.1', 'redirection' => 0, 'headers' => $hdrsArr, 'body' => $flds, 'cookies' => $ckArr));
         if (stripos($r2['body'], 'page_wall_count_own') !== false && stripos($r2['body'], 'div id="post') !== false) {
             $pid = CutFromTo($r2['body'], 'div id="post', '"');
             return array("code" => "OK", "post_id" => $pid);

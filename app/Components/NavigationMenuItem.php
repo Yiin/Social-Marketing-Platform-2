@@ -11,18 +11,21 @@ class NavigationMenuItem
     public $icon;
     public $requires_permision;
 
-    function __construct($title, $icon, $route, $requires_permision = null)
+    function __construct($title, $icon, $route, $guard = null)
     {
         $this->title = $title;
         $this->icon = $icon;
         $this->route = $route;
-        $this->requires_permision = $requires_permision;
+        $this->requires_permision = $guard;
         $this->childs = [];
     }
 
-    public function addChild($title, $icon, $route, $requires_permision = null)
+
+//    public function canShow
+
+    public function addChild($title, $icon, $route, $guard = null)
     {
-        $item = new self($title, $icon, $route, $requires_permision);
+        $item = new self($title, $icon, $route, $guard);
 
         $this->childs [] = $item;
 

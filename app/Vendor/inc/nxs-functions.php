@@ -17,6 +17,7 @@ if (!function_exists('nxs_currPageURL')){ function nxs_currPageURL() {
   if ($_SERVER["SERVER_PORT"] != "80"){ $pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"];} else { $pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];} 
   $pageURL=strtok($pageURL,'?'); $ggt = $_GET; if (isset($ggt['auth'])) unset($ggt['auth']); if (isset($ggt['acc'])) unset($ggt['acc']); if (!empty($ggt)) $pageURL .= '?'.http_build_query($ggt); /*prr($pageURL); */ return $pageURL;
 }}
+if (!function_exists('nxsDelCookie')){ function nxsDelCookie($ck, $dc) { $ckOut = array(); foreach ($ck as $c) if ($c->name!=$dc) $ckOut[] = $c; return $ckOut; }}
 //## Part II. SNAP Functions
 if (!function_exists('nxs_settings_open')){ function nxs_settings_open() {  
 	$fileData = trim(file_get_contents(dirname(__DIR__).'/nx-snap-settings.txt'));  $options = nxs_maybe_unserialize($fileData);  return $options;
@@ -350,4 +351,28 @@ if (!function_exists("nxs_getOption")) { function nxs_getOption($optName) { $val
 if (!function_exists('nxsLstSort')){function nxsLstSort($a, $b) { if (empty($a['do'])) $a['do'] = 0; if (empty($b['do'])) $b['do'] = 0;  if (empty($a['nName'])) $a['nName'] = ''; if (empty($b['nName'])) $b['nName'] = '';
   if ($a['do']=='2') $a['do'] = 1;  if ($b['do']=='2') $b['do'] = 1; if ($a['do'] == $b['do']) { return strcasecmp($a['nName'],$b['nName']); } return ($a['do'] > $b['do']) ? -1 : 1;    
 }}
+if (!function_exists("nxs_arrMergeCheck")) { function nxs_arrMergeCheck($a1, $a2){ foreach ($a2 as $ak=>$a) if (!in_array($ak, array_keys($a1))) $a1[$ak] = $a; return $a1; }}
+//## Upload Image with Content-Disposition
+if (!function_exists('nxs_uploadImgCD')){ function nxs_uploadImgCD($imgURL, $uplURL, $pstArray, $pstField, $ck='') { 
+    $imgType = substr(  $imgURL, strrpos( $imgURL , '.' )+1 ); if (stripos($imgType,'?')!==false) $imgType = @reset((explode('?', $imgType))); $ia = array("jpg", "png", "gif", "jpeg"); if (!in_array($imgType, $ia)) $imgType = 'jpg'; 
+    $hdrsArr = nxs_makeHeaders($imgURL);  $advSet = nxs_mkRemOptsArr($hdrsArr);  $imgData = nxs_remote_get($imgURL, $advSet);
+    if(is_nxs_error($imgData) || empty($imgData['body']) || (!empty($imgData['headers']['content-length']) && (int)$imgData['headers']['content-length']<200) || 
+      $imgData['headers']['content-type'] == 'text/html' ||  $imgData['response']['code'] == '403' ) return array('err'=>print_r($imgData, true)); else $imgData = $imgData['body'];  
+    //## Post
+    $params = ''; if (is_array($pstArray)) foreach ($pstArray as $n=>$v) $params .= "------WebKitFormFQc7dbZE\r\nContent-Disposition: form-data; name=\"".$n."\"\r\n\r\n".$v."\r\n";
+    $params  .= "------WebKitFormFQc7dbZE\r\nContent-Disposition: form-data; name=\"".$pstField."\"; filename=\"image.".$imgType."\"\r\nContent-Type: image/".$imgType."\r\n\r\n".$imgData."\r\n------WebKitFormFQc7dbZE--";              
+    $hdrsArr = nxs_makeHeaders($imgURL,'','POST'); $hdrsArr['Content-Type']='multipart/form-data; boundary=----WebKitFormFQc7dbZE'; $advSet = nxs_mkRemOptsArr($hdrsArr, $ck, $params);  $rep = nxs_remote_post($uplURL, $advSet); 
+    if(is_nxs_error($rep)) return array('err'=>print_r($rep, true)); else return $rep; 
+}}
+//## Headers and Remote Options Array
+if (!function_exists("nxs_makeHeaders")) { function nxs_makeHeaders($ref, $org='', $type='GET', $aj=false){  $hdrsArr = array(); 
+ $hdrsArr['Cache-Control']='max-age=0'; $hdrsArr['Connection']='keep-alive'; $hdrsArr['Referer']=$ref;
+ $hdrsArr['User-Agent']='Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.67 Safari/537.36'; 
+ if($type=='JSON') $hdrsArr['Content-Type']='application/json;charset=UTF-8'; elseif($type=='POST') $hdrsArr['Content-Type']='application/x-www-form-urlencoded'; 
+   elseif($type=='JS') $hdrsArr['Content-Type']='application/javascript; charset=UTF-8'; elseif($type=='PUT') $hdrsArr['Content-Type']='application/octet-stream';
+ if($aj===true) $hdrsArr['X-Requested-With']='XMLHttpRequest';  if ($org!='') $hdrsArr['Origin']=$org; 
+ if ($type=='GET') $hdrsArr['Accept']='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'; else $hdrsArr['Accept']='*/*';
+ if (function_exists('gzdeflate')) $hdrsArr['Accept-Encoding']='deflate,sdch';  $hdrsArr['Accept-Language']='en-US,en;q=0.8'; return $hdrsArr;         
+}}
+if (!function_exists("nxs_getNXSHeaders")) {  function nxs_getNXSHeaders($ref='', $post=false){ return nxs_makeHeaders($ref, '', $post?'POST':'GET'); }} //## Compatibility function...
 ?>

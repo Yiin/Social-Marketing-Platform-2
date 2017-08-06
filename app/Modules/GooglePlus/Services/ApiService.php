@@ -2,11 +2,6 @@
 
 namespace App\Modules\GooglePlus\Services;
 
-use App\Interfaces\SocialMediaServiceInterface;
-use App\Jobs\PostToGooglePlus;
-use App\Models\Account;
-use App\Models\Queue;
-use App\Models\SocialMediaService;
 use App\Models\Template;
 use App\Modules\GooglePlus\Jobs\PostMessage;
 use App\Modules\GooglePlus\Models\GoogleAccount;
@@ -16,6 +11,7 @@ use Cache;
 use Carbon\Carbon;
 use ChillDev\Spintax\Parser;
 use Illuminate\Http\Request;
+use nxs_class_SNAP_GP;
 use nxsAPI_GP;
 use simple_html_dom;
 
@@ -57,7 +53,7 @@ class ApiService
         $error = $this->api->connect($account->username, $account->password);
 
         if ($error) {
-            return false;
+            return dd(['login', $error]);
         }
         return true;
     }
@@ -76,14 +72,7 @@ class ApiService
      */
     public function groups()
     {
-        $groups = array_map(function ($group) {
-            return [
-                'id' => $group[0],
-                'name' => $group[1]
-            ];
-        }, $this->api->grabGroups('/u/0', ''));
-
-        $this->getGroupsData($groups);
+        $groups = $this->getGroupsData();
 
         return $groups;
     }
@@ -162,8 +151,61 @@ class ApiService
     |--------------------------------------------------------------------------
     */
 
-    private function getGroupsData(&$groups)
+    private function getGroupsData()
     {
+        $email = 'stanislovas.janonis@gmail.com';
+        $pass = 'Gigabytes5284691367';
+        $commID = '100609058582053363304';
+        $commCategoryID = '64a9f3c6-57aa-4da9-ab02-a25aa523687f';
+        $lnk = 'http://www.nextscripts.com/snap-api/';
+        $msg = 'Post this to Google Plus!';
+
+        $nt = new nxsAPI_GP();
+        $nt->debug = true;
+
+        $loginError = $nt->connect($email, $pass);
+
+        if (!$loginError) {
+            $result = $nt->postGP($msg, $lnk, '', $commID, $commCategoryID);
+        } else {
+            echo $loginError;
+        }
+
+        if (!empty($result) && is_array($result) && !empty($result['post_url']))
+            echo '<a target="_blank" href="' . $result['post_url'] . '">New Post</a>';
+        else
+            echo "<pre>" . print_r($result, true) . "</pre>";
+
+        exit;
+
+        $groups = [];
+
+        if ($err) {
+            dd($err);
+        }
+
+//        dd($this->api->postGP("test lol", "", "", "100609058582053363304", "64a9f3c6-57aa-4da9-ab02-a25aa523687f"));
+
+//        dd($this->api->check('GP', 'stanislovas.janonis'));
+
+        $body = $this->api->get('communities/member');//['body'];
+//        dd($body);
+        echo $body;
+        exit;
+
+        $html = new simple_html_dom();
+
+        $html->load($body);
+
+        foreach ($html->find('.gZXxHe.UB0dDd.CuPm0') as $node) {
+            $groups [] = [
+                'url' => $node->href
+            ];
+        }
+        dd($groups);
+
+        return $groups;
+
         $urls = [];
         foreach ($groups as $index => &$group) {
             // if we have cached group data, do not update
